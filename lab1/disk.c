@@ -32,8 +32,9 @@ int fd;
     read(fd, buf, 512);               // read 512 bytes into buf[ ]
 }
 
-void print_part_info(struct partition *p, char *name, int offset) {
-    printf("Partition %s:\n", name);
+// This is just to print out the partition info
+void print_part_info(struct partition *p, int num, int offset) {
+    printf("Partition %d:\n", num);
     printf("    start_sector: %d\n", p->start_sector + offset);
     printf("    end_sector: %d\n", ((p->start_sector + p->nr_sectors) - 1) + offset);
     printf("    nr_sectors: %d\n", p->nr_sectors);
@@ -51,39 +52,35 @@ int main() {
 
     // print P1's start_sector, nr_sectors, sys_type);
     
-    print_part_info(p, "P1", 0);
+    print_part_info(p, 1, 0); // Print p1
+    p++; // incrememnt p1 -> p2
+    print_part_info(p, 2, 0); // Print p2
+    p++; // increment p2 -> p3, etc...
+    print_part_info(p, 3, 0);
     p++;
-    print_part_info(p, "P2", 0);
-    p++;
-    print_part_info(p, "P3", 0);
-    p++;
-    print_part_info(p, "P4", 0);
+    print_part_info(p, 4, 0);
 
     // Write code to print all 4 partitions;
     // ASSUME P4 is EXTEND type, p->P4;
-    //printf("P4 start_sector = %d\n", p->start_sector);
-    int extstart = p->start_sector;
-    read_sector(fd, extstart, buf);
-
-    p = (struct partition *)&buf[0x1BE];    // p->localMBR
     
-    int nextstart = extstart + p->nr_sectors;
-    //printf("FIRST entry of localMBR\n");
-    //printf("start_sector=%d, nsectors=%d\n", p->start_sector, p->nr_sectors);
-    // Write YOUR code to get 2nd entry, which points to the next localMBR, etc
-    print_part_info(p, "P5", extstart);
-    p++;
+    int extstart = p->start_sector; // Setting extstart to p4's start sector
+
+    if (p->sys_type == 5) { // If P4 is extended
+        int extstart = p->start_sector; // Setting extstart to P4's start
+        read_sector(fd, extstart, buf); //Read the sector
+        p = (struct partition *)&buf[0x1BE];    // p->localMBR
+        int nextstart = extstart + p->nr_sectors; // Offset for next start/end values
+        print_part_info(p, 5, extstart); // Print P5 info
+        p++; // Increment
     
-    read_sector(fd, p->start_sector + extstart, buf);
-    p = (struct partition *)&buf[0x1BE];
-
-    print_part_info(p, "P6", p->start_sector + nextstart);
-
-    nextstart = nextstart + p->nr_sectors + p->start_sector;
-
-    p++;
-    read_sector(fd, p->start_sector + extstart, buf);
-    p = (struct partition *)&buf[0x1BE];
-    print_part_info(p, "P7", p->start_sector + nextstart);
+        int epnum = 6; // Next partition number
+        while(p->sys_type != 0) {
+            read_sector(fd, p->start_sector + extstart, buf); // Read next sector, offset from P4
+            p = (struct partition *)&buf[0x1BE];
+            print_part_info(p, epnum, p->start_sector + nextstart); // Print Part info with offset
+            nextstart = nextstart + p->nr_sectors + p->start_sector; // Set new offset for next partition
+            epnum++; // Increment parttion counter
+            p++; // Increment partition
+        }
+    }
 }
-// FIGURE OUT THE START AND END VALUES
