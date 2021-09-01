@@ -1,0 +1,147 @@
+enter main
+&argc: 0xffb45920 argv: 0xffb459c4 env: 0xffb459d8
+&a: 0xffb458dc &b: 0xffb458e0 &c: 0xffb458e4
+argc: 4
+argv: ./a.out, one, two, three, 
+enter A
+&d: 0xffb45890, &e: 0xffb45894, &f: 0xffb45898
+enter B
+&g: 0xffb45860, &h: 0xffb45864, &i: 0xffb45868
+enter C
+&u: 0xffb45820, &v: 0xffb45824, &w: 0xffb45828, &i: 0xffb4582c, &p: 0xffb45830
+Current FP Val: 0xffb45848
+----- FP list -----
+0xffb45848 -> 0xffb45878 -> 0xffb458a8 -> 0xffb45908 -> 0
+----- Stack Contents -----
+  0: p: 0xffb45820 -> a
+  1: p: 0xffb45824 -> b
+  2: p: 0xffb45828 -> c
+  3: p: 0xffb4582c -> d
+  4: p: 0xffb45830 -> ffb45830
+  5: p: 0xffb45834 -> 0
+  6: p: 0xffb45838 -> 6
+  7: p: 0xffb4583c -> 4d641400
+  8: p: 0xffb45840 -> ffb45920
+  9: p: 0xffb45844 -> 56590000
+ 10: p: 0xffb45848 -> ffb45878
+ 11: p: 0xffb4584c -> 5658d41a
+ 12: p: 0xffb45850 -> 7
+ 13: p: 0xffb45854 -> 8
+ 14: p: 0xffb45858 -> ffb45864
+ 15: p: 0xffb4585c -> ffb45868
+ 16: p: 0xffb45860 -> 7
+ 17: p: 0xffb45864 -> 8
+ 18: p: 0xffb45868 -> 9
+ 19: p: 0xffb4586c -> 4d641400
+ 20: p: 0xffb45870 -> ffb45920
+ 21: p: 0xffb45874 -> 56590000
+ 22: p: 0xffb45878 -> ffb458a8
+ 23: p: 0xffb4587c -> 5658d37b
+ 24: p: 0xffb45880 -> 4
+ 25: p: 0xffb45884 -> 5
+ 26: p: 0xffb45888 -> ffb45894
+ 27: p: 0xffb4588c -> ffb45898
+ 28: p: 0xffb45890 -> 4
+ 29: p: 0xffb45894 -> 5
+ 30: p: 0xffb45898 -> 6
+ 31: p: 0xffb4589c -> 4d641400
+ 32: p: 0xffb458a0 -> ffb45920
+ 33: p: 0xffb458a4 -> 56590000
+ 34: p: 0xffb458a8 -> ffb45908
+ 35: p: 0xffb458ac -> 5658d2d6
+ 36: p: 0xffb458b0 -> 1
+ 37: p: 0xffb458b4 -> 2
+ 38: p: 0xffb458b8 -> ffb458e0
+ 39: p: 0xffb458bc -> ffb458e4
+ 40: p: 0xffb458c0 -> 5658d090
+ 41: p: 0xffb458c4 -> f7f21540
+ 42: p: 0xffb458c8 -> ffb459d8
+ 43: p: 0xffb458cc -> ffb459c4
+ 44: p: 0xffb458d0 -> 4
+ 45: p: 0xffb458d4 -> f7f34430
+ 46: p: 0xffb458d8 -> 0
+ 47: p: 0xffb458dc -> 1
+ 48: p: 0xffb458e0 -> 2
+ 49: p: 0xffb458e4 -> 3
+ 50: p: 0xffb458e8 -> 4
+ 51: p: 0xffb458ec -> 4d641400
+ 52: p: 0xffb458f0 -> 4
+ 53: p: 0xffb458f4 -> ffb459c4
+ 54: p: 0xffb458f8 -> ffb459d8
+ 55: p: 0xffb458fc -> ffb45920
+ 56: p: 0xffb45900 -> 0
+ 57: p: 0xffb45904 -> 4
+ 58: p: 0xffb45908 -> 0
+ 59: p: 0xffb4590c -> f7d429a5
+ 60: p: 0xffb45910 -> 4
+ 61: p: 0xffb45914 -> 5658d090
+ 62: p: 0xffb45918 -> 0
+ 63: p: 0xffb4591c -> f7d429a5
+ 64: p: 0xffb45920 -> 4
+ 65: p: 0xffb45924 -> ffb459c4
+ 66: p: 0xffb45928 -> ffb459d8
+ 67: p: 0xffb4592c -> ffb45954
+ 68: p: 0xffb45930 -> ffb45964
+ 69: p: 0xffb45934 -> f7f55b78
+ 70: p: 0xffb45938 -> f7f1b390
+ 71: p: 0xffb4593c -> f7f0b000
+ 72: p: 0xffb45940 -> 1
+ 73: p: 0xffb45944 -> 0
+ 74: p: 0xffb45948 -> ffb459a8
+ 75: p: 0xffb4594c -> 0
+ 76: p: 0xffb45950 -> f7f54fdc
+ 77: p: 0xffb45954 -> 0
+ 78: p: 0xffb45958 -> 4
+ 79: p: 0xffb4595c -> 5658d090
+ 80: p: 0xffb45960 -> 0
+ 81: p: 0xffb45964 -> 9b7a50f6
+ 82: p: 0xffb45968 -> 5b9aace6
+ 83: p: 0xffb4596c -> 0
+ 84: p: 0xffb45970 -> 0
+ 85: p: 0xffb45974 -> 0
+ 86: p: 0xffb45978 -> 4
+ 87: p: 0xffb4597c -> 5658d090
+ 88: p: 0xffb45980 -> 0
+ 89: p: 0xffb45984 -> f7f39c50
+ 90: p: 0xffb45988 -> f7f34430
+ 91: p: 0xffb4598c -> 56590000
+ 92: p: 0xffb45990 -> 4
+ 93: p: 0xffb45994 -> 5658d090
+ 94: p: 0xffb45998 -> 0
+ 95: p: 0xffb4599c -> 5658d0c1
+ 96: p: 0xffb459a0 -> 5658d1c9
+ 97: p: 0xffb459a4 -> 4
+ 98: p: 0xffb459a8 -> ffb459c4
+ 99: p: 0xffb459ac -> 5658d5c0
+100: p: 0xffb459b0 -> 5658d620
+101: p: 0xffb459b4 -> f7f34430
+102: p: 0xffb459b8 -> ffb459bc
+103: p: 0xffb459bc -> f7f559b0
+104: p: 0xffb459c0 -> 4
+105: p: 0xffb459c4 -> ffb478bf
+106: p: 0xffb459c8 -> ffb478c7
+107: p: 0xffb459cc -> ffb478cb
+108: p: 0xffb459d0 -> ffb478cf
+109: p: 0xffb459d4 -> 0
+110: p: 0xffb459d8 -> ffb478d5
+111: p: 0xffb459dc -> ffb478fc
+112: p: 0xffb459e0 -> ffb47910
+113: p: 0xffb459e4 -> ffb4793e
+114: p: 0xffb459e8 -> ffb47a17
+115: p: 0xffb459ec -> ffb47a79
+116: p: 0xffb459f0 -> ffb47a8f
+117: p: 0xffb459f4 -> ffb47a9a
+118: p: 0xffb459f8 -> ffb47aab
+119: p: 0xffb459fc -> ffb47ab6
+120: p: 0xffb45a00 -> ffb47ac7
+121: p: 0xffb45a04 -> ffb47adf
+122: p: 0xffb45a08 -> ffb47af1
+123: p: 0xffb45a0c -> ffb47b77
+124: p: 0xffb45a10 -> ffb47b87
+125: p: 0xffb45a14 -> ffb47b9c
+126: p: 0xffb45a18 -> ffb47bb2
+127: p: 0xffb45a1c -> ffb47bc1
+exit C
+exit B
+exit A
+exit main

@@ -1,0 +1,64 @@
+\documentclass{article}
+
+\usepackage[margin=1in]{geometry}
+
+\title{Pre-lab 1}
+\author{Andrew Todd}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Part 1}
+A.
+\begin{center}
+    \begin{tabular}{|c | c | c | c | c|}
+        \hline
+        Case & a.out & TEXT & DATA & BSS \\ [0.5ex]
+        \hline
+        1 & 14772 & 1543 & 296 & 8 \\
+        \hline
+        2 & 14776 & 1543 & 300 & 4 \\
+        \hline
+        3 & 14772 & 1543 & 296 & 40032 \\
+        \hline
+        4 & 54808 & 1543 & 40320 & 4 \\
+        \hline
+        5 & 14856 & 1743 & 300 & 8 \\
+        \hline
+        6 & 14852 & 1559 & 296 & 40064 \\
+        \hline
+    \end{tabular}
+\end{center}
+1.
+    The variables in DATA will be initialized variables. \\
+    The variables in BSS will be statically allocated vairables that have been declared, but have not been assigned a value. \\
+\\
+2.
+    The sections in a.out are the TEXT and DATA sections. The BSS is stored in memory. The reason TEXT and DATA are in the executable is because they have a fixed known value and therefore known size at compile time. BSS can be assigned any sort of value, therefore it will need to be stored in a place where you can dynamically allocate space to it. \\
+\\
+B.
+\begin{center}
+    \begin{tabular}{|c | c | c | c | c|}
+        \hline
+        Case & a.out & TEXT & DATA & BSS \\ [0.5ex]
+        \hline
+        1 & 710876 & 629787 & 13400 & 3668 \\
+        \hline
+        2 & 710904 & 629787 & 13432 & 3636 \\
+        \hline
+        3 & 710872 & 629787 & 13400 & 43668 \\
+        \hline
+        4 & 750904 & 629787 & 53432 & 3636 \\
+        \hline
+        5 & 710872 & 629835 & 13400 & 3668 \\
+        \hline
+        6 & 710952 & 629803 & 13400 & 43700 \\
+        \hline
+    \end{tabular}
+\end{center}
+The section sizes are much larger in the static files than they are in the non-static ones. \\
+I believe it is because the static flag links all of the dependencies statically so you can run it on systems without the dependencies. This of course makes the resulting executable file larger than a dynamically linked executable.
+
+\end{document}
