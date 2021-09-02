@@ -19,14 +19,14 @@ int main(int argc, char *argv[], char *env[]) {
     
     myprintf("argc: %d\n", argc);
 
-    myprintf("Argv[]: \n");
+    //myprintf("Argv[]: \n");
     for(int i = 0; i < argc; i++) {
         myprintf("[%d]: %s\n", i, argv[i]);
     }
-    myprintf("Env[]: \n");
+    /*myprintf("Env[]: \n");
     for(int j = 0; env[j] != NULL; j++) {
         myprintf("[%d]: %s\n", j, env[j]);
-    }
+    }*/
 
     return 0;
 }
