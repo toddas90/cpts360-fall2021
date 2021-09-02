@@ -34,8 +34,8 @@ int fd;
 
 // Prints the partition info
 void print_partition(struct partition *p, int num, int offset) {
-    printf("%2d       %4d   %4d      %4d   %4dK    %2x\n", 
-            num, p->start_sector + offset,
+    printf("%s%d     %4d   %4d      %4d   %4dK    %2x\n", 
+            dev, num, p->start_sector + offset,
             ((p->start_sector + p->nr_sectors) - 1) + offset, 
             p->nr_sectors, (p->nr_sectors / 2), p->sys_type);
 }
@@ -49,10 +49,10 @@ int main() {
 
     p = (struct partition *)(&buf[0x1be]); // p->P1
     
-    printf("============================================\n");
-    printf("=   Andrew's Totally Awesome Fdisk Clone   =\n");
-    printf("============================================\n");
-    printf("Part    Start    End   Sectors    Size    Id\n");
+    printf("===============================================\n");
+    printf("=   Andrew's Totally Awesome Fdisk -l Clone   =\n");
+    printf("===============================================\n");
+    printf("Disk      Start    End   Sectors    Size    Id\n");
     // print P1's start_sector, nr_sectors, sys_type);
     
     print_partition(p, 1, 0);
