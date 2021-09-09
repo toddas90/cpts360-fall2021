@@ -29,52 +29,28 @@ void rmdir(char *path) {
     }
 
     // CASE 2
-    if (p->parent->child == p && p->sibling == NULL) {
-        printf("only child removal\n");
-        p->parent->child = NULL;
+    if (p->parent->child == p) {
+        if (p->sibling == NULL) {
+            p->parent->child = NULL;
+        } else {
+            p->parent->child = p->sibling;
+            p->sibling = NULL;
+        }
         deallocate(p);
         return;
     }
 
-    // CASE 3
-    if (p->parent->child == p && p->sibling != NULL) {
-        printf("first child with sibling removal\n");
-        p->parent->child = p->sibling;
-        p->sibling = NULL;
-        deallocate(p);
-        return;
-    }
-
-    // CASE 4
-    if (p->parent->child != p && p->sibling != NULL) {
-        printf("Sibling with siblings removal\n");
+    if (p->parent->child != p) {
         Node *j = p->parent->child;
         while (j->sibling != p)
             j = j->sibling;
-        j->sibling = p->sibling;
-        p->sibling = NULL;
-        deallocate(p);
-        return;
-    }
-
-    // CASE 5
-    if (p->parent->child != p && p->sibling == NULL) {
-        printf("Sibling with no siblings removal\n");
-        Node *j = p->parent->child;
-        while (j->sibling != p) {
-            j = j->sibling;
+        if (p->sibling != NULL) {
+            j->sibling = p->sibling;
+            p->sibling = NULL;
+        } else {
+            j->sibling = NULL;
         }
-        j->sibling = NULL;
         deallocate(p);
         return;
     }
 }
-
-// RMDIR CASES:
-// -1: DIR not found
-// 0: DIR is not empty
-// 1: DIR is cwd or root
-// 2: DIR is child of parent with NO siblings
-// 3: DIR is child of parent with siblings
-// 4: DIR is sibling with siblings
-// 5: DIR is sibling with NO siblings
