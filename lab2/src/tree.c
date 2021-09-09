@@ -24,7 +24,7 @@ Node *search_child(Node *parent, char *name) {
     if (p == NULL)
         return NULL;
     while (p) {
-        if (!strcmp(p->name, name))
+        if (strcmp(p->name, name) == 0)
             return p;
         p = p->sibling;
     }

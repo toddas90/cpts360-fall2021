@@ -9,6 +9,7 @@
 #include "../include/tree.h"
 #include "../include/cd.h"
 #include "../include/pwd.h"
+#include "../include/debug.h"
 
 Node *root, *cwd, *start;
 char line[128];
@@ -16,7 +17,7 @@ char command[16], pathname[64];
 
 //               0       1      2    
 char *cmd[] = {"mkdir", "ls", "cd", "pwd", "creat",
-            "rm", "save", "reload", "menu","quit",NULL};
+            "rm", "save", "reload", "menu","quit", "debug",NULL};
 
 int findCmd(char *command) {
    int i = 0;
@@ -50,8 +51,6 @@ int main() {
 
       index = findCmd(command);
 
-    printf("CWD PTR -> %p\n", cwd);
-
       switch (index) {
         case 0: mkdir(pathname); 
                 break;
@@ -60,7 +59,7 @@ int main() {
         case 2: cd(pathname);
                 break;
         case 3: pwd(cwd);
-                break;
+                printf("\n"); break;
         case 4: ;//creat();
                 break;
         case 5: ;//rm();
@@ -73,6 +72,8 @@ int main() {
                 break;
         case 9: quit();          
                 break;
+        case 10: print_ptr();
+                 break;
         default: printf("Invalid Command\n");
       }
   }
