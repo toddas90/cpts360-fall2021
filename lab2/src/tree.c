@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "tree.h"
+#include "../include/tree.h"
 
 extern Node *root, *start, *cwd;
 
@@ -24,7 +24,7 @@ Node *search_child(Node *parent, char *name) {
     if (p == NULL)
         return NULL;
     while (p) {
-        if (strcmp(p->name, name) == 0)
+        if (!strcmp(p->name, name))
             return p;
         p = p->sibling;
     }
@@ -45,4 +45,13 @@ void insert_child(Node *parent, Node *q) {
     q->parent = parent;
     q->child = NULL;
     q->sibling = NULL;
+}
+
+void deallocate(Node *node) {
+    if(node == 0)
+        return;
+
+    deallocate(node->sibling);
+    deallocate(node->child);
+    free(node);
 }

@@ -13,4 +13,6 @@ void insert_child(Node *parent, Node *q);
 
 void initialize();
 
+void deallocate(Node *node);
+
 #endif /* TREE_H */

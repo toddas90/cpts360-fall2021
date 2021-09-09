@@ -2,8 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "tree.h"
-#include "mkdir.h"
+#include "../include/tree.h"
+#include "../include/mkdir.h"
 
 extern Node *start, *cwd, *root;
 //Currently takes name, modify to take pathname
