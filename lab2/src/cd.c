@@ -26,29 +26,6 @@ void cd(char *path) {
         cwd = cwd->parent;
 }
 
-Node *find_node(char *path) {
-    Node *p;
-    if (path[0] == '/') {
-        printf("Searching for node in path\n");
-        //start = root;
-        //find_node(basename(path));
-    } else {
-        printf("Searching for node in current DIR\n");
-        start = cwd;
-    }
-    if (start->child == NULL) {
-            return NULL;
-        } else {
-            p = start->child;
-            while(p) {
-                if (strcmp(p->name, path) == 0)
-                    return p;
-                p = p->sibling;
-            }
-            return NULL;
-        }
-}
-
 int cd_helper(char *path) {
     if (!strcmp(path, "")) {
         printf("cd into /\n");

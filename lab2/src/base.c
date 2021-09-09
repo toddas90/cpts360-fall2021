@@ -10,6 +10,8 @@
 #include "../include/cd.h"
 #include "../include/pwd.h"
 #include "../include/debug.h"
+#include "../include/creat.h"
+#include "../include/rmdir.h"
 
 Node *root, *cwd, *start;
 char line[128];
@@ -17,7 +19,7 @@ char command[16], pathname[64];
 
 //               0       1      2    
 char *cmd[] = {"mkdir", "ls", "cd", "pwd", "creat",
-            "rm", "save", "reload", "menu","quit", "debug",NULL};
+            "rm", "rmdir","save", "reload", "menu","quit", "debug",NULL};
 
 int findCmd(char *command) {
    int i = 0;
@@ -34,7 +36,7 @@ int main() {
 
   initialize();
 
-  printf("NOTE: commands = [mkdir|ls|cd|pwd|creat|rm|save|reload|menu|quit]\n");
+  printf("NOTE: commands = [mkdir|ls|cd|pwd|creat|rm|rmdir|save|reload|menu|quit]\n");
 
   while(1) {
       printf("Enter command line : ");
@@ -64,15 +66,17 @@ int main() {
                 break;
         case 5: ;//rm();
                 break;
-        case 6: ;//save();
+        case 6: rmdir(pathname);
                 break;
-        case 7: ;//reload();
+        case 7: ;//save();
                 break;
-        case 8: ;//menu();
+        case 8: ;//reload();
                 break;
-        case 9: quit();          
+        case 9: ;//menu();
                 break;
-        case 10: print_ptr();
+        case 10: quit();          
+                break;
+        case 11: print_ptr();
                  break;
         default: printf("Invalid Command\n");
       }

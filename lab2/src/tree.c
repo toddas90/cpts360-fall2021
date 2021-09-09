@@ -47,6 +47,29 @@ void insert_child(Node *parent, Node *q) {
     q->sibling = NULL;
 }
 
+Node *find_node(char *path) {
+    Node *p;
+    if (path[0] == '/') {
+        printf("Searching for node in path\n");
+        //start = root;
+        //find_node(basename(path));
+    } else {
+        printf("Searching for node in current DIR\n");
+        start = cwd;
+    }
+    if (start->child == NULL) {
+            return NULL;
+        } else {
+            p = start->child;
+            while(p) {
+                if (strcmp(p->name, path) == 0)
+                    return p;
+                p = p->sibling;
+            }
+            return NULL;
+        }
+}
+
 void deallocate(Node *node) {
     if(node == 0)
         return;
