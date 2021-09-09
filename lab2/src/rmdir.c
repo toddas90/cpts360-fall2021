@@ -50,19 +50,20 @@ void rmdir(char *path) {
         printf("Sibling with siblings removal\n");
         Node *j = p->parent->child;
         while (j->sibling != p)
-            j = p->sibling;
+            j = j->sibling;
         j->sibling = p->sibling;
         p->sibling = NULL;
         deallocate(p);
         return;
     }
 
-    // CASE 5 (broken)
+    // CASE 5
     if (p->parent->child != p && p->sibling == NULL) {
         printf("Sibling with no siblings removal\n");
         Node *j = p->parent->child;
-        while (j->sibling != p)
-            j = p->sibling;
+        while (j->sibling != p) {
+            j = j->sibling;
+        }
         j->sibling = NULL;
         deallocate(p);
         return;
