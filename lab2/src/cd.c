@@ -4,33 +4,49 @@
 
 #include "../include/tree.h"
 #include "../include/cd.h"
+#include "../include/parse.h"
 
 extern Node *root, *cwd, *start;
 
-// Train of thought:
-// The node creation is messing up the name and/or parent assignment
-// inside of either mkdir.c or tree.c
-
 void cd(char *path) {
-    int b = cd_helper(path);
-    if (b == 2) {
-        Node *p = find_node(path);
-        if (p != NULL)
-            cwd = p;
-        else
-            printf("Can't CD into %s\n", path);
+    if (!strcmp(path, "/")) {
+        printf("cd into /\n");
+        cwd = root;
+        return;
     }
-    else if (b == 0)
-        cwd = root; 
-    else if (b == 1)
-        cwd = cwd->parent;
+    char *token = parse(path);
+    if (token == NULL) {
+        printf("cd into /\n");
+        cwd = root;
+        return;
+    }
+    while (token) {
+        int b = cd_helper(token);
+        if (b == 2) {
+            Node *p;
+            if (path[0] == '/')
+                p = find_node(token, root);
+            else
+                p = find_node(token, cwd);
+            if (p != NULL) {
+                if (p->type == 'F') {
+                    printf("%s is not a directory", path);
+                    return;
+                }
+                cwd = p;
+            }
+            else
+                printf("Can't CD into %s\n", path);
+        }
+        else if (b == 1) {
+            cwd = cwd->parent;
+        }
+        token = strtok(NULL, "/");
+        }
 }
 
 int cd_helper(char *path) {
-    if (!strcmp(path, "")) {
-        printf("cd into /\n");
-        return 0;
-    } else if (!strcmp(path, "..")) {
+    if (!strcmp(path, "..")) {
         printf("cd into parent\n");
         return 1;
     } else {

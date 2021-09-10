@@ -3,18 +3,18 @@
 #include <stdlib.h>
 
 #include "../include/tree.h"
-#include "../include/mkdir.h"
+#include "../include/creat.h"
 
 extern Node *start, *cwd, *root;
 //Currently takes name, modify to take pathname
-//(currently only mkdir in CWD)
-int mkdir(char *name) {
+//(currently only creat in CWD)
+int creat(char *name) {
     Node *p, *q;
-    // printf("Mkdir: name = %s\n", name);
+    printf("Creat: name = %s\n", name);
 
     if (!strcmp(name, "/") || !strcmp(name, ".") ||
             !strcmp(name, "..")) {
-        printf("Can't mkdir with %s\n", name);
+        printf("Can't creat with %s\n", name);
         return -1;
     }
     if (name[0] == '/')
@@ -22,16 +22,16 @@ int mkdir(char *name) {
     else
         start = cwd;
 
-    // printf("Check wether %s already exists\n", name);
+    printf("Check wether %s already exists\n", name);
     p = search_child(start, name);
     if (p) {
-        printf("name %s already exists, mkdir failed\n", name);
+        printf("name %s already exists, creat failed\n", name);
         return -1;
     }
     q = (Node *)malloc(sizeof(Node));
-    q->type = 'D';
+    q->type = 'F';
     strcpy(q->name, name);
     insert_child(start, q);
-    // printf("Mkdir %s OK\n", name);
+    printf("Creat %s OK\n", name);
     return 0;
 }

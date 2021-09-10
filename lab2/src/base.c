@@ -12,6 +12,7 @@
 #include "../include/debug.h"
 #include "../include/creat.h"
 #include "../include/rmdir.h"
+#include "../include/rm.h"
 
 Node *root, *cwd, *start;
 char line[128];
@@ -29,6 +30,15 @@ int findCmd(char *command) {
      i++;
    }
    return -1;
+}
+
+void print_menu() {
+    printf("mkdir <filename> - Create a directory\n");
+    printf("rmdir <filename> - Remove a directory\n");
+    printf("ls <filename> - Print directory contents\n");
+    printf("cd <filename> - Change directory\n");
+    printf("pwd - Print working directory\n");
+    printf("menu - Show this menu\n");
 }
 
 int main() {
@@ -62,9 +72,9 @@ int main() {
                 break;
         case 3: pwd(cwd);
                 printf("\n"); break;
-        case 4: ;//creat();
+        case 4: creat(pathname);
                 break;
-        case 5: ;//rm();
+        case 5: rm(pathname);
                 break;
         case 6: rmdir(pathname);
                 break;
@@ -72,7 +82,7 @@ int main() {
                 break;
         case 8: ;//reload();
                 break;
-        case 9: ;//menu();
+        case 9: print_menu();
                 break;
         case 10: quit();          
                 break;

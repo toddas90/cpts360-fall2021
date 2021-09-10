@@ -13,7 +13,9 @@ void insert_child(Node *parent, Node *q);
 
 void initialize();
 
-Node *find_node(char *path);
+Node *find_node(char *path, Node *begin);
+
+void delete(Node *p);
 
 void deallocate(Node *node);
 

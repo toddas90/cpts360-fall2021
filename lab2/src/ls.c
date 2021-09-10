@@ -10,7 +10,13 @@ extern Node *root, *cwd, *start;
 // just using the CWD.
 void ls(char *pathname) {
     Node *p = ls_helper(pathname);
-    printf("Contents -> ");
+    if (p == NULL)
+        return;
+    if (p->type == 'F') {
+        printf("%s is not a directory\n", pathname);
+        return;
+    }
+    p = p->child;
     while (p) {
         printf("[%c %s] ", p->type, p->name);
         p = p->sibling;
@@ -19,10 +25,12 @@ void ls(char *pathname) {
 }
 
 Node *ls_helper(char *path) {
-    if (strcmp(path, " ")) {
-        //return cwd->child;
-        return cwd->child;
+    if (!strcmp(path, "")) {
+        return cwd;
     } else {
-        return search_child(root, path);
+        if (path[0] == '/')
+            return find_node(path, root);
+        else
+            return find_node(path, cwd);
     }
 }

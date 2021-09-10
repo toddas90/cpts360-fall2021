@@ -1,6 +1,6 @@
 #ifndef CREAT_H
 #define CREAT_H
 
-void creat();
+int creat(char *name);
 
 #endif /* CREAT_H */
