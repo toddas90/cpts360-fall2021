@@ -4,34 +4,56 @@
 
 #include "../include/tree.h"
 #include "../include/mkdir.h"
+#include "../include/parse.h"
+#include "../include/cd.h"
 
 extern Node *start, *cwd, *root;
 //Currently takes name, modify to take pathname
 //(currently only mkdir in CWD)
 int mkdir(char *name) {
-    Node *p, *q;
-    // printf("Mkdir: name = %s\n", name);
+    Node *p, *q; 
 
-    if (!strcmp(name, "/") || !strcmp(name, ".") ||
-            !strcmp(name, "..")) {
-        printf("Can't mkdir with %s\n", name);
-        return -1;
-    }
+    char *path = malloc(strlen(name) + 1);
+    strcpy(path, name);
+
     if (name[0] == '/')
         start = root;
     else
         start = cwd;
 
-    // printf("Check wether %s already exists\n", name);
-    p = search_child(start, name);
-    if (p) {
-        printf("name %s already exists, mkdir failed\n", name);
+    cd(path);
+    
+    char *token = parse(name);
+    char *tok_last;
+
+    printf("MKDIR: Path %s\n", name);
+    while (token) {
+        printf("MKDIR: Token %s\n", token);
+        tok_last = token;
+        token = strtok(NULL, "/");
+    }
+
+    if (!strcmp(name, "/") || !strcmp(name, ".") ||
+            !strcmp(name, "..")) {
+        printf("Can't mkdir with %s\n", tok_last);
+        cd(start->name);
+        free(path);
         return -1;
     }
+
+    p = search_child(start, tok_last);
+    if (p) {
+        printf("name %s already exists, mkdir failed\n", name);
+        cd(start->name);
+        free(path);
+        return -1;
+    }
+   
     q = (Node *)malloc(sizeof(Node));
     q->type = 'D';
-    strcpy(q->name, name);
-    insert_child(start, q);
-    // printf("Mkdir %s OK\n", name);
+    strcpy(q->name, tok_last);
+    insert_child(cwd, q);
+    cd(start->name);
+    free(path);
     return 0;
 }

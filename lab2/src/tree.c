@@ -20,7 +20,7 @@ void initialize() {
 
 Node *search_child(Node *parent, char *name) {
     Node *p;
-    printf("Search for %s in parent DIR\n", name);
+    // printf("Search for %s in parent DIR\n", name);
     p = parent->child;
     if (p == NULL)
         return NULL;
@@ -34,7 +34,7 @@ Node *search_child(Node *parent, char *name) {
 
 void insert_child(Node *parent, Node *q) {
     Node *p;
-    printf("Insert Node %s into END of parent child list\n", q->name);
+    // printf("Insert Node %s into END of parent child list\n", q->name);
     p = parent->child;
     if (p == NULL)
         parent->child = q;
@@ -54,7 +54,7 @@ Node *find_node(char *path, Node *begin) {
     if (start->child == NULL) {
         return NULL;
     } else {
-        p = start->child;
+        p = begin->child; // start->child
         while(p) {
             if (strcmp(p->name, path) == 0)
                 return p;
