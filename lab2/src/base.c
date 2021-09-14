@@ -13,6 +13,7 @@
 #include "../include/creat.h"
 #include "../include/rmdir.h"
 #include "../include/rm.h"
+#include "../include/save.h"
 
 Node *root, *cwd, *start;
 char line[128];
@@ -78,7 +79,7 @@ int main() {
                 break;
         case 6: rmdir(pathname);
                 break;
-        case 7: ;//save();
+        case 7: save();
                 break;
         case 8: ;//reload();
                 break;
