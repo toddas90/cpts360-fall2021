@@ -4,34 +4,55 @@
 
 #include "../include/tree.h"
 #include "../include/creat.h"
+#include "../include/parse.h"
+#include "../include/cd.h"
 
 extern Node *start, *cwd, *root;
-//Currently takes name, modify to take pathname
-//(currently only creat in CWD)
-int creat(char *name) {
-    Node *p, *q;
-    printf("Creat: name = %s\n", name);
 
-    if (!strcmp(name, "/") || !strcmp(name, ".") ||
-            !strcmp(name, "..")) {
-        printf("Can't creat with %s\n", name);
-        return -1;
-    }
+int creat(char *name) {
+    Node *p, *q; 
+
+    char *path = malloc(strlen(name) + 1);
+    strcpy(path, name);
+
     if (name[0] == '/')
         start = root;
     else
         start = cwd;
 
-    printf("Check wether %s already exists\n", name);
-    p = search_child(start, name);
-    if (p) {
-        printf("name %s already exists, creat failed\n", name);
+    cd(path);
+    
+    char *token = parse(name);
+    char *tok_last;
+
+    //printf("CREAT: Path %s\n", name);
+    while (token) {
+        //printf("CREAT: Token %s\n", token);
+        tok_last = token;
+        token = strtok(NULL, "/");
+    }
+
+    if (!strcmp(name, "/") || !strcmp(name, ".") ||
+            !strcmp(name, "..")) {
+        printf("Can't creat with %s\n", tok_last);
+        cd(start->name);
+        free(path);
         return -1;
     }
+
+    p = search_child(start, tok_last);
+    if (p) {
+        printf("name %s already exists, creat failed\n", name);
+        cd(start->name);
+        free(path);
+        return -1;
+    }
+   
     q = (Node *)malloc(sizeof(Node));
     q->type = 'F';
-    strcpy(q->name, name);
-    insert_child(start, q);
-    printf("Creat %s OK\n", name);
+    strcpy(q->name, tok_last);
+    insert_child(cwd, q);
+    cd(start->name);
+    free(path);
     return 0;
 }

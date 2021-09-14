@@ -8,8 +8,7 @@
 #include "../include/cd.h"
 
 extern Node *start, *cwd, *root;
-//Currently takes name, modify to take pathname
-//(currently only mkdir in CWD)
+
 int mkdir(char *name) {
     Node *p, *q; 
 
