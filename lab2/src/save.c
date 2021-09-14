@@ -12,7 +12,7 @@ extern Node *root, *start, *cwd;
 FILE *fp;
 
 int save() {
-    fp = fopen("lab2.sav", "w+");
+    fp = fopen("lab2.sav", "w"); // w+
 
     save_helper(root);
 

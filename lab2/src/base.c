@@ -14,6 +14,7 @@
 #include "../include/rmdir.h"
 #include "../include/rm.h"
 #include "../include/save.h"
+#include "../include/load.h"
 
 Node *root, *cwd, *start;
 char line[128];
@@ -21,7 +22,7 @@ char command[16], pathname[64];
 
 //               0       1      2    
 char *cmd[] = {"mkdir", "ls", "cd", "pwd", "creat",
-            "rm", "rmdir","save", "reload", "menu","quit", "debug",NULL};
+            "rm", "rmdir","save", "load", "menu","quit", "debug",NULL};
 
 int findCmd(char *command) {
    int i = 0;
@@ -36,10 +37,15 @@ int findCmd(char *command) {
 void print_menu() {
     printf("mkdir <filename> - Create a directory\n");
     printf("rmdir <filename> - Remove a directory\n");
+    printf("Creat <filename> - Creat a file\n");
+    printf("rm <filename> - Remove a file\n");
     printf("ls <filename> - Print directory contents\n");
     printf("cd <filename> - Change directory\n");
     printf("pwd - Print working directory\n");
     printf("menu - Show this menu\n");
+    printf("save - Save the current filesystem\n");
+    printf("load - Load a saved filesystem\n");
+    printf("quit - Quit the program\n");
 }
 
 int main() {
@@ -47,7 +53,7 @@ int main() {
 
   initialize();
 
-  printf("NOTE: commands = [mkdir|ls|cd|pwd|creat|rm|rmdir|save|reload|menu|quit]\n");
+  printf("Commands = [mkdir|ls|cd|pwd|creat|rm|rmdir|save|load|menu|quit]\n");
 
   while(1) {
       printf("Enter command line : ");
@@ -81,7 +87,7 @@ int main() {
                 break;
         case 7: save();
                 break;
-        case 8: ;//reload();
+        case 8: load();
                 break;
         case 9: print_menu();
                 break;
