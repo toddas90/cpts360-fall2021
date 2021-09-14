@@ -8,6 +8,8 @@
 
 extern Node *root, *cwd, *start;
 
+// CD FAILS REQUIREMENT 4
+
 void cd(char *path) {
     if (!strcmp(path, "/")) {
         //printf("cd into /\n");

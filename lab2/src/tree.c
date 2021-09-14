@@ -50,11 +50,11 @@ void insert_child(Node *parent, Node *q) {
 
 Node *find_node(char *path, Node *begin) {
     Node *p;
-    printf("searching for %s starting in %s\n", path, begin->name);
+    // printf("searching for %s starting in %s\n", path, begin->name);
     if (start->child == NULL) {
         return NULL;
     } else {
-        p = begin->child; // start->child
+        p = begin->child;
         while(p) {
             if (strcmp(p->name, path) == 0)
                 return p;
