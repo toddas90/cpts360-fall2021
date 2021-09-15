@@ -5,6 +5,6 @@
 
 void ls(char *path);
 
-Node *ls_helper(char *path);
+Node *ls_helper(char *path, char *pt);
 
 #endif /* LS_H */
