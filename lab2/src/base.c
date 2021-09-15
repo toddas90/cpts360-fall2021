@@ -37,7 +37,7 @@ int findCmd(char *command) {
 void print_menu() {
     printf("mkdir <filename> - Create a directory\n");
     printf("rmdir <filename> - Remove a directory\n");
-    printf("Creat <filename> - Creat a file\n");
+    printf("Creat <filename> - Create a file\n");
     printf("rm <filename> - Remove a file\n");
     printf("ls <filename> - Print directory contents\n");
     printf("cd <filename> - Change directory\n");
@@ -56,14 +56,14 @@ int main() {
   printf("Commands = [mkdir|ls|cd|pwd|creat|rm|rmdir|save|load|menu|quit]\n");
 
   while(1) {
-      printf("Enter command line : ");
+      printf(">: ");
       fgets(line, 128, stdin);
       line[strlen(line)-1] = 0;
 
       command[0] = pathname[0] = 0;
       sscanf(line, "%s %s", command, pathname);
-      printf("command=%s pathname=%s\n", 
-              command, pathname);
+      //printf("command=%s pathname=%s\n", 
+      //        command, pathname);
       
       if (command[0] == 0) 
          continue;

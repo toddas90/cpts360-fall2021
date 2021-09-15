@@ -15,7 +15,7 @@ void initialize() {
     root->child = NULL;
     root->type = 'D';
     cwd = root;
-    printf("Root init OK\n");
+    //printf("Root init OK\n");
 }
 
 Node *search_child(Node *parent, char *name) {

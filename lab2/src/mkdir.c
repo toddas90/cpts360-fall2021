@@ -12,6 +12,9 @@ extern Node *start, *cwd, *root;
 int mkdir(char *name) {
     Node *p, *q; 
 
+    if (!strcmp(name, ""))
+        return -1;
+
     char *path = malloc(strlen(name) + 1);
     strcpy(path, name);
 
@@ -21,13 +24,13 @@ int mkdir(char *name) {
         start = cwd;
 
     cd(path);
-    
+
     char *token = parse(name);
     char *tok_last;
 
-    printf("MKDIR: Path %s\n", name);
+    //printf("MKDIR: Path %s\n", name);
     while (token) {
-        printf("MKDIR: Token %s\n", token);
+        // printf("MKDIR: Token %s\n", token);
         tok_last = token;
         token = strtok(NULL, "/");
     }
