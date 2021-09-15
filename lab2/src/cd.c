@@ -41,7 +41,7 @@ void cd(char *path) {
         Node *p = find_node(token, cwd);
         if (p != NULL) {
             if (p->type == 'F') {
-                printf("CD: %s is not a directory", path);
+                //printf("CD: %s is not a directory\n", token);
                 return;
             }
             cwd = p;

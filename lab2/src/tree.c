@@ -58,7 +58,9 @@ Node *find_node(char *path, Node *begin) {
         while(p) {
             if (strcmp(p->name, path) == 0)
                 return p;
+            //printf("%s does not match %s\n", p->name, path);
             p = p->sibling;
+            //printf("Moving to %s\n", p->name);
         }
         return NULL;
     }    

@@ -6,8 +6,6 @@
 
 extern Node *root, *cwd, *start;
 
-// Must improve to take in a pathname instead of
-// just using the CWD.
 void ls(char *pathname) {
     Node *p = ls_helper(pathname);
     if (p == NULL)
