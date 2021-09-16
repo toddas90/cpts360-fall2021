@@ -13,7 +13,7 @@ extern Node *root, *cwd, *start;
 void cd(char *path) {
     if (path[0] == '/') {
         //printf("Start from /\n");
-        start = root;
+        cwd = root;
     }
     else {
         //printf("Start from cwd\n");
@@ -29,11 +29,6 @@ void cd(char *path) {
     }
 
     while (token) {
-        if (!strcmp(token, "/")) {
-            //printf("cd into /\n");
-            cwd = root;
-            //return;
-        }
         if (!strcmp(token, "..")) {
             //printf("cd into parent\n");
             cwd = cwd->parent;
