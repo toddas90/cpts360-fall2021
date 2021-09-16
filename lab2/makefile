@@ -11,7 +11,7 @@ OBJS := $(SRCS:.c=.o)
 
 .PHONY: clean
 
-all : $(TARGET)
+release : $(TARGET)
 	@echo Release build finished
 
 debug : $(TARGET)

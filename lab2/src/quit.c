@@ -8,7 +8,7 @@
 extern Node *root;
 
 int quit() {
-    printf("Program exit\n");
+    printf("Bye, have a beautiful time!\n");
     deallocate(root);
     exit(0);
 }
