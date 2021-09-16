@@ -12,8 +12,10 @@ extern Node *start, *cwd, *root;
 int mkdir(char *name) {
     Node *p, *q; 
 
-    if (!strcmp(name, ""))
+    if (!strcmp(name, "")) {
+        printf("No name provided\n");
         return -1;
+    }
 
     char *path = malloc(strlen(name) + 1);
     strcpy(path, name);

@@ -12,6 +12,11 @@ extern Node *cwd, *root, *start;
 void rmdir(char *path) {
     Node *p;
 
+    if (!strcmp(path, "")) {
+        printf("No name provided\n");
+        return;
+    }
+    
     char *name = malloc(strlen(path) + 1);
     strcpy(name, path);
 

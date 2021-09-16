@@ -16,7 +16,6 @@ void load() {
 
     if (fp == NULL) {
         printf("Cannot open file\n");
-        fclose(fp);
         return;
     }
 
