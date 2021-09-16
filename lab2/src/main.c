@@ -37,7 +37,7 @@ int findCmd(char *command) {
 void print_menu() {
     printf("mkdir <filename> - Create a directory\n");
     printf("rmdir <filename> - Remove a directory\n");
-    printf("Creat <filename> - Create a file\n");
+    printf("creat <filename> - Create a file\n");
     printf("rm <filename> - Remove a file\n");
     printf("ls <filename> - Print directory contents\n");
     printf("cd <filename> - Change directory\n");
