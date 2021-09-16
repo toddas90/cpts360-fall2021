@@ -9,6 +9,8 @@
 
 extern Node *start, *cwd, *root;
 
+// If you are in / and try to make a dir /a/b, it will place b in / instead.
+
 int mkdir(char *name) {
     Node *p, *q; 
 
