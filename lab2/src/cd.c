@@ -8,6 +8,8 @@
 
 extern Node *root, *cwd, *start;
 
+// Can't cd into a sibling directory.
+
 void cd(char *path) {
     if (path[0] == '/') {
         //printf("Start from /\n");

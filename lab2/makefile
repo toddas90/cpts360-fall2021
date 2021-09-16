@@ -1,5 +1,7 @@
 CC := gcc
-CFLAGS :=  -g -Wall -Werror
+CFLAGS := -O3 -Wall -Werror -pipe -march=native
+debug: CFLAGS :=  -g -Wall -Werror -pipe -march=native
+
 TARGET := lab2
 
 INCLUDES := -I./include
@@ -10,7 +12,10 @@ OBJS := $(SRCS:.c=.o)
 .PHONY: clean
 
 all : $(TARGET)
-	@echo Compilation Finished
+	@echo Release build finished
+
+debug : $(TARGET)
+	@echo Debug build finished
 
 $(TARGET) : $(OBJS)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $(TARGET) $(OBJS)

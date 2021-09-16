@@ -57,7 +57,10 @@ int main() {
 
   while(1) {
       printf(">: ");
-      fgets(line, 128, stdin);
+      if (!fgets(line, 128, stdin)) {
+          printf("Invalid command\n");
+          continue;
+      };
       line[strlen(line)-1] = 0;
 
       command[0] = pathname[0] = 0;
