@@ -1,6 +1,6 @@
 CC := gcc
 CFLAGS := -O3 -Wall -Werror -pipe -march=native
-debug: CFLAGS :=  -g -Wall -Werror -pipe -march=native
+debug: CFLAGS :=  -g -Wall -pipe -march=native
 
 TARGET := lab3
 

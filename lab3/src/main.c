@@ -1,5 +1,8 @@
-#include <stdio.h>
+#include <stdlib.h>
 
-int main() {
-    return 0;
+#include "../include/shell.h"
+
+int main(int argc, char **argv) {
+    shell_loop();
+    return EXIT_SUCCESS;
 }
