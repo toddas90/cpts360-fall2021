@@ -13,6 +13,34 @@
 #define TOK_BUFSIZE 64
 #define TOK_DELIM " \t\r\n\a"
 
+int shell_pipe(char **head, char **tail) {
+    int pid, pd[2];
+
+    if (pipe(pd) < 0)
+        exit(EXIT_FAILURE);
+
+    pid = fork();
+
+    if (pid == 0) {
+        close(pd[0]);
+        close(1);
+        dup(pd[1]);
+        close(pd[1]);
+        if (execvp(head[0], head) == -1)
+            perror("Shell");
+    } else if (pid < 0)
+        perror("Shell");
+    else {
+        close(pd[1]);
+        close(0);
+        dup(pd[0]);
+        close(pd[0]);
+        if (execvp(tail[0], tail) == -1)
+            perror("Shell");
+    }
+    return 1;
+}
+
 // Launches programs
 int shell_launch(char **args) {
     int pid, status;
@@ -21,18 +49,13 @@ int shell_launch(char **args) {
 
     // Just some error checking
     if (pid == 0) {
-        // Runs the program and throws error if it failed
-        if (execvp(args[0], args) == -1) {
-            perror("Shell: ");
-        }
+        if (execvp(args[0], args) == -1)
+            perror("Shell");
         exit(EXIT_FAILURE);
-    } else if (pid < 0) {
-        // pid is a negative number which is bad
-        perror("Shell: ");
-    } else {
-        // Wait for the child
+    } else if (pid < 0)
+        perror("Shell");
+    else
         pid = wait(&status);
-    }
     return 1; 
 }
 
@@ -41,21 +64,22 @@ int shell_execute(char **args) {
     int i = 0, j = 0, status = 0;
     FILE *fp = NULL;
 
-    if (args[0] == NULL) {
-        // Args can't be empty
+    if (args[0] == NULL)
         return 1;
-    }
 
     // Checks to see if the command is one of the built-in ones
     for (i = 0; i < shell_numcommands(); i++) {
-        if (strcmp(args[0], commands_str[i]) == 0) {
-            // If so, it will run it
+        if (strcmp(args[0], commands_str[i]) == 0)
             return (*commands_fn[i])(args);
-        }
     }
 
     // Checks for i/o redirection
     while (args[j] != NULL) {
+        if (!strcmp(args[j], "|")) {
+            args[j] = NULL;
+            return shell_pipe(&args[0], &args[j+1]);
+        }
+
         if (!strcmp(args[j], ">")) {
             args[j] = NULL;
             fp = freopen(args[j+1], "w+", stdout); // Create/Overwrite file
@@ -100,15 +124,14 @@ char *shell_readline() {
 
     // Reads a line into buffer
     if (getline(&line, &bufsize, stdin) == -1){
-        if (feof(stdin)) {
+        if (feof(stdin))
             exit(EXIT_SUCCESS);
-        } else  {
+        else  {
             perror("Readline: ");
             exit(EXIT_FAILURE);
-      }
+        }
     }
-
-  return line;
+    return line;
 }
 
 // Parse line (on whitespace)
@@ -139,15 +162,17 @@ void shell_loop(void) {
     username = getenv("USER");
 
     do {
-        if (getcwd(dir, PATH_MAX) == NULL) {
+        if (getcwd(dir, PATH_MAX) == NULL)
             perror("getcwd() error");
-        }
+
         printf("%s@%s %s > ", username, host, dir);
+        
         line = shell_readline();
         args = shell_parseline(line);
         status = shell_execute(args);
 
-        free(line);
         free(args);
+        free(line);
+        printf("Status: %d\n", status);
     } while (status);
 }
