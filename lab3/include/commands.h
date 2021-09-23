@@ -1,6 +1,8 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
+extern int debug;
+
 extern char *commands_str[];
 
 extern int (*commands_fn[]) (char **);

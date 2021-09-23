@@ -4,6 +4,9 @@
 
 #include "../include/commands.h"
 
+// Debugging info flag
+int debug = 0;
+
 // Array of commands that are built into the shell
 // Easily expandable
 char *commands_str[] = {

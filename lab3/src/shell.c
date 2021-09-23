@@ -14,14 +14,26 @@
 #define TOK_DELIM " \t\r\n\a"
 
 int shell_pipe(char **head, char **tail) {
-    int pid, pd[2];
+    int pid, pd[2], i = 0, j = 0;
 
     if (pipe(pd) < 0)
         exit(EXIT_FAILURE);
 
+    if (debug == 1) {
+        while (head[i] != NULL) {
+            printf("head[%d] = %s\n", i, head[i]);
+            i++;
+        }
+
+        while (tail[j] != NULL) {
+            printf("tail[%d] = %s\n", j, tail[j]);
+            j++;
+        }
+    }
+
     pid = fork();
 
-    if (pid == 0) {
+    if (pid == 0) { // pid == 0 is child, pid > 0 is parent.
         close(pd[0]);
         close(1);
         dup(pd[1]);
@@ -42,6 +54,23 @@ int shell_pipe(char **head, char **tail) {
 }
 
 // Launches programs
+int shell_pipe_launch(char **head, char **tail) {
+    int pid, status;
+
+    pid = fork();
+
+    // Just some error checking
+    if (pid == 0) {
+        shell_pipe(head, tail);
+    } else if (pid < 0)
+        perror("Shell");
+    else
+        pid = wait(&status);
+    return 1; 
+}
+
+
+// Launches programs
 int shell_launch(char **args) {
     int pid, status;
 
@@ -51,7 +80,6 @@ int shell_launch(char **args) {
     if (pid == 0) {
         if (execvp(args[0], args) == -1)
             perror("Shell");
-        exit(EXIT_FAILURE);
     } else if (pid < 0)
         perror("Shell");
     else
@@ -77,7 +105,7 @@ int shell_execute(char **args) {
     while (args[j] != NULL) {
         if (!strcmp(args[j], "|")) {
             args[j] = NULL;
-            return shell_pipe(&args[0], &args[j+1]);
+            return shell_pipe_launch(&args[0], &args[j+1]);
         }
 
         if (!strcmp(args[j], ">")) {
