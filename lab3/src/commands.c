@@ -10,6 +10,7 @@ int debug = 0;
 // Array of commands that are built into the shell
 // Easily expandable
 char *commands_str[] = {
+    "debug",
     "cd",
     "exit"
 };
@@ -17,6 +18,7 @@ char *commands_str[] = {
 // Array of function pointers to built-in commands
 // Also makes it easily expandable in the future
 int (*commands_fn[]) (char **) = {
+    &shell_debug,
     &shell_cd,
     &shell_exit
 };
@@ -25,6 +27,17 @@ int (*commands_fn[]) (char **) = {
 // Gets number of shell commands
 int shell_numcommands(void) {
     return sizeof(commands_str) / sizeof(char *);
+}
+
+int shell_debug(char **args) {
+    if (debug == 0) {
+        debug = 1;
+        printf("Debugging Symbols [On]\n");
+    } else {
+        debug = 0;
+        printf("Debugging Symbols [Off]\n");
+    }
+    return 1;
 }
 
 // Built-in cd command

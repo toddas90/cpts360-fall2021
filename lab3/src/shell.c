@@ -30,6 +30,10 @@ int shell_pipe(char **head, char **tail) {
             j++;
         }
     }
+   
+    if (debug == 1) {
+        fprintf(stderr, "Forking\n");
+    }
 
     pid = fork();
 
@@ -57,6 +61,9 @@ int shell_pipe(char **head, char **tail) {
 int shell_pipe_launch(char **head, char **tail) {
     int pid, status;
 
+    if (debug == 1)
+        fprintf(stderr, "Forking\n");
+
     pid = fork();
 
     // Just some error checking
@@ -74,6 +81,9 @@ int shell_pipe_launch(char **head, char **tail) {
 int shell_launch(char **args) {
     int pid, status;
 
+    if (debug == 1)
+        fprintf(stderr, "Forking\n");
+
     pid = fork();
 
     // Just some error checking
@@ -89,11 +99,16 @@ int shell_launch(char **args) {
 
 // Execute built in commands or launches program
 int shell_execute(char **args) {
-    int i = 0, j = 0, status = 0;
+    int i = 0, j = 0, k, status = 0;
     FILE *fp = NULL;
 
     if (args[0] == NULL)
         return 1;
+
+    if (debug == 1) {
+        for(k = 0; args[k] != NULL; k++)
+            printf("args[%d]: %s\n", k, args[k]);
+    }
 
     // Checks to see if the command is one of the built-in ones
     for (i = 0; i < shell_numcommands(); i++) {
@@ -104,21 +119,29 @@ int shell_execute(char **args) {
     // Checks for i/o redirection
     while (args[j] != NULL) {
         if (!strcmp(args[j], "|")) {
+            if (debug == 1)
+                printf("Pipe detected!\n");
             args[j] = NULL;
             return shell_pipe_launch(&args[0], &args[j+1]);
         }
 
         if (!strcmp(args[j], ">")) {
+            if (debug == 1)
+                printf("Redirect: Create/Overwrite file!\n");
             args[j] = NULL;
             fp = freopen(args[j+1], "w+", stdout); // Create/Overwrite file
             if (fp)
                 status = shell_launch(args);
         } else if (!strcmp(args[j], ">>")) {
+            if (debug == 1)
+                printf("Redirect: Create/Append to file!\n");
             args[j] = NULL;
             fp = freopen(args[j+1], "a+", stdout); // Create/Append file
             if (fp)
                 status = shell_launch(args);
         } else if (!strcmp(args[j], "<")) {
+            if (debug == 1)
+                printf("Redirect: Read from file!\n");
             args[j] = NULL;
             fp = freopen(args[j+1], "r", stdin); // Read from file
             if (fp)
@@ -131,11 +154,15 @@ int shell_execute(char **args) {
     // If output has been redirected, change it back
     if (status == 1) {
         fp = freopen("/dev/tty", "w", stdout);
+        if (debug == 1)
+            printf("Redirect: Terminal output!\n");
         if (fp)
             return 1;
         return 0;
     } else if (status == 2) {
         fp = freopen("/dev/tty", "r", stdin);
+        if (debug == 1)
+            printf("Redirect: Keyboard input!\n");
         if (fp)
             return 1;
         return 0;
@@ -159,6 +186,10 @@ char *shell_readline() {
             exit(EXIT_FAILURE);
         }
     }
+
+    if (debug == 1)
+        printf("Line: %s\n", line);
+
     return line;
 }
 
@@ -170,7 +201,10 @@ char **shell_parseline(char *line) {
 
     // Delimiter for tokens is set up top
     token = strtok(line, TOK_DELIM);
+    
     while (token != NULL) {
+        if (debug == 1)
+            printf("Current Token: %s\n", token);
         tokens[pos] = token;
         pos++;
         token = strtok(NULL, TOK_DELIM);
