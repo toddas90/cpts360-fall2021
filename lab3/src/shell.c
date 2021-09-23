@@ -173,6 +173,5 @@ void shell_loop(void) {
 
         free(args);
         free(line);
-        printf("Status: %d\n", status);
     } while (status);
 }
