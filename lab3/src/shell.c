@@ -40,7 +40,8 @@ int shell_pipe(char **head, char **tail) {
     if (pid == 0) { // pid == 0 is child, pid > 0 is parent.
         close(pd[0]);
         close(1);
-        dup(pd[1]);
+        if (dup(pd[1]) == -1)
+            perror("Shell");
         close(pd[1]);
         if (execvp(head[0], head) == -1)
             perror("Shell");
@@ -49,7 +50,8 @@ int shell_pipe(char **head, char **tail) {
     else {
         close(pd[1]);
         close(0);
-        dup(pd[0]);
+        if (dup(pd[0]) == -1)
+            perror("Shell");
         close(pd[0]);
         if (execvp(tail[0], tail) == -1)
             perror("Shell");
@@ -100,7 +102,6 @@ int shell_launch(char **args) {
 // Execute built in commands or launches program
 int shell_execute(char **args) {
     int i = 0, j = 0, k, status = 0;
-    FILE *fp = NULL;
 
     if (args[0] == NULL)
         return 1;
@@ -129,23 +130,23 @@ int shell_execute(char **args) {
             if (debug == 1)
                 printf("Redirect: Create/Overwrite file!\n");
             args[j] = NULL;
-            fp = freopen(args[j+1], "w+", stdout); // Create/Overwrite file
-            if (fp)
-                status = shell_launch(args);
+            if (freopen(args[j+1], "w+", stdout) == NULL) // Create/Overwrite file
+                perror("Shell");
+            status = shell_launch(args);
         } else if (!strcmp(args[j], ">>")) {
             if (debug == 1)
                 printf("Redirect: Create/Append to file!\n");
             args[j] = NULL;
-            fp = freopen(args[j+1], "a+", stdout); // Create/Append file
-            if (fp)
-                status = shell_launch(args);
+            if (freopen(args[j+1], "a+", stdout) == NULL) // Create/Append file
+                perror("Shell");
+            status = shell_launch(args);
         } else if (!strcmp(args[j], "<")) {
             if (debug == 1)
                 printf("Redirect: Read from file!\n");
             args[j] = NULL;
-            fp = freopen(args[j+1], "r", stdin); // Read from file
-            if (fp)
-                status = shell_launch(args) + 1;
+            if (freopen(args[j+1], "r", stdin) == NULL) // Read from file
+                perror("Shell");
+            status = shell_launch(args) + 1;
         } else {
             j++;
         }
@@ -153,19 +154,17 @@ int shell_execute(char **args) {
 
     // If output has been redirected, change it back
     if (status == 1) {
-        fp = freopen("/dev/tty", "w", stdout);
         if (debug == 1)
             printf("Redirect: Terminal output!\n");
-        if (fp)
-            return 1;
-        return 0;
+        if (freopen("/dev/tty", "w", stdout) == NULL)
+            perror("Shell");
+        return 1;
     } else if (status == 2) {
-        fp = freopen("/dev/tty", "r", stdin);
         if (debug == 1)
             printf("Redirect: Keyboard input!\n");
-        if (fp)
-            return 1;
-        return 0;
+        if (freopen("/dev/tty", "r", stdin) == NULL)
+            perror("Shell");
+        return 1;
     }
 
     // Run non-built-in programs
