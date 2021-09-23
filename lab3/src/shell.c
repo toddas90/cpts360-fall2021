@@ -31,13 +31,11 @@ int shell_pipe(char **head, char **tail) {
         }
     }
    
-    if (debug == 1) {
-        fprintf(stderr, "Forking\n");
-    }
-
     pid = fork();
 
     if (pid == 0) { // pid == 0 is child, pid > 0 is parent.
+        if (debug == 1)
+            printf("child sh %d running\n", getpid());
         close(pd[0]);
         close(1);
         if (dup(pd[1]) == -1)
@@ -48,6 +46,10 @@ int shell_pipe(char **head, char **tail) {
     } else if (pid < 0)
         perror("Shell");
     else {
+        if (debug == 1) {
+            printf("sh %d forked a child sh %d\n", getpid(), pid);
+            printf("sh %d wait for child sh %d to terminate\n", getpid(), pid);
+        }
         close(pd[1]);
         close(0);
         if (dup(pd[0]) == -1)
@@ -63,18 +65,25 @@ int shell_pipe(char **head, char **tail) {
 int shell_pipe_launch(char **head, char **tail) {
     int pid, status;
 
-    if (debug == 1)
-        fprintf(stderr, "Forking\n");
-
     pid = fork();
 
     // Just some error checking
     if (pid == 0) {
+        if (debug == 1)
+            printf("child sh %d running\n", getpid());
         shell_pipe(head, tail);
     } else if (pid < 0)
         perror("Shell");
-    else
+    else {
+        if (debug == 1) {
+            printf("sh %d forked a child sh %d\n", getpid(), pid);
+            printf("sh %d wait for child sh %d to terminate\n", getpid(), pid);
+        }
         pid = wait(&status);
+        if (debug == 1)
+            printf("ZOMBIE child=%d exitStatus=%x\n", pid, status);
+    }
+
     return 1; 
 }
 
@@ -83,19 +92,25 @@ int shell_pipe_launch(char **head, char **tail) {
 int shell_launch(char **args) {
     int pid, status;
 
-    if (debug == 1)
-        fprintf(stderr, "Forking\n");
-
     pid = fork();
 
     // Just some error checking
     if (pid == 0) {
         if (execvp(args[0], args) == -1)
             perror("Shell");
+        if (debug == 1)
+            printf("child sh %d running\n", getpid());
     } else if (pid < 0)
         perror("Shell");
-    else
+    else {
+        if (debug == 1) {
+            printf("sh %d forked a child sh %d\n", getpid(), pid);
+            printf("sh %d wait for child sh %d to terminate\n", getpid(), pid);
+        }
         pid = wait(&status);
+        if (debug == 1)
+            printf("ZOMBIE child=%d exitStatus=%x\n", pid, status);
+    }
     return 1; 
 }
 
