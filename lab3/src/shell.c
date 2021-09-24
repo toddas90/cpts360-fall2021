@@ -13,80 +13,6 @@
 #define TOK_BUFSIZE 64
 #define TOK_DELIM " \t\r\n\a"
 
-/*int shell_pipe(char **head, char **tail) {
-    int pid, pd[2], i = 0, j = 0;
-
-    if (pipe(pd) < 0)
-        exit(EXIT_FAILURE);
-
-    if (debug == 1) {
-        while (head[i] != NULL) {
-            printf("head[%d] = %s\n", i, head[i]);
-            i++;
-        }
-
-        while (tail[j] != NULL) {
-            printf("tail[%d] = %s\n", j, tail[j]);
-            j++;
-        }
-    }
-   
-    pid = fork();
-
-    if (pid == 0) { // pid == 0 is child, pid > 0 is parent.
-        if (debug == 1)
-            printf("child sh %d running\n", getpid());
-        close(pd[0]);
-        close(1);
-        if (dup(pd[1]) == -1)
-            perror("Shell");
-        close(pd[1]);
-        if (execvp(head[0], head) == -1)
-            perror("Shell");
-    } else if (pid < 0)
-        perror("Shell");
-    else {
-        if (debug == 1) {
-            printf("sh %d forked a child sh %d\n", getpid(), pid);
-            printf("sh %d wait for child sh %d to terminate\n", getpid(), pid);
-        }
-        close(pd[1]);
-        close(0);
-        if (dup(pd[0]) == -1)
-            perror("Shell");
-        close(pd[0]);
-        if (execvp(tail[0], tail) == -1)
-            perror("Shell");
-    }
-    return 1;
-}*/
-
-// Launches programs
-/*int shell_pipe_launch(char **head, char **tail) {
-    int pid, status;
-
-    pid = fork();
-
-    // Just some error checking
-    if (pid == 0) {
-        if (debug == 1)
-            printf("child sh %d running\n", getpid());
-        shell_pipe(head, tail);
-        exit(EXIT_SUCCESS);
-    } else if (pid < 0)
-        perror("Shell");
-    else {
-        if (debug == 1) {
-            printf("sh %d forked a child sh %d\n", getpid(), pid);
-            printf("sh %d wait for child sh %d to terminate\n", getpid(), pid);
-        }
-        pid = wait(&status);
-        if (debug == 1)
-            printf("ZOMBIE child=%d exitStatus=%x\n", pid, status);
-    }
-    return 1; 
-}*/
-
 int shell_launch_pipe(char **head, char **tail) {
     int pid1, pid2, pd[2], status;
 
@@ -129,11 +55,11 @@ int shell_launch_pipe(char **head, char **tail) {
                 printf("sh %d wait for child sh %d to terminate\n", getpid(), pid2);
             }
             pid1 = wait(&status);
-            close(pd[1]);
+            close(pd[1]); // need to close the pipe so the other program knows to exit.
             if (debug == 1)
                 printf("ZOMBIE child=%d exitStatus=%x\n", pid1, status);
             pid2 = wait(&status);
-            close(pd[0]);
+            close(pd[0]); // Just to make sure this side is also closed. Probably not needed.
             if (debug == 1)
                 printf("ZOMBIE child=%d exitStatus=%x\n", pid2, status);
         }
@@ -191,7 +117,6 @@ int shell_execute(char **args) {
             if (debug == 1)
                 printf("Pipe detected!\n");
             args[j] = NULL;
-            //return shell_pipe_launch(&args[0], &args[j+1]);
             return shell_launch_pipe(&args[0], &args[j+1]);
         }
 
