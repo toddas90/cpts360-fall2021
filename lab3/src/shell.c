@@ -45,8 +45,7 @@ int shell_launch_pipe(char **head, char **tail) {
             close(pd[1]); // Close write end
             dup2(pd[0], STDIN_FILENO);
             close(pd[0]);
-            if (execvp(tail[0], tail) == -1)
-                perror("Shell");
+            shell_execute(tail);
         } else if (pid2 < 0)
             perror("Shell");
         else {
