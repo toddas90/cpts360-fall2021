@@ -45,7 +45,7 @@ int shell_launch_pipe(char **head, char **tail) {
             close(pd[1]); // Close write end
             dup2(pd[0], STDIN_FILENO);
             close(pd[0]);
-            shell_execute(tail);
+            shell_execute(tail, 1);
         } else if (pid2 < 0)
             perror("Shell");
         else {
@@ -67,8 +67,14 @@ int shell_launch_pipe(char **head, char **tail) {
 }
 
 // Launches programs
-int shell_launch(char **args) {
+int shell_launch(char **args, int ispipe) {
     int pid, status;
+
+    if (ispipe == 1) {
+        if (execvp(args[0], args))
+            perror("Shell");
+        return 1;
+    }
 
     pid = fork();
 
@@ -93,7 +99,7 @@ int shell_launch(char **args) {
 }
 
 // Execute built in commands or launches program
-int shell_execute(char **args) {
+int shell_execute(char **args, int ispipe) {
     int i = 0, j = 0, k, status = 0;
 
     if (args[0] == NULL)
@@ -125,21 +131,21 @@ int shell_execute(char **args) {
             args[j] = NULL;
             if (freopen(args[j+1], "w+", stdout) == NULL) // Create/Overwrite file
                 perror("Shell");
-            status = shell_launch(args);
+            status = shell_launch(args, ispipe);
         } else if (!strcmp(args[j], ">>")) {
             if (debug == 1)
                 printf("Redirect: Create/Append to file!\n");
             args[j] = NULL;
             if (freopen(args[j+1], "a+", stdout) == NULL) // Create/Append file
                 perror("Shell");
-            status = shell_launch(args);
+            status = shell_launch(args, ispipe);
         } else if (!strcmp(args[j], "<")) {
             if (debug == 1)
                 printf("Redirect: Read from file!\n");
             args[j] = NULL;
             if (freopen(args[j+1], "r", stdin) == NULL) // Read from file
                 perror("Shell");
-            status = shell_launch(args) + 1;
+            status = shell_launch(args, ispipe) + 1;
         } else {
             j++;
         }
@@ -161,7 +167,7 @@ int shell_execute(char **args) {
     }
 
     // Run non-built-in programs
-    return shell_launch(args);
+    return shell_launch(args, ispipe);
 }
 
 // Read line into program
@@ -223,7 +229,7 @@ void shell_loop(void) {
         
         line = shell_readline();
         args = shell_parseline(line);
-        status = shell_execute(args);
+        status = shell_execute(args, 0);
 
         free(args);
         free(line);

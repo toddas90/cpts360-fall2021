@@ -2,9 +2,7 @@ Requirements
 1. Nested pipes
 
 Thoughts
-1. Instead of passing the whole side of a pipe to the command, I need to parse it again for I/O redirection.
-   For example, "dmesg | grep wlp3s0" will work, but "dmesg | grep wlp3s0 > log" will not. I need to re-parse
-   the tail of the pipe for it to detect the redirection.
+1. When using pipes, it prints the prompt twice.
 
 2. Will the debug output get messed up if I have I/O redirection? I think it redirects all of the stdout to the file.
    Maybe it will also print debug messages to the file. Will need to check that.
