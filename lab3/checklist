@@ -1,0 +1,55 @@
+<html>
+<body>
+<pre>
+                      CS360 LAB3 Check List
+
+      WARNING: ZERO points if turn in only the lab3base.c code
+		   
+Make sure you have a LARGE text file such as t.c of YOUR LAB3 C code file
+
+1. Simple commands:                                                  20 points
+   start YOUR mysh program, run the following commnads
+      ls -l       # ls LONG format                  
+      cat t.c     # show t.c contents
+   Other Linux commands, e.g. date, mkdir abc, rmdir abc, touch filename
+   		     
+   Choose an Editor that suits you : emacs, vi, gedit, nano
+      emacs t.c   # must be able to edit your file
+
+      cc t.c      # must be able to compile and link your t.c file
+      a.out       # run another instance of your mysh program
+      exit        # back to the original mysh
+
+2. I/O redirections:                                                 20 points
+      cat < t.c                     # cat your t.c file 
+      cat t.c  > outfile; ls -l     # must show outfile same as t.c
+      cat t.c >> outfile; ls -l     # must show outfile size doubled
+
+3. PIPES:                                                            30 points  
+      cat t.c | grep printf         # must show the piped outputs
+      cat t.c | grep printf | more  # 2 pipes
+===============================================================================
+                                                        
+4. BONUS for MULTIPLE pipes with I/O redirection, e.g.               10 points
+    cat < t.c | cat | cat | grep printf > outfile 
+===============================================================================
+
+              During DEMO, TA will ask you these questions:
+
+               Answer these questions in YOUR program code:          20 points
+
+1. show where and HOW do you tokenize PATH into dir pointers.
+
+2. show where and how do you execute SIMPLE commands (no I/O redirect, no pipe)
+
+3. show how do you handle > for output redirection 
+
+4. For the command line
+           ls -l -a > outfile
+   what's argv[] passed to the ls program? WHY?
+    
+5. show where and how do you handle pipe command, e.g. cmd1 | cmd2
+===============================================================================
+                                                           Total:  100 points
+
+

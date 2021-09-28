@@ -1,0 +1,5 @@
+1. Running "cat t.c | grep while | more" does not work. It just outputs text to the screen instead of to more. However, replacing "more" with "less" works just fine.
+
+2. Running something with multiple pipes prints the prompt the number of extra pipes you use.
+
+3. Running less and quitting without going all the way to the bottom hangs.
