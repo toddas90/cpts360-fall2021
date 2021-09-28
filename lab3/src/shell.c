@@ -224,7 +224,7 @@ void shell_loop(void) {
     do {
         if (getcwd(dir, PATH_MAX) == NULL)
             perror("getcwd() error");
-
+        
         printf("%s@%s %s > ", username, host, dir);
         
         line = shell_readline();
