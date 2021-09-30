@@ -1,3 +1,5 @@
-1. Running something with multiple pipes prints the prompt the number of extra pipes you use.
+1. Running "cat t.c | cat | cat | grep printf > outfile" creates an empty file named outfile. However,
+    running "cat t.c | cat | cat | grep printf >> outfile" seems to work just fine? Also, running
+    "cat t.c | cat | grep printf > outfile" seems to work. Not sure why the extra cat is breaking it.
 
 2. Running less and quitting without going all the way to the bottom hangs.

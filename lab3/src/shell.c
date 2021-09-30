@@ -16,49 +16,54 @@
 int shell_launch_pipe(char **head, char **tail) {
     int pid1, pid2, pd[2], status;
 
-    if (pipe(pd) < 0)
+    if (pipe(pd) < 0) // Create pipe
         perror("Pipe");
 
     pid1 = fork();
 
-    if (pid1 == 0) {
+    if (pid1 == 0) { // Inside child of main shell
         if (debug == 1)
             printf("child sh %d running %s\n", getpid(), head[0]);
         close(pd[0]); // Close read end
         dup2(pd[1], STDOUT_FILENO);
         close(pd[1]);
-        shell_execute(head, 1);
-        //if (execvp(head[0], head) == -1)
-            //perror("Shell");
+        shell_execute(head, 1); // Execute head of command
     } else if (pid1 < 0)
         perror("Shell");
-    else {
-        if (debug == 1) {
+    else { // Inside main shell
+        if (debug == 1)
             printf("sh %d forked a child sh %d\n", getpid(), pid1);
-            printf("sh %d wait for child sh %d to terminate\n", getpid(), pid1);
-        }
 
         pid2 = fork();
 
-        if (pid2 == 0) {
-            if (debug == 1)
-                printf("child sh %d running %s\n", getpid(), tail[0]);
-            close(pd[1]); // Close write end
+        if (pid2 == 0) { // Inside another child of main thread
+            if (debug == 1) {
+                printf("child sh %d running ", getpid());
+                for (int i = 0; tail[i] != NULL; i++) {
+                    printf("%s ", tail[i]);
+                }
+                printf("\n");
+            }
+                close(pd[1]); // Close write end
             dup2(pd[0], STDIN_FILENO);
             close(pd[0]);
+            for (int i = 0; tail[i] != NULL; i++) {
+                if (!strcmp(tail[i], "|")) {
+                    tail[i] = NULL;
+                    shell_launch_pipe(&tail[0], &tail[i+1]);
+                }
+            }
             shell_execute(tail, 1);
         } else if (pid2 < 0)
             perror("Shell");
-        else {
-            if (debug == 1) {
+        else { // Inside main shell thread
+            if (debug == 1)
                 printf("sh %d forked a child sh %d\n", getpid(), pid2);
-                printf("sh %d wait for child sh %d to terminate\n", getpid(), pid2);
-            }
-            pid1 = wait(&status);
+            pid1 = wait(&status); // Wait for head to die
             close(pd[1]); // need to close the pipe so the other program knows to exit.
             if (debug == 1)
                 printf("ZOMBIE child=%d exitStatus=%x\n", pid1, status);
-            pid2 = wait(&status);
+            pid2 = wait(&status); // Wait for tail to die
             close(pd[0]); // Just to make sure this side is also closed. Probably not needed.
             if (debug == 1)
                 printf("ZOMBIE child=%d exitStatus=%x\n", pid2, status);
@@ -71,8 +76,8 @@ int shell_launch_pipe(char **head, char **tail) {
 int shell_launch(char **args, int ispipe) {
     int pid, status;
 
-    if (ispipe == 1) {
-        if (execvp(args[0], args))
+    if (ispipe == 1) { // Special condition if already forked (pipe)
+        if (execvp(args[0], args) == -1)
             perror("Shell");
         return 1;
     }
@@ -80,19 +85,19 @@ int shell_launch(char **args, int ispipe) {
     pid = fork();
 
     // Just some error checking
-    if (pid == 0) {
+    if (pid == 0) { // Inside child
         if (debug == 1)
             printf("child sh %d running %s\n", getpid(), args[0]);
         if (execvp(args[0], args) == -1)
             perror("Shell");
     } else if (pid < 0)
         perror("Shell");
-    else {
+    else { // Inside parent
         if (debug == 1) {
             printf("sh %d forked a child sh %d\n", getpid(), pid);
             printf("sh %d wait for child sh %d to terminate\n", getpid(), pid);
         }
-        pid = wait(&status);
+        pid = wait(&status); // Wait for child to die
         if (debug == 1)
             printf("ZOMBIE child=%d exitStatus=%x\n", pid, status);
     }
@@ -103,7 +108,7 @@ int shell_launch(char **args, int ispipe) {
 int shell_execute(char **args, int ispipe) {
     int i = 0, j = 0, k, status = 0;
 
-    if (args[0] == NULL)
+    if (args[0] == NULL) // If empty, exit
         return 1;
 
     if (debug == 1) {
@@ -119,28 +124,28 @@ int shell_execute(char **args, int ispipe) {
 
     // Checks for i/o redirection
     while (args[j] != NULL) {
-        if (!strcmp(args[j], "|")) {
+        if (!strcmp(args[j], "|")) { // Checks for pipes
             if (debug == 1)
                 printf("Pipe detected!\n");
             args[j] = NULL;
             return shell_launch_pipe(&args[0], &args[j+1]);
         }
 
-        if (!strcmp(args[j], ">")) {
+        if (!strcmp(args[j], ">")) { // Checks for overwrite
             if (debug == 1)
                 printf("Redirect: Create/Overwrite file!\n");
             args[j] = NULL;
             if (freopen(args[j+1], "w+", stdout) == NULL) // Create/Overwrite file
                 perror("Shell");
             status = shell_launch(args, ispipe);
-        } else if (!strcmp(args[j], ">>")) {
+        } else if (!strcmp(args[j], ">>")) { // Check for append
             if (debug == 1)
                 printf("Redirect: Create/Append to file!\n");
             args[j] = NULL;
             if (freopen(args[j+1], "a+", stdout) == NULL) // Create/Append file
                 perror("Shell");
             status = shell_launch(args, ispipe);
-        } else if (!strcmp(args[j], "<")) {
+        } else if (!strcmp(args[j], "<")) { // Check for input
             if (debug == 1)
                 printf("Redirect: Read from file!\n");
             args[j] = NULL;
@@ -223,7 +228,7 @@ void shell_loop(void) {
     username = getenv("USER");
 
     do {
-        if (getcwd(dir, PATH_MAX) == NULL)
+        if (getcwd(dir, PATH_MAX) == NULL) // Gets the cwd
             perror("getcwd() error");
         
         printf("%s@%s %s > ", username, host, dir);
