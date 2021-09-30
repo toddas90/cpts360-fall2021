@@ -1,5 +1,12 @@
-1. Running "cat t.c | cat | cat | grep printf > outfile" creates an empty file named outfile. However,
+1 (if using pipe-check in pipe_exec). 
+    Running "cat t.c | cat | cat | grep printf > outfile" creates an empty file named outfile. However,
     running "cat t.c | cat | cat | grep printf >> outfile" seems to work just fine? Also, running
     "cat t.c | cat | grep printf > outfile" seems to work. Not sure why the extra cat is breaking it.
+    (CAUSE = UNKNOWN)
 
-2. Running less and quitting without going all the way to the bottom hangs.
+2. Running less and quitting without going all the way to the bottom hangs. 
+    (CAUSE = UNKNOWN)
+
+3. (if using shell_exec in pipe_exec)
+    Running a command with multiple pipes will print the user prompt multiple times. 
+    (CAUSE = If there are multiple pipes, the tail will not run a specific command, but run the shell_exec again. So it doesn't exit until after the other processes. It prints another prompt when it exits.)

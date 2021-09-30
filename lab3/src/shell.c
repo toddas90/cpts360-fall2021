@@ -22,8 +22,14 @@ int shell_launch_pipe(char **head, char **tail) {
     pid1 = fork();
 
     if (pid1 == 0) { // Inside child of main shell
-        if (debug == 1)
-            printf("child sh %d running %s\n", getpid(), head[0]);
+        if (debug == 1) {
+            printf("child sh %d running ", getpid());
+            for (int i = 0; head[i] != NULL; i++) {
+                printf("%s ", head[i]);
+            }
+            printf("\n");
+        }
+
         close(pd[0]); // Close read end
         dup2(pd[1], STDOUT_FILENO);
         close(pd[1]);
@@ -44,15 +50,15 @@ int shell_launch_pipe(char **head, char **tail) {
                 }
                 printf("\n");
             }
-                close(pd[1]); // Close write end
+            close(pd[1]); // Close write end
             dup2(pd[0], STDIN_FILENO);
             close(pd[0]);
-            for (int i = 0; tail[i] != NULL; i++) {
+            /*for (int i = 0; tail[i] != NULL; i++) {
                 if (!strcmp(tail[i], "|")) {
                     tail[i] = NULL;
                     shell_launch_pipe(&tail[0], &tail[i+1]);
                 }
-            }
+            }*/
             shell_execute(tail, 1);
         } else if (pid2 < 0)
             perror("Shell");
@@ -86,8 +92,14 @@ int shell_launch(char **args, int ispipe) {
 
     // Just some error checking
     if (pid == 0) { // Inside child
-        if (debug == 1)
-            printf("child sh %d running %s\n", getpid(), args[0]);
+        if (debug == 1) {
+            printf("child sh %d running ", getpid());
+            for (int i = 0; args[i] != NULL; i++) {
+                printf("%s ", args[i]);
+            }
+            printf("\n");
+        }
+
         if (execvp(args[0], args) == -1)
             perror("Shell");
     } else if (pid < 0)
@@ -95,7 +107,6 @@ int shell_launch(char **args, int ispipe) {
     else { // Inside parent
         if (debug == 1) {
             printf("sh %d forked a child sh %d\n", getpid(), pid);
-            printf("sh %d wait for child sh %d to terminate\n", getpid(), pid);
         }
         pid = wait(&status); // Wait for child to die
         if (debug == 1)
@@ -207,8 +218,8 @@ char **shell_parseline(char *line) {
     token = strtok(line, TOK_DELIM);
     
     while (token != NULL) {
-        if (debug == 1)
-            printf("Current Token: %s\n", token);
+        //if (debug == 1)
+            //printf("Current Token: %s\n", token);
         tokens[pos] = token;
         pos++;
         token = strtok(NULL, TOK_DELIM);
