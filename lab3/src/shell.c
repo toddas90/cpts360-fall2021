@@ -204,7 +204,7 @@ char *shell_readline() {
     }
 
     if (debug == 1)
-        printf("Line: %s\n", line);
+        printf("Line: %s", line);
 
     return line;
 }
