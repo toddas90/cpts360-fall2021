@@ -1,12 +1,3 @@
-<html>
-<body>
-<pre>
-                      CS360 LAB3 Check List
-
-      WARNING: ZERO points if turn in only the lab3base.c code
-		   
-Make sure you have a LARGE text file such as t.c of YOUR LAB3 C code file
-
 1. Simple commands:                                                  20 points
    start YOUR mysh program, run the following commnads
       ls -l       # ls LONG format                  
@@ -29,13 +20,9 @@ Make sure you have a LARGE text file such as t.c of YOUR LAB3 C code file
       cat t.c | grep printf         # must show the piped outputs
       cat t.c | grep printf | more  # 2 pipes
 ===============================================================================
-                                                        
 4. BONUS for MULTIPLE pipes with I/O redirection, e.g.               10 points
     cat < t.c | cat | cat | grep printf > outfile 
 ===============================================================================
-
-              During DEMO, TA will ask you these questions:
-
                Answer these questions in YOUR program code:          20 points
 
 1. show where and HOW do you tokenize PATH into dir pointers.
@@ -51,5 +38,3 @@ Make sure you have a LARGE text file such as t.c of YOUR LAB3 C code file
 5. show where and how do you handle pipe command, e.g. cmd1 | cmd2
 ===============================================================================
                                                            Total:  100 points
-
-

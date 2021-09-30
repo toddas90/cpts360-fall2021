@@ -27,8 +27,9 @@ int shell_launch_pipe(char **head, char **tail) {
         close(pd[0]); // Close read end
         dup2(pd[1], STDOUT_FILENO);
         close(pd[1]);
-        if (execvp(head[0], head) == -1)
-            perror("Shell");
+        shell_execute(head, 1);
+        //if (execvp(head[0], head) == -1)
+            //perror("Shell");
     } else if (pid1 < 0)
         perror("Shell");
     else {
