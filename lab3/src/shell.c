@@ -9,6 +9,7 @@
 
 #include "../include/shell.h"
 #include "../include/commands.h"
+#include "../include/colors.h"
 
 #define TOK_BUFSIZE 64
 #define TOK_DELIM " \t\r\n\a"
@@ -242,7 +243,8 @@ void shell_loop(void) {
         if (getcwd(dir, PATH_MAX) == NULL) // Gets the cwd
             perror("getcwd() error");
         
-        printf("%s@%s %s > ", username, host, dir);
+        printf(GRN "%s@%s " RESET, username, host);
+        printf(BLU "%s > " RESET, dir);
         
         line = shell_readline();
         args = shell_parseline(line);
