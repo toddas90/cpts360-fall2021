@@ -33,7 +33,7 @@ int tmp;
 
 char **args;
 
-int initialize() {
+int initialize(char *addr) {
     printf("1. create a socket\n");
     sfd = socket(AF_INET, SOCK_STREAM, 0); 
     if (sfd < 0) { 
@@ -44,7 +44,7 @@ int initialize() {
     printf("2. fill in server IP and port number\n");
     bzero(&saddr, sizeof(saddr)); 
     saddr.sin_family = AF_INET; 
-    //saddr.sin_addr.s_addr = inet_addr("127.0.0.1"); 
+    saddr.sin_addr.s_addr = inet_addr(addr); 
     saddr.sin_port = htons(PORT); 
   
     printf("3. connect to server\n");
@@ -81,7 +81,14 @@ int send_command(char *line) {
 
 int main(int argc, char *argv[], char *env[]) 
 {
-    if (initialize() < 0) {
+    char *addr;
+    if (argv[1] == NULL) {
+        addr = "127.0.0.1";
+    }
+    else {
+        addr = argv[1];
+    }
+    if (initialize(addr) < 0) {
         printf("Error during initialization\n");
         exit(1);
     }
