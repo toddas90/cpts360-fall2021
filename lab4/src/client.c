@@ -44,7 +44,7 @@ int initialize() {
     printf("2. fill in server IP and port number\n");
     bzero(&saddr, sizeof(saddr)); 
     saddr.sin_family = AF_INET; 
-    saddr.sin_addr.s_addr = inet_addr("127.0.0.1"); 
+    //saddr.sin_addr.s_addr = inet_addr("127.0.0.1"); 
     saddr.sin_port = htons(PORT); 
   
     printf("3. connect to server\n");
