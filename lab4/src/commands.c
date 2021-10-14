@@ -97,7 +97,7 @@ int my_get() {
 
 }
 
-int my_put() {
+int my_put(char **args) {
 
 }
 
@@ -236,7 +236,7 @@ int my_cp(char **args) {
     if ((fd = (open(args[1], O_RDONLY))) < 0)
         return -2;
 
-    if ((gd = open(args[2], O_WRONLY|O_CREAT, 0644)) < 0)
+    if ((gd = open(args[2], O_WRONLY|O_CREAT, 0755)) < 0)
         return -3;
 
     while ((n = read(fd, buf, BLKSIZE))) {

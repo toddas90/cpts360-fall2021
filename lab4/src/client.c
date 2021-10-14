@@ -55,7 +55,42 @@ int initialize(char *addr) {
     return 0;
 }
 
+int send_command(char *line) {
+    n = write(sfd, line, MAX);
+    //printf("Client: wrote %d bytes to server\n", n);
+
+    n = read(sfd, ans, MAX);
+    //printf("Client: read %d bytes from server\n", n);
+
+    return 0;
+}
+
+int send_file(char *file, int sockfd) {
+    int n;
+    char data[MAX] = {0};
+    FILE *fp;
+    
+    fp = fopen(file, "r");
+    if (fp == NULL) {
+        perror("[-]Error in reading file.");
+        exit(1);
+    }
+    while(fgets(data, MAX, fp) != NULL) {
+        if (send(sockfd, data, sizeof(data), 0) == -1) {
+            perror("[-]Error in sending file.");
+            exit(1);
+        }
+        bzero(data, MAX);
+    }
+    return 0;
+}
+
 int run_command(char **args) {
+    if (!strcmp(args[0], "put")) {
+        send_file(args[1], sfd);
+        return 0;
+    }
+
     if (args[0][0] != 'l' || !strcmp(args[0], "ls"))
         return 1;
 
@@ -66,16 +101,6 @@ int run_command(char **args) {
         if (strcmp(args[0], commands_str_client[i]) == 0)
             return (*commands_fn[i])(args);
     }
-    return 0;
-}
-
-int send_command(char *line) {
-    n = write(sfd, line, MAX);
-    //printf("Client: wrote %d bytes to server\n", n);
-
-    n = read(sfd, ans, MAX);
-    //printf("Client: read %d bytes from server\n", n);
-
     return 0;
 }
 

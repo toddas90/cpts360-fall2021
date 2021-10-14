@@ -27,7 +27,7 @@ char line[MAX];
 char **args;
 char cwd[128];
 
-int run_commands(char **args) {
+int run_commands(char **args) { 
     if (!strcmp(args[0], "ls") && args[1] == NULL)
         args[1] = cwd;
 
@@ -86,7 +86,7 @@ int main()
 
        printf("server: accepted a client connection from\n");
        printf("-----------------------------------------------\n");
-       printf("    IP=%s  port=%d\n", "127.0.0.1", ntohs(caddr.sin_port));
+       printf("    IP=%s  port=%d\n", inet_ntoa(caddr.sin_addr), ntohs(caddr.sin_port));
        printf("-----------------------------------------------\n");
 
        // Processing loop
@@ -101,17 +101,36 @@ int main()
  
          // show the line string
          printf("server: read  n=%d bytes; line = %s\n", n, line);
-         
+        
          freopen("/dev/null", "a", stdout);
          setbuf(stdout, ans);
          getcwd(cwd, 128);
          args = parseline(line);
-         run_commands(args);
+
+         // READING A FILE NOT WORKING
+         if (!strcmp(line, "put")) {
+             int q;
+             FILE *fp;
+             char buffer[MAX];
+
+             fp = fopen(args[1], "w");
+             while (1) {
+                 printf("loop\n");
+                 q = recv(sfd, buffer, MAX, 0);
+                 if (q < 0)
+                     break;
+                 fprintf(fp, "%s", buffer);
+                 bzero(buffer, MAX);
+             }
+         }
+         else
+            run_commands(args);
+         
          freopen("/dev/tty", "a", stdout);
 
          n = write(cfd, ans, MAX);
          
-         printf("server: wrote n=%d bytes\n", n);
+         printf("server: wrote n=%d bytes; line = %s\n", n, ans);
          printf("server: ready for next request\n");
          free(args);
          bzero(ans, MAX);
