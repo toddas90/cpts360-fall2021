@@ -14,6 +14,7 @@
 #include <dirent.h>
 #include <libgen.h>
 #include <time.h>
+#include <signal.h>
 
 #include "../include/commands.h"
 
@@ -91,43 +92,48 @@ int main()
        printf("-----------------------------------------------\n");
        printf("    IP=%s  port=%d\n", inet_ntoa(caddr.sin_addr), ntohs(caddr.sin_port));
        printf("-----------------------------------------------\n");
-
-       // Processing loop
-       while(1){
-         printf("server ready for next request ....\n");
-         n = read(cfd, line, MAX);
-         if (n==0){
-           printf("server: client died, server loops\n");
-           close(cfd);
-           break;
-         }
+    
+       if (!fork()) {
+           close(sfd);
+           // Processing loop
+           while(1){
+               printf("server ready for next request ....\n");
+               n = read(cfd, line, MAX);
+               if (n==0){
+                   printf("server: client died, server loops\n");
+                   close(cfd);
+                   break;
+               }
  
-         // show the line string
-         printf("server: read  n=%d bytes; line = %s\n", n, line);
+           // show the line string
+           printf("server: read  n=%d bytes; line = %s\n", n, line);
         
-         printf("Changing output to /dev/null\n");
-         freopen("/dev/null", "a", stdout);
-         setbuf(stdout, ans);
-         getcwd(cwd, 128);
-         args = parseline(line);
+           printf("Changing output to /dev/null\n");
+           freopen("/dev/null", "a", stdout);
+           setbuf(stdout, ans);
+           getcwd(cwd, 128);
+           args = parseline(line);
            
-         if (!strcmp(args[0], "stop")) {
-             free(args);
-             exit(0);
-         }
+           if (!strcmp(args[0], "stop")) {
+               //free(args);
+               //_exit(0);
+               kill(getppid(), SIGTERM);
+               exit(1);
+           }
 
-         run_commands(args); 
-           
-         n = write(cfd, ans, MAX);
+           run_commands(args);   
+           n = write(cfd, ans, MAX);
 
-         freopen("/dev/tty", "a", stdout);
-         printf("Output changed back to /dev/tty\n");   
+           freopen("/dev/tty", "a", stdout);
+           printf("Output changed back to /dev/tty\n");   
   
-         printf("server: wrote n=%d bytes; line = %s\n", n, ans);
-         printf("server: ready for next request\n");
-         free(args);
-         bzero(ans, MAX);
-        }
+           printf("server: wrote n=%d bytes; line = %s\n", n, ans);
+           printf("server: ready for next request\n");
+           free(args);
+           bzero(ans, MAX);
+           }  
+       }
+       close(cfd);
     }
 }
      

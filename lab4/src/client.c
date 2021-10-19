@@ -178,8 +178,11 @@ int main(int argc, char *argv[], char *env[])
         args = parseline(line); // LEAK
   
         if ((tmp = run_command(args)) < 0) {
-            printf("Error running command\n");
-            exit(-1);
+            //printf("Error running command\n");
+            free(args);
+            free(line);
+            free(cp_line);
+            exit(1);
         }
         else if (tmp == 1) { 
             if (send_command(cp_line) < 0)
