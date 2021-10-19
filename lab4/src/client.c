@@ -19,7 +19,7 @@
 #define MAX 4096
 #define PORT 1234
 
-char ans[MAX], *line, *cp_line;
+char ans[MAX], *line;
 int n;
 
 char cwd[128];  
@@ -153,7 +153,7 @@ int run_command(char **args) {
 
 int main(int argc, char *argv[], char *env[]) 
 {
-    char *addr;
+    char *addr, *cp_line;
     if (argv[1] == NULL) {
         addr = "127.0.0.1";
     }
@@ -170,12 +170,12 @@ int main(int argc, char *argv[], char *env[])
         printf("input a line : ");
 
         getcwd(cwd, 128); 
-        line = readline();
+        line = readline(); // LEAK
 
-        cp_line = (char*)malloc(strlen(line) * sizeof(char));
+        cp_line = malloc(strlen(line) + 1); // LEAK
         strcpy(cp_line, line);
 
-        args = parseline(line);
+        args = parseline(line); // LEAK
   
         if ((tmp = run_command(args)) < 0) {
             printf("Error running command\n");
@@ -187,6 +187,7 @@ int main(int argc, char *argv[], char *env[])
             puts(ans);
         } else if (tmp == 2) {
             free(args);
+            free(line);
             free(cp_line);
             exit(0);
         }
@@ -194,6 +195,7 @@ int main(int argc, char *argv[], char *env[])
         printf("\n"); 
         free(args);  
         free(cp_line);
+        free(line);
         bzero(ans, MAX);
   }
 }
