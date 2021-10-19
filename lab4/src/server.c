@@ -21,13 +21,16 @@
 #define PORT 1234
 
 int n;
-
+int sfd, cfd;
 char ans[MAX];
 char line[MAX];
 char **args;
 char cwd[128];
 
-int run_commands(char **args) { 
+int run_commands(char **args) {
+    if (args[0] == NULL)
+        return -1;
+    
     if (!strcmp(args[0], "ls") && args[1] == NULL)
         args[1] = cwd;
 
@@ -47,7 +50,7 @@ int main()
         //perror("chroot root");
         //return 1;
     //}
-    int sfd, cfd, len; 
+    int len; 
     struct sockaddr_in saddr, caddr; 
     int i, length;
     printf("1. create a socket\n");
@@ -102,34 +105,24 @@ int main()
          // show the line string
          printf("server: read  n=%d bytes; line = %s\n", n, line);
         
+         printf("Changing output to /dev/null\n");
          freopen("/dev/null", "a", stdout);
          setbuf(stdout, ans);
          getcwd(cwd, 128);
          args = parseline(line);
-
-         // READING A FILE NOT WORKING
-         if (!strcmp(line, "put")) {
-             int q;
-             FILE *fp;
-             char buffer[MAX];
-
-             fp = fopen(args[1], "w");
-             while (1) {
-                 printf("loop\n");
-                 q = recv(sfd, buffer, MAX, 0);
-                 if (q < 0)
-                     break;
-                 fprintf(fp, "%s", buffer);
-                 bzero(buffer, MAX);
-             }
+           
+         if (!strcmp(args[0], "stop")) {
+             free(args);
+             exit(0);
          }
-         else
-            run_commands(args);
-         
-         freopen("/dev/tty", "a", stdout);
 
+         run_commands(args); 
+           
          n = write(cfd, ans, MAX);
-         
+
+         freopen("/dev/tty", "a", stdout);
+         printf("Output changed back to /dev/tty\n");   
+  
          printf("server: wrote n=%d bytes; line = %s\n", n, ans);
          printf("server: ready for next request\n");
          free(args);
@@ -137,4 +130,4 @@ int main()
         }
     }
 }
-
+     

@@ -1,6 +1,9 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
+extern int sfd;
+extern int cfd;
+
 extern char *commands_str_client[];
 extern char *commands_str_server[];
 extern int (*commands_fn[]) (char **);

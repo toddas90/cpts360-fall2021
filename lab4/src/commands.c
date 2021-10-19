@@ -11,6 +11,7 @@
 #include <grp.h>
 #include <time.h>
 #include <fcntl.h>
+#include <sys/socket.h>
 
 #include "../include/commands.h"
 
@@ -93,12 +94,56 @@ char **parseline(char *line) {
     return tokens;
 }
 
-int my_get() {
+int my_get(char **args) {
+    int n;
+    char data[256] = {0};
+    FILE *fp;
+    struct stat stat;
+    char *sending = (char *)malloc(32 * sizeof(char));
 
+    lstat(args[1], &stat);
+    
+    sprintf(sending, "%ld", stat.st_size);
+
+    n = write(cfd, sending, 256);
+
+    fp = fopen(args[1], "r");
+
+    if (fp == NULL) {
+        perror("Error reading file");
+        free(sending);
+        exit(1);
+    }
+    while (fgets(data, 256, fp) != NULL) {
+        if (send(cfd, data, sizeof(data), 0) == -1) {
+            perror("Error sending file");
+            free(sending);
+            exit(1);
+        }
+        bzero(data, 256);
+    }
+    free(sending);
+    fclose(fp);
+    return 0;
 }
 
 int my_put(char **args) {
+  int q = 0, total = 0;
+  FILE *fp;
+  char buffer[256];
 
+  fp = fopen(args[2], "w");
+  while (total < atoi(args[1])) {
+    q = read(cfd, buffer, 256);
+    if (q < 0) {
+      break;
+    }
+    fprintf(fp, "%s", buffer);
+    total += (strlen(buffer) + 1);
+    bzero(buffer, 256);
+  }
+  fclose(fp);
+  return 0;
 }
 
 int my_pwd() {
@@ -166,14 +211,14 @@ int my_ls(char **args) {
     while ((d = readdir(dir)) != NULL) {
         my_new_ls(d->d_name);
     }
-    close(dir);
+    closedir(dir);
     return 0;
 }
 
 int my_mkdir(char **args) {
     if (args[1] == NULL)
         return -1;
-    if (mkdir(args[1], 0755)) {
+    if (mkdir(args[1], 0655)) {
         printf("mkdir() failed\n");
         printf("errno: %s\n", strerror(errno));
         return -1;
@@ -236,7 +281,7 @@ int my_cp(char **args) {
     if ((fd = (open(args[1], O_RDONLY))) < 0)
         return -2;
 
-    if ((gd = open(args[2], O_WRONLY|O_CREAT, 0755)) < 0)
+    if ((gd = open(args[2], O_WRONLY|O_CREAT, 0655)) < 0)
         return -3;
 
     while ((n = read(fd, buf, BLKSIZE))) {

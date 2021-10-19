@@ -25,7 +25,7 @@ int n;
 char cwd[128];  
 
 struct sockaddr_in saddr; 
-int sfd;
+int sfd, cfd;
 
 char how[64];
 int i;
@@ -67,27 +67,74 @@ int send_command(char *line) {
 
 int send_file(char *file, int sockfd) {
     int n;
-    char data[MAX] = {0};
+    char data[256] = {0};
     FILE *fp;
+    struct stat stat;
+    char *sending = (char *)malloc(128 * sizeof(char));
     
+    lstat(file, &stat);
+ 
+    sprintf(sending, "put %ld %s", stat.st_size, file);
+   
+    n = write(sfd, sending, 256); 
+ 
     fp = fopen(file, "r");
+
     if (fp == NULL) {
-        perror("[-]Error in reading file.");
+        perror("Error reading file.");
+        free(sending);
         exit(1);
     }
-    while(fgets(data, MAX, fp) != NULL) {
+    while(fgets(data, 256, fp) != NULL) {
         if (send(sockfd, data, sizeof(data), 0) == -1) {
-            perror("[-]Error in sending file.");
+            perror("Error sending file.");
+            free(sending);
             exit(1);
         }
-        bzero(data, MAX);
+        bzero(data, 256);  
     }
+    free(sending);
+    fclose(fp);
+    return 0;
+}
+
+int recv_file(char **args) {
+    int q = 0, total = 0, tmp = 0;
+    FILE *fp;
+    char buffer[256];
+    char *com = (char *)malloc(32 * sizeof(char));
+    
+    sprintf(com, "get %s", args[1]);
+    n = write(sfd, com, 256);
+    n = read(sfd, buffer, 256);
+    tmp = atoi(buffer);
+
+    fp = fopen(args[1], "w");
+    while (total < tmp) {
+        q = read(sfd, buffer, 256);
+        if (q < 0)
+            break;
+        fprintf(fp, "%s", buffer);
+        total += (strlen(buffer) + 1);
+        bzero(buffer, 256);
+    }
+    fclose(fp);
+    free(com);
     return 0;
 }
 
 int run_command(char **args) {
+    if (!strcmp(args[0], "quit")) {
+        return -1;
+    }
+
     if (!strcmp(args[0], "put")) {
         send_file(args[1], sfd);
+        return 0;
+    }
+
+    if (!strcmp(args[0], "get")) {
+        recv_file(args);
         return 0;
     }
 
@@ -125,22 +172,29 @@ int main(int argc, char *argv[], char *env[])
         getcwd(cwd, 128); 
         line = readline();
 
-        cp_line = (char*)malloc(sizeof(line));
+        cp_line = (char*)malloc(strlen(line) * sizeof(char));
         strcpy(cp_line, line);
 
         args = parseline(line);
   
-        if ((tmp = run_command(args)) < 0)
+        if ((tmp = run_command(args)) < 0) {
             printf("Error running command\n");
+            exit(-1);
+        }
         else if (tmp == 1) { 
             if (send_command(cp_line) < 0)
                 printf("Error sending command to server\n");
             puts(ans);
-        } else
-            //puts(ans);
+        } else if (tmp == 2) {
+            free(args);
+            free(cp_line);
+            exit(0);
+        }
+            
         printf("\n"); 
         free(args);  
         free(cp_line);
+        bzero(ans, MAX);
   }
 }
   
