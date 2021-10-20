@@ -23,11 +23,12 @@
 
 int n;
 int sfd, cfd;
-char ans[MAX];
-char line[MAX];
-char **args;
+//char ans[MAX];
+//char line[MAX];
+//char **args;
 char cwd[128];
 uid_t uid = 100;
+gid_t gid = 100;
 
 int run_commands(char **args) {
     if (args[0] == NULL)
@@ -42,20 +43,30 @@ int run_commands(char **args) {
     }
     return 0;
 }
-
+ 
 int main() 
 {
     getcwd(cwd, 128);
     strcat(cwd, "/root");
     chdir(cwd);
-    //if (chroot(cwd) != 0) {
-    //    perror("chroot root");
-    //    return 1;
-    //}
-    
-    //if (setresuid(uid, uid, uid) < 0) {
-    //    exit(1);
-    //}
+    if (chroot(cwd) != 0) {
+        perror("chroot root");
+        return 1;
+    }
+
+    if (setgid(gid) < 0) {
+        perror("setgid");
+        exit(1);
+    }
+
+    if (setuid(uid) < 0) {
+        perror("setuid");
+        exit(1);
+    }
+
+    char ans[MAX];
+    char line[MAX];
+    char **args;
 
     int len; 
     struct sockaddr_in saddr, caddr; 
@@ -128,9 +139,9 @@ int main()
                exit(1);
            }
 
-           run_commands(args);   
+           run_commands(args);
            n = write(cfd, ans, MAX);
-
+           
            freopen("/dev/tty", "a", stdout);
            printf("Output changed back to /dev/tty\n");   
   
