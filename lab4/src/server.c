@@ -64,9 +64,9 @@ int main()
         exit(1);
     }
 
-    char ans[MAX];
-    char line[MAX];
-    char **args;
+    //char ans[MAX];
+    //char line[MAX];
+    //char **args;
 
     int len; 
     struct sockaddr_in saddr, caddr; 
@@ -113,6 +113,10 @@ int main()
     
        if (!fork()) {
            close(sfd);
+
+           char ans[MAX];
+           char line[MAX];
+           char **args;
            // Processing loop
            while(1){
                printf("server ready for next request ....\n");
