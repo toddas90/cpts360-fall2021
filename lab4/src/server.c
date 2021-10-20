@@ -27,6 +27,7 @@ char ans[MAX];
 char line[MAX];
 char **args;
 char cwd[128];
+uid_t uid = 100;
 
 int run_commands(char **args) {
     if (args[0] == NULL)
@@ -48,9 +49,14 @@ int main()
     strcat(cwd, "/root");
     chdir(cwd);
     //if (chroot(cwd) != 0) {
-        //perror("chroot root");
-        //return 1;
+    //    perror("chroot root");
+    //    return 1;
     //}
+    
+    //if (setresuid(uid, uid, uid) < 0) {
+    //    exit(1);
+    //}
+
     int len; 
     struct sockaddr_in saddr, caddr; 
     int i, length;
@@ -79,6 +85,7 @@ int main()
         printf("Listen failed\n"); 
         exit(0); 
     }
+    
     while(1){
        // Try to accept a client connection as descriptor newsock
        length = sizeof(caddr);
