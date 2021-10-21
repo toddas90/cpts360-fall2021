@@ -19,7 +19,7 @@
 #include "../include/commands.h"
 
 #define MAX 4096
-#define PORT 1234
+#define PORT 5357
 
 int n;
 int sfd, cfd;
