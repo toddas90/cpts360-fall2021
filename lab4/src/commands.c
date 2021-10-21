@@ -139,7 +139,7 @@ int my_put(char **args) {
       break;
     }
     fprintf(fp, "%s", buffer);
-    total += (strlen(buffer) + 1);
+    total += (strlen(buffer));
     bzero(buffer, 256);
   }
   fclose(fp);
