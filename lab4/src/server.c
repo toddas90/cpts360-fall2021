@@ -23,12 +23,9 @@
 
 int n;
 int sfd, cfd;
-//char ans[MAX];
-//char line[MAX];
-//char **args;
 char cwd[128];
-uid_t uid = 100;
-gid_t gid = 100;
+uid_t uid = 1000;
+gid_t gid = 1000;
 
 int run_commands(char **args) {
     if (args[0] == NULL)
@@ -63,10 +60,6 @@ int main()
         perror("setuid");
         exit(1);
     }
-
-    //char ans[MAX];
-    //char line[MAX];
-    //char **args;
 
     int len; 
     struct sockaddr_in saddr, caddr; 

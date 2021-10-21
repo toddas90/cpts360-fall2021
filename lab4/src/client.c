@@ -108,14 +108,14 @@ int recv_file(char **args) {
     n = write(sfd, com, 256);
     n = read(sfd, buffer, 256);
     tmp = atoi(buffer);
-
     fp = fopen(args[1], "w");
     while (total < tmp) {
+        fprintf(stderr, "%d < %d\n", total, tmp);
         q = read(sfd, buffer, 256);
         if (q < 0)
             break;
         fprintf(fp, "%s", buffer);
-        total += (strlen(buffer) + 1);
+        total += (strlen(buffer)); // +1
         bzero(buffer, 256);
     }
     fclose(fp);

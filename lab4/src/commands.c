@@ -218,7 +218,7 @@ int my_ls(char **args) {
 int my_mkdir(char **args) {
     if (args[1] == NULL)
         return -1;
-    if (mkdir(args[1], 0655)) {
+    if (mkdir(args[1], 0755)) {
         printf("mkdir() failed\n");
         printf("errno: %s\n", strerror(errno));
         return -1;
@@ -281,7 +281,7 @@ int my_cp(char **args) {
     if ((fd = (open(args[1], O_RDONLY))) < 0)
         return -2;
 
-    if ((gd = open(args[2], O_WRONLY|O_CREAT, 0655)) < 0)
+    if ((gd = open(args[2], O_WRONLY|O_CREAT, 0644)) < 0)
         return -3;
 
     while ((n = read(fd, buf, BLKSIZE))) {
