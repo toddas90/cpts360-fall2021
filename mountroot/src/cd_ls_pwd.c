@@ -64,6 +64,7 @@ int ls_dir(MINODE *mip) {
     char buf[BLKSIZE], temp[256];
     DIR *dp;
     char *cp;
+    MINODE *mmip;
   
     get_block(mip->dev, mip->INODE.i_block[0], buf);
     dp = (DIR *)buf;
@@ -73,8 +74,9 @@ int ls_dir(MINODE *mip) {
         strncpy(temp, dp->name, dp->name_len);
         temp[dp->name_len] = 0;
         //printf("%s  ", temp);
-
-        ls_file(dp, temp);
+        
+        mmip = iget(mip->dev, mip->ino); // NEED TO FIND DEV AND INO FOR dp
+        ls_file(mmip, temp); 
 
         cp += dp->rec_len;
         dp = (DIR *)cp;
