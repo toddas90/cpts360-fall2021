@@ -19,20 +19,49 @@ int cd() {
 }
 
 int ls_file(MINODE *mip, char *name) {
-    printf("ls_file: to be done: READ textbook!!!!\n");
-    // READ Chapter 11.7.3 HOW TO ls
-}
-
-int ls_dir(MINODE *mip) {
-    printf("ls_dir: list CWD's file names; YOU FINISH IT as ls -l\n");
-
     char *t1 = "xwrxwrxwr-------";
     char *t2 = "----------------";
 
     struct group *grp;
     struct passwd *pwd;
 
-    char buf[BLKSIZE], temp[256], ftime[64];
+    char ftime[64];
+  
+    if ((mip->INODE.i_mode & 0xF000) == 0x8000)
+        printf("%c", '-');
+    if ((mip->INODE.i_mode & 0xF000) == 0x4000)
+        printf("%c", 'd');
+    if ((mip->INODE.i_mode & 0xF000) == 0xA000)
+        printf("%c", 'l');
+    for (int i = 8; i >= 0; i--) {
+        if (mip->INODE.i_mode & (1 << i))
+            printf("%c", t1[i]);
+        else
+            printf("%c", t2[i]);
+    }
+
+    printf("%2d ", mip->INODE.i_links_count);
+
+    if ((pwd = getpwuid(mip->INODE.i_uid)) != NULL)
+        printf("%-4.8s ", pwd->pw_name);
+    else
+        printf("%-4d ", mip->INODE.i_uid);
+
+    if ((grp = getgrgid(mip->INODE.i_gid)) != NULL)
+        printf("%-4.8s", grp->gr_name);
+    else
+        printf("%-4d", mip->INODE.i_gid);
+
+    printf("%6d ", mip->INODE.i_size);
+
+    //strcpy(ftime, ctime(mip->INODE.i_ctime));
+    //ftime[strlen(ftime)-1] = 0;
+    //printf("%s ", ftime);
+    printf("%s\n", name);
+}
+int ls_dir(MINODE *mip) {
+
+    char buf[BLKSIZE], temp[256];
     DIR *dp;
     char *cp;
   
@@ -45,37 +74,7 @@ int ls_dir(MINODE *mip) {
         temp[dp->name_len] = 0;
         //printf("%s  ", temp);
 
-        if ((mip->INODE.i_mode & 0xF000) == 0x8000)
-            printf("%c", '-');
-        if ((mip->INODE.i_mode & 0xF000) == 0x4000)
-            printf("%c", 'd');
-        if ((mip->INODE.i_mode & 0xF000) == 0xA000)
-            printf("%c", 'l');
-        for (int i = 8; i >= 0; i--) {
-            if (mip->INODE.i_mode & (1 << i))
-                printf("%c", t1[i]);
-            else
-                printf("%c", t2[i]);
-        }
-
-        printf("%4d ", mip->INODE.i_links_count);
-
-        if ((pwd = getpwuid(mip->INODE.i_uid)) != NULL)
-            printf("%-8.8s ", pwd->pw_name);
-        else
-            printf("%-8d ", mip->INODE.i_uid);
-
-        if ((grp = getgrgid(mip->INODE.i_gid)) != NULL)
-            printf("%-8.8s", grp->gr_name);
-        else
-            printf("%-8d", mip->INODE.i_gid);
-
-        printf("%6d ", mip->INODE.i_size);
-
-        //strcpy(ftime, ctime(mip->INODE.i_ctime));
-        //ftime[strlen(ftime)-1] = 0;
-        //printf("%s ", ftime);
-        printf("%s\n", temp);
+        ls_file(dp, temp);
 
         cp += dp->rec_len;
         dp = (DIR *)cp;
