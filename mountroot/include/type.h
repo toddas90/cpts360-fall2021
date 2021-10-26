@@ -1,4 +1,9 @@
 /*************** type.h file for LEVEL-1 ****************/
+#ifndef TYPE_H
+#define TYPE_H
+
+#include <ext2fs/ext2_fs.h>
+
 typedef unsigned char  u8;
 typedef unsigned short u16;
 typedef unsigned int   u32;
@@ -8,10 +13,10 @@ typedef struct ext2_group_desc  GD;
 typedef struct ext2_inode       INODE;
 typedef struct ext2_dir_entry_2 DIR;
 
-SUPER *sp;
-GD    *gp;
-INODE *ip;
-DIR   *dp;   
+extern SUPER *sp;
+extern GD    *gp;
+extern INODE *ip;
+extern DIR   *dp;   
 
 #define FREE        0
 #define READY       1
@@ -33,7 +38,11 @@ typedef struct minode{
 typedef struct proc{
   struct proc *next;
   int          pid;      // process ID  
+  int          ppid;
+  int          status;
   int          uid;      // user ID
   int          gid;
   MINODE      *cwd;      // CWD directory pointer  
 }PROC;
+
+#endif /* TYPE_H */

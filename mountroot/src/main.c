@@ -11,6 +11,8 @@
 #include <time.h>
 
 #include "type.h"
+#include "util.h"
+#include "cd_ls_pwd.h"
 
 extern MINODE *iget();
 
@@ -22,11 +24,14 @@ char gpath[128]; // global for tokenized components
 char *name[64];  // assume at most 64 components in pathname
 int   n;         // number of component strings
 
+SUPER *sp;
+GD *gp;
+INODE *ip;
+DIR *dp;
+
 int fd, dev;
 int nblocks, ninodes, bmap, imap, iblk;
 char line[128], cmd[32], pathname[128];
-
-#include "cd_ls_pwd.c"
 
 int init()
 {

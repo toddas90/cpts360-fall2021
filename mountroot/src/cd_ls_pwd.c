@@ -1,3 +1,13 @@
+#include <stdio.h>
+#include <string.h>
+
+#include "util.h" 
+#include "type.h"
+#include "cd_ls_pwd.h" 
+
+extern PROC *running;
+extern MINODE *root;
+
 /************* cd_ls_pwd.c file **************/
 int cd()
 {
@@ -19,8 +29,8 @@ int ls_dir(MINODE *mip)
   char buf[BLKSIZE], temp[256];
   DIR *dp;
   char *cp;
-
-  get_block(dev, mip->INODE.i_block[0], buf);
+  
+  get_block(mip->dev, mip->INODE.i_block[0], buf);
   dp = (DIR *)buf;
   cp = buf;
   
@@ -47,8 +57,9 @@ char *pwd(MINODE *wd)
   printf("pwd: READ HOW TO pwd in textbook!!!!\n");
   if (wd == root){
     printf("/\n");
-    return;
+    return "";
   }
+  return "";
 }
 
 

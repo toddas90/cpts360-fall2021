@@ -7,8 +7,10 @@
 #include <libgen.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "type.h"
+#include "util.h"
 
 /**** globals defined in main.c file ****/
 extern MINODE minode[NMINODE];
