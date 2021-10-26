@@ -771,3 +771,32 @@ main (int argc, char **argv)
                             + page_size - 1);
 
           ok &= cat (ptr_align (inbuf, page_size), insize,
+                     ptr_align (outbuf, page_size), outsize, show_nonprinting,
+                     show_tabs, number, number_nonblank, show_ends,
+                     squeeze_blank);
+
+          free (outbuf);
+        }
+
+      free (inbuf);
+
+    contin:
+      if (!STREQ (infile, "-") && close (input_desc) < 0)
+        {
+          error (0, errno, "%s", quotef (infile));
+          ok = false;
+        }
+    }
+  while (++argind < argc);
+
+  if (pending_cr)
+    {
+      if (full_write (STDOUT_FILENO, "\r", 1) != 1)
+        die (EXIT_FAILURE, errno, _("write error"));
+    }
+
+  if (have_read_stdin && close (STDIN_FILENO) < 0)
+    die (EXIT_FAILURE, errno, _("closing standard input"));
+
+  return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+}
