@@ -10,9 +10,9 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#include "type.h"
-#include "util.h"
-#include "cd_ls_pwd.h"
+#include "../include/type.h"
+#include "../include/util.h"
+#include "../include/cd_ls_pwd.h"
 
 extern MINODE *iget();
 

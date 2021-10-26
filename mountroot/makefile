@@ -1,6 +1,6 @@
 CC := gcc
 release: CFLAGS := -O3 -Wall -Werror -pipe -march=native
-debug: CFLAGS :=  -g -O0 -Wall -pipe -march=native
+debug: CFLAGS :=  -g -O0 -Wall
 
 TARGET := mr
 
