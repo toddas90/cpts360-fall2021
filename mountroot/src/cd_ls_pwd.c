@@ -89,7 +89,6 @@ int ls_dir(MINODE *mip) {
 }
 
 int ls() {
-    printf("ls: list CWD only! YOU FINISH IT for ls pathname\n");
     if (!strcmp(pathname, ""))
         ls_dir(running->cwd);
     else {
