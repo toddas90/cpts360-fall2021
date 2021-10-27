@@ -11,6 +11,8 @@
 extern PROC *running;
 extern MINODE *root;
 
+extern char pathname[128];
+
 /************* cd_ls_pwd.c file **************/
 int cd() {
     printf("cd: under construction READ textbook!!!!\n");
@@ -88,7 +90,15 @@ int ls_dir(MINODE *mip) {
 
 int ls() {
     printf("ls: list CWD only! YOU FINISH IT for ls pathname\n");
-    ls_dir(running->cwd);
+    if (!strcmp(pathname, ""))
+        ls_dir(running->cwd);
+    else {
+        int i = getino(pathname);
+        int d = running->cwd->dev;
+        MINODE *m = iget(d, i);
+        ls_dir(m);
+    }
+    return 0;
 }
 
 char *pwd(MINODE *wd) {

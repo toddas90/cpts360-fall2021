@@ -130,6 +130,7 @@ int main(int argc, char *argv[ ])
        pwd(running->cwd);
     else if (strcmp(cmd, "quit")==0)
        quit();
+    bzero(pathname, 128);
   }
 }
 
