@@ -42,7 +42,7 @@ int tokenize(char *pathname)
 {
   int i;
   char *s;
-  printf("tokenize %s\n", pathname);
+  //printf("tokenize %s\n", pathname);
 
   strcpy(gpath, pathname);   // tokens are in global gpath[ ]
   n = 0;
@@ -55,9 +55,9 @@ int tokenize(char *pathname)
   }
   name[n] = 0;
   
-  for (i= 0; i<n; i++)
-    printf("%s  ", name[i]);
-  printf("\n");
+  //for (i= 0; i<n; i++)
+    //printf("%s  ", name[i]);
+  //printf("\n");
 }
 
 // return minode pointer to loaded INODE

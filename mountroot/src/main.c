@@ -127,7 +127,7 @@ int main(int argc, char *argv[ ])
     else if (strcmp(cmd, "cd")==0)
        cd();
     else if (strcmp(cmd, "pwd")==0)
-       pwd(running->cwd);
+       printf("%s\n", pwd(running->cwd));
     else if (strcmp(cmd, "quit")==0)
        quit();
     bzero(pathname, 128);

@@ -3,6 +3,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "../include/util.h" 
 #include "../include/type.h"
@@ -12,12 +13,32 @@ extern PROC *running;
 extern MINODE *root;
 
 extern char pathname[128];
+extern int dev;
 
 /************* cd_ls_pwd.c file **************/
 int cd() {
-    printf("cd: under construction READ textbook!!!!\n");
+    int ino = 0;
+    
+    if (!strcmp(pathname, "")) {
+        ino = 2;
+    } else {
+        ino = getino(pathname);
+         if (ino == 0) {
+            fprintf(stderr, "ino = 0\n");
+            return -1;
+        }
+    }
 
-    // READ Chapter 11.7.3 HOW TO chdir
+    MINODE *mip = iget(dev, ino);
+
+    if (!((mip->INODE.i_mode & 0xF000) == 0x4000)) {
+        fprintf(stderr, "INODE is not a dir\n");
+        return -1;
+    }
+
+    iput(running->cwd);
+    running->cwd = mip;
+    return 0;
 }
 
 int ls_file(MINODE *mip, char *name) {
@@ -77,7 +98,6 @@ int ls_dir(MINODE *mip) {
     while (cp < buf + BLKSIZE){
         strncpy(temp, dp->name, dp->name_len);
         temp[dp->name_len] = 0;
-        //printf("%s  ", temp);
         
         mmip = iget(mip->dev, dp->inode);
         ls_file(mmip, temp); 
@@ -86,6 +106,7 @@ int ls_dir(MINODE *mip) {
         dp = (DIR *)cp;
     }
     printf("\n");
+    return 0;
 }
 
 int ls() {
@@ -101,13 +122,14 @@ int ls() {
 }
 
 char *pwd(MINODE *wd) {
-    printf("pwd: READ HOW TO pwd in textbook!!!!\n");
-    if (wd == root){
-        printf("/\n");
-        return "";
-    } else {
-        printf("T");
-    }
+    //printf("pwd: READ HOW TO pwd in textbook!!!!\n");
+    //if (wd == root){
+        //printf("/\n");
+        //return "";
+    //} else {
+        //printf("T");
+    //}
+    //return "";
     return "";
 }
 
