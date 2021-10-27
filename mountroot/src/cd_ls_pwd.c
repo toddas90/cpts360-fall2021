@@ -121,43 +121,34 @@ int ls() {
     return 0;
 }
 
-char *rpwd(MINODE *wd) {
-    int ino, pino;
+void rpwd(MINODE *wd) {
+    u32 ino, pino;
     char buf[BLKSIZE], my_name[256];
     DIR *dp;
     char *cp;
     MINODE *pip;
 
     if (wd == root)
-        return "/";
+        return;
     
-    get_block(wd->dev, wd->INODE.i_block[0], buf);
-
-    dp = (DIR *)buf; // set dp to first item in block (.)
-    cp = buf;
-    ino = dp->inode; // ino = . ino
-
-    cp += dp->rec_len;
-    dp = (DIR *)cp; // set dp to second item in block (..)
-    pino = dp->inode; // pino = .. ino
+    ino = wd->ino;
+    pino = findino(wd, &ino);
 
     pip = iget(dev, pino);
-    get_block(pip->dev, pip->INODE.i_block[0], buf);
-    dp = (DIR *)buf;
-    cp = buf;
-    strncpy(my_name, dp->name, dp->name_len);
+    findmyname(pip, ino, my_name);
     rpwd(pip);
     printf("/%s", my_name);
-    return "";
+    return;
 }
 
-char *pwd(MINODE *wd) {
+void pwd(MINODE *wd) {
     if (wd == root){
         printf("/");
-        return "";
+        return;
     } else {
         rpwd(wd);
+        printf("\n");
     }
-    return "";
+    return;
 }
 

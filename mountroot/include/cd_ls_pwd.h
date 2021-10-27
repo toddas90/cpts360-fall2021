@@ -11,6 +11,8 @@ int ls_dir(MINODE *m);
 
 int ls();
 
-char *pwd(MINODE *w);
+void rpwd(MINODE *w);
+
+void pwd(MINODE *w);
 
 #endif /* CD_LS_PWD_H */
