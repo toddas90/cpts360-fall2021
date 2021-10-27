@@ -24,9 +24,11 @@ int ls_file(MINODE *mip, char *name) {
 
     struct group *grp;
     struct passwd *pwd;
-
+    struct tm ts;
     char ftime[64];
-  
+    time_t file_time = mip->INODE.i_ctime;
+    ts = *localtime(&file_time);
+
     if ((mip->INODE.i_mode & 0xF000) == 0x8000)
         printf("%c", '-');
     if ((mip->INODE.i_mode & 0xF000) == 0x4000)
@@ -54,13 +56,13 @@ int ls_file(MINODE *mip, char *name) {
 
     printf("%6d ", mip->INODE.i_size);
 
-    //strcpy(ftime, ctime(mip->INODE.i_ctime));
-    //ftime[strlen(ftime)-1] = 0;
-    //printf("%s ", ftime);
+    strftime(ftime, sizeof(ftime), "%b %d %H:%M", &ts);
+    printf("%s ", ftime);
     printf("%s\n", name);
+
+    return 0;
 }
 int ls_dir(MINODE *mip) {
-
     char buf[BLKSIZE], temp[256];
     DIR *dp;
     char *cp;
@@ -75,7 +77,7 @@ int ls_dir(MINODE *mip) {
         temp[dp->name_len] = 0;
         //printf("%s  ", temp);
         
-        mmip = iget(mip->dev, mip->ino); // NEED TO FIND DEV AND INO FOR dp
+        mmip = iget(mip->dev, dp->inode);
         ls_file(mmip, temp); 
 
         cp += dp->rec_len;
