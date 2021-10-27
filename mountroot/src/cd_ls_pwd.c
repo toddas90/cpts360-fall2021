@@ -121,15 +121,43 @@ int ls() {
     return 0;
 }
 
+char *rpwd(MINODE *wd) {
+    int ino, pino;
+    char buf[BLKSIZE], my_name[256];
+    DIR *dp;
+    char *cp;
+    MINODE *pip;
+
+    if (wd == root)
+        return "/";
+    
+    get_block(wd->dev, wd->INODE.i_block[0], buf);
+
+    dp = (DIR *)buf; // set dp to first item in block (.)
+    cp = buf;
+    ino = dp->inode; // ino = . ino
+
+    cp += dp->rec_len;
+    dp = (DIR *)cp; // set dp to second item in block (..)
+    pino = dp->inode; // pino = .. ino
+
+    pip = iget(dev, pino);
+    get_block(pip->dev, pip->INODE.i_block[0], buf);
+    dp = (DIR *)buf;
+    cp = buf;
+    strncpy(my_name, dp->name, dp->name_len);
+    rpwd(pip);
+    printf("/%s", my_name);
+    return "";
+}
+
 char *pwd(MINODE *wd) {
-    //printf("pwd: READ HOW TO pwd in textbook!!!!\n");
-    //if (wd == root){
-        //printf("/\n");
-        //return "";
-    //} else {
-        //printf("T");
-    //}
-    //return "";
+    if (wd == root){
+        printf("/");
+        return "";
+    } else {
+        rpwd(wd);
+    }
     return "";
 }
 
