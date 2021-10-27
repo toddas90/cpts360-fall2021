@@ -215,7 +215,8 @@ int findmyname(MINODE *parent, u32 myino, char myname[ ])
 
     while (cp < sbuf + BLKSIZE){
         if (myino == dp->inode){
-            strcpy(myname, dp->name);
+            strncpy(myname, dp->name, dp->name_len);
+            //myname[strlen(myname)+1] = '\0';
             return dp->inode;
         }
         cp += dp->rec_len;

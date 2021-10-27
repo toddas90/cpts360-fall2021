@@ -123,9 +123,7 @@ int ls() {
 
 void rpwd(MINODE *wd) {
     u32 ino, pino;
-    char buf[BLKSIZE], my_name[256];
-    DIR *dp;
-    char *cp;
+    char my_name[64];
     MINODE *pip;
 
     if (wd == root)
