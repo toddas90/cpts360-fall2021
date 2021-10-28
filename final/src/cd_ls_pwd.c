@@ -4,10 +4,12 @@
 #include <grp.h>
 #include <time.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 #include "../include/util.h" 
 #include "../include/type.h"
 #include "../include/cd_ls_pwd.h" 
+#include "../include/colors.h"
 
 extern PROC *running;
 extern MINODE *root;
@@ -52,17 +54,28 @@ int ls_file(MINODE *mip, char *name) {
     time_t file_time = mip->INODE.i_ctime; // time
     ts = *localtime(&file_time); // time
 
+    int ftype = 0;
+
     if ((mip->INODE.i_mode & 0xF000) == 0x8000) // Check if file
         printf("%c", '-');
-    if ((mip->INODE.i_mode & 0xF000) == 0x4000) // Check if dir
+    if ((mip->INODE.i_mode & 0xF000) == 0x4000) { // Check if dir
         printf("%c", 'd');
-    if ((mip->INODE.i_mode & 0xF000) == 0xA000) // Check if link
+        ftype = 1;
+    }
+    if ((mip->INODE.i_mode & 0xF000) == 0xA000) { // Check if link
         printf("%c", 'l');
+        ftype = 3;
+    }
     for (int i = 8; i >= 0; i--) { // Print out permissions
-        if (mip->INODE.i_mode & (1 << i))
+        if (mip->INODE.i_mode & (1 << i)) {
             printf("%c", t1[i]);
+        }
         else
             printf("%c", t2[i]);
+    }
+
+    if (mip->INODE.i_mode & S_IXUSR && ftype != 1) {
+        ftype = 2;
     }
 
     printf("%2d ", mip->INODE.i_links_count); // Print link count
@@ -81,8 +94,16 @@ int ls_file(MINODE *mip, char *name) {
 
     strftime(ftime, sizeof(ftime), "%b %d %H:%M", &ts); // Format the time
     printf("%s ", ftime); // Print time
-    printf("%s\n", name); // Print file name
-
+    
+    if (ftype == 1) {
+        printf(BLD BLU "%s/\n" RESET, name); // Print dir name blue
+    } else if (ftype == 2) {
+        printf(BLD GRN "%s*\n" RESET, name); // print executable green
+    } else if (ftype == 3) {
+        printf(BLD CYN "%s@\n" RESET, name);
+    } else {
+        printf("%s\n", name); // print name normally
+    }
     return 0;
 }
 
@@ -144,7 +165,7 @@ void rpwd(MINODE *wd) {
 
 void pwd(MINODE *wd) {
     if (wd == root){
-        printf("/");
+        printf("/\n");
         return;
     } else {
         rpwd(wd);
