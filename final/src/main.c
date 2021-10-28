@@ -13,6 +13,7 @@
 #include "../include/type.h"
 #include "../include/util.h"
 #include "../include/cd_ls_pwd.h"
+#include "../include/colors.h"
 
 extern MINODE *iget();
 
@@ -54,6 +55,7 @@ int init()
     p->uid = p->gid = 0;
     p->cwd = 0;
   }
+  return 0;
 }
 
 // load root INODE and set root pointer to it
@@ -61,6 +63,19 @@ int mount_root()
 {  
   printf("mount_root()\n");
   root = iget(dev, 2);
+  return 0;
+}
+
+int quit()
+{
+  int i;
+  MINODE *mip;
+  for (i=0; i<NMINODE; i++){
+    mip = &minode[i];
+    if (mip->refCount > 0)
+      iput(mip);
+  }
+  exit(0);
 }
 
 char *disk = "diskimage";
@@ -71,7 +86,7 @@ int main(int argc, char *argv[ ])
 
   printf("checking EXT2 FS ....");
   if ((fd = open(disk, O_RDWR)) < 0){
-    printf("open %s failed\n", disk);
+    printf(RED "open %s failed\n" RESET, disk);
     exit(1);
   }
 
@@ -83,7 +98,7 @@ int main(int argc, char *argv[ ])
 
   /* verify it's an ext2 file system ***********/
   if (sp->s_magic != 0xEF53){
-      printf("magic = %x is not an ext2 filesystem\n", sp->s_magic);
+      printf(RED "magic = %x is not an ext2 filesystem\n" RESET, sp->s_magic);
       exit(1);
   }     
   printf("EXT2 FS OK\n");
@@ -120,7 +135,7 @@ int main(int argc, char *argv[ ])
     pathname[0] = 0;
 
     sscanf(line, "%s %s", cmd, pathname);
-    printf("cmd=%s pathname=%s\n", cmd, pathname);
+    //printf("cmd=%s pathname=%s\n", cmd, pathname);
   
     if (strcmp(cmd, "ls")==0)
        ls();
@@ -134,14 +149,3 @@ int main(int argc, char *argv[ ])
   }
 }
 
-int quit()
-{
-  int i;
-  MINODE *mip;
-  for (i=0; i<NMINODE; i++){
-    mip = &minode[i];
-    if (mip->refCount > 0)
-      iput(mip);
-  }
-  exit(0);
-}

@@ -11,6 +11,7 @@
 
 #include "../include/type.h"
 #include "../include/util.h"
+#include "../include/colors.h"
 
 /**** globals defined in main.c file ****/
 extern MINODE minode[NMINODE];
@@ -30,12 +31,14 @@ int get_block(int dev, int blk, char *buf)
 {
    lseek(dev, (long)blk*BLKSIZE, 0);
    read(dev, buf, BLKSIZE);
+   return 0;
 }   
 
 int put_block(int dev, int blk, char *buf)
 {
    lseek(dev, (long)blk*BLKSIZE, 0);
    write(dev, buf, BLKSIZE);
+   return 0;
 }   
 
 int tokenize(char *pathname)
@@ -58,6 +61,7 @@ int tokenize(char *pathname)
   //for (i= 0; i<n; i++)
     //printf("%s  ", name[i]);
   //printf("\n");
+  return 0;
 }
 
 // return minode pointer to loaded INODE
@@ -99,7 +103,7 @@ MINODE *iget(int dev, int ino)
        return mip;
     }
   }   
-  printf("PANIC: no more free minodes\n");
+  printf(YEL "PANIC: no more free minodes\n" RESET);
   return 0;
 }
 
@@ -188,7 +192,7 @@ int getino(char *pathname)
 
       if (ino==0){
          iput(mip);
-         printf("name %s does not exist\n", name[i]);
+         printf(YEL "name %s does not exist\n" RESET, name[i]);
          return 0;
       }
       iput(mip);

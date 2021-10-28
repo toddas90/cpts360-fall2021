@@ -26,7 +26,7 @@ int cd() {
     } else { // If global path is NOT empty
         ino = getino(pathname); // get inode number
          if (ino == 0) {
-            fprintf(stderr, "ino = 0\n");
+            fprintf(stderr, YEL "ino = 0\n" RESET);
             return -1;
         }
     }
@@ -34,7 +34,7 @@ int cd() {
     MINODE *mip = iget(dev, ino); // get minode of path dir
 
     if (!((mip->INODE.i_mode & 0xF000) == 0x4000)) { // If inode is not a dir, quit
-        fprintf(stderr, "INODE is not a dir\n");
+        fprintf(stderr, YEL "INODE is not a dir\n" RESET);
         return -1;
     }
 
