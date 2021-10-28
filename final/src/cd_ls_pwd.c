@@ -96,11 +96,11 @@ int ls_file(MINODE *mip, char *name) {
     printf("%s ", ftime); // Print time
     
     if (ftype == 1) {
-        printf(BLD BLU "%s/\n" RESET, name); // Print dir name blue
+        printf(BLD BLU "%s" RESET "/\n", name); // Print dir name blue
     } else if (ftype == 2) {
-        printf(BLD GRN "%s*\n" RESET, name); // print executable green
+        printf(BLD GRN "%s" RESET "*\n", name); // print executable green
     } else if (ftype == 3) {
-        printf(BLD CYN "%s@\n" RESET, name);
+        printf(BLD CYN "%s" RESET "@\n", name);
     } else {
         printf("%s\n", name); // print name normally
     }
