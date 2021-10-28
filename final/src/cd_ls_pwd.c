@@ -102,7 +102,7 @@ int ls_dir(MINODE *mip) {
         
         mmip = iget(mip->dev, dp->inode); // Child inode
         ls_file(mmip, temp); // Call ls_file with each child node
-
+        //iput(mip);
         cp += dp->rec_len;
         dp = (DIR *)cp;
     }
@@ -118,6 +118,7 @@ int ls() {
         int d = running->cwd->dev; // get device num
         MINODE *m = iget(d, i); // get minode of path dir
         ls_dir(m);
+        //iput(m);
     }
     return 0;
 }
@@ -137,6 +138,7 @@ void rpwd(MINODE *wd) {
     findmyname(pip, ino, my_name); // get name of cwd from parent
     rpwd(pip); // recursive call, from cwd to root
     printf("/%s", my_name);
+    //iput(pip);
     return;
 }
 
