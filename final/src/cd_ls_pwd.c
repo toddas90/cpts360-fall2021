@@ -49,10 +49,10 @@ int ls_file(MINODE *mip, char *name) {
 
     struct group *grp; // For group name
     struct passwd *pwd; // for User name
-    struct tm ts; // For time
-    char ftime[64]; // Formatted time
+    
     time_t file_time = mip->INODE.i_ctime; // time
-    ts = *localtime(&file_time); // time
+    struct tm ts = *localtime(&file_time); // time
+    char ftime[64]; // Formatted time
 
     int ftype = 0;
 
