@@ -9,9 +9,9 @@
 #include "../include/type.h"
 
 extern char pathname[128];
-extern int dev;
+extern int dev, ninodes;
 extern SUPER *sp;
-extern GD = *gp;
+extern GD *gp;
 
 int lab_mkdir() {
     // Check for empty global pathname
@@ -58,7 +58,13 @@ int dec_free_inodes(int dev) {
 }
 
 int ialloc(int dev) {
-    
+    int i = 0;
+    char buf[BLKSIZE];
+
+    // MTABLE is in the book, but I'm not sure
+    // where it comes from????
+    // MTABLE *mp = (MTABLE *)get_mtable(dev);
+
     return 0;
 }
 
