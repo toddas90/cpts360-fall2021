@@ -9,7 +9,7 @@
 #include "../include/type.h"
 
 extern char pathname[128];
-extern int dev, ninodes;
+extern int dev, ninodes, imap, bmap;
 extern SUPER *sp;
 extern GD *gp;
 
@@ -58,12 +58,19 @@ int dec_free_inodes(int dev) {
 }
 
 int ialloc(int dev) {
-    int i = 0;
+    // KC's code from the website, not the book.
     char buf[BLKSIZE];
 
-    // MTABLE is in the book, but I'm not sure
-    // where it comes from????
-    // MTABLE *mp = (MTABLE *)get_mtable(dev);
+    get_block(dev, imap, buf); // read inode bitmap into buf
+
+    for (int i = 0; i < ninodes; i++) { // loop through number of inodes
+        if (test_bit(buf, i)==0) { // test the bit
+            set_bit(buf, i); // Set the bit
+            put_block(dev, imap, buf); // write to block
+            printf("allocated ino = %d\n", i+1); // bits count from 0; ino from 1
+            return i+1;
+        }
+    }
 
     return 0;
 }
