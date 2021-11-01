@@ -13,6 +13,7 @@
 #include "../include/type.h"
 #include "../include/util.h"
 #include "../include/cd_ls_pwd.h"
+#include "../include/mkdir_creat.h"
 #include "../include/colors.h"
 
 extern MINODE *iget();
@@ -143,6 +144,10 @@ int main(int argc, char *argv[ ])
        cd();
     else if (strcmp(cmd, "pwd")==0)
        pwd(running->cwd);
+    else if (strcmp(cmd, "mkdir")==0)
+        lab_mkdir();
+    else if (strcmp(cmd, "creat")==0)
+        lab_creat();
     else if (strcmp(cmd, "quit")==0)
        quit();
     bzero(pathname, 128);
