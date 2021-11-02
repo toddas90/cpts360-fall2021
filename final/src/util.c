@@ -133,6 +133,18 @@ void iput(MINODE *mip)
     midealloc(mip); // mip->refcount = 0 
 }
 
+MINODE *mialloc() {
+    for (int i = 0; i < NMINODE; i++) {
+        MINODE *mp = &minode[i];
+        if (mp->refCount == 0) {
+            mp->refCount = 1;
+            return mp;
+        }
+    }
+    printf(YEL "Out of MINODES\n" RESET);
+    return 0;
+}
+
 int midealloc(MINODE *mip) {
     mip->refCount = 0;
     return 0;
