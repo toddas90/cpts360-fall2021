@@ -12,10 +12,63 @@ extern char pathname[128];
 extern int dev, ninodes, nblocks, imap, bmap;
 extern SUPER *sp;
 extern GD *gp;
+extern PROC *running;
 
 int lab_mkdir() {
+    int ino = 0;
+    int bno = 0;
+    MINODE *mip;
+    
     // Check for empty global pathname
     // Do code from book.
+    // 1. divide pathname in dirname and basename.
+    //     ex. a/b/c -> dirname = a/b basename = c
+    // 2. dirname must exist and is a DIR type.
+    //     pino = getino(dirname);
+    //     pmip = iget(dev, pino);
+    //     check if pmip INODE is a DIR
+    // 3. basename must not exist in parent DIR.
+    //     search(pmip, basename) must return 0.
+    
+    ino = ialloc(dev); // Allocate inode
+    bno = balloc(dev); // Allocate disk block
+    
+    // This chunk gets a new INODE and puts it into the MINODE.
+    // It also initializes the INODE to a DIR.
+    mip = iget(dev, ino); // Load inode into a MINODE
+    mip->INODE.i_mode = 0x41ED; // Set mode as DIR with standard permissions (04755)
+    mip->INODE.i_uid = running->uid; // Set uid of INODE
+    mip->INODE.i_gid = running->gid; // Set gid of INODE
+    mip->INODE.i_size = BLKSIZE; // Set block size
+    mip->INODE.i_links_count = 2; // two links, . and ..
+    mip->INODE.i_atime = mip->INODE.i_ctime;
+    mip->INODE.i_blocks = 2; // . and ..
+    mip->INODE.i_block[0] = bno; // New dir has 1 data block
+    for (int j = 14; j > 0; j--) {
+        mip->INODE.i_block[j] = 0; // Set blocks 1-14 to 0
+    }
+    
+    // Sets MINODE dirty and writes it to disk.
+    mip->dirty = 1; // Set new MINODE to dirty.
+    iput(mip); // Write new MINODE to the disk.
+    
+    // Creates the . and .. entries in the new INODE
+    char buf[BLKSIZE];
+    bzero(buf, BLKSIZE);
+    DIR *dp = (DIR *)buf;
+    dp->inode = ino;
+    dp->rec_len = 12;
+    dp->name_len = 1;
+    dp->name[0] = '.';
+
+    dp = (char *)dp + 12;
+    dp->inode = pino;
+    dp->rec_len = BLKSIZE - 12;
+    dp->name_len = 2;
+    dp->name[0] = dp->name[1] = '.';
+    put_block(dev, bno, buf);
+
+    enter_child(pmip, ino, basename);
     return 0;
 }
 
