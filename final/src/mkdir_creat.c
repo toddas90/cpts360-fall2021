@@ -9,7 +9,7 @@
 #include "../include/type.h"
 
 extern char pathname[128];
-extern int dev, ninodes, imap, bmap;
+extern int dev, ninodes, nblocks, imap, bmap;
 extern SUPER *sp;
 extern GD *gp;
 
@@ -22,10 +22,6 @@ int lab_mkdir() {
 int lab_creat() {
     // Check for empty global path.
     // Do code in book.
-    return 0;
-}
-
-int lab_kmkdir(MINODE *pmip, char *basename) {
     return 0;
 }
 
@@ -67,18 +63,32 @@ int ialloc(int dev) {
         if (test_bit(buf, i)==0) { // test the bit
             set_bit(buf, i); // Set the bit
             put_block(dev, imap, buf); // write to block
-            printf("allocated ino = %d\n", i+1); // bits count from 0; ino from 1
+            //printf("allocated ino = %d\n", i+1); // bits count from 0; ino from 1
             return i+1;
         }
     }
-
     return 0;
 }
 
 int balloc(int dev) {
+    // Current code is a mirror of
+    // ialloc() except it is using
+    // the bmap instead of imap.
+    char buf[BLKSIZE];
+
+    get_block(dev, bmap, buf);
+    
+    for (int i = 0; i < nblocks; i++) {
+        if (test_bit(buf, i)==0) {
+            set_bit(buf, i);
+            put_block(dev, bmap, buf);
+            printf("allocated bno = %d\n", i+1);
+            return i+1;
+        }
+    }
     return 0;
 }
 
-int ender_child(MINODE *pmip, int ino, char *basename) {
+int enter_child(MINODE *pmip, int ino, char *basename) {
     return 0;
 }

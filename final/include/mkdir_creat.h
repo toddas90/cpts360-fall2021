@@ -5,7 +5,6 @@
 
 int lab_mkdir();
 int lab_creat();
-int lab_kmkdir(MINODE *pmip, char *basename);
 
 int ialloc(int dev);
 int balloc(int dev);
