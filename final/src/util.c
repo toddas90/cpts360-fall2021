@@ -109,27 +109,34 @@ MINODE *iget(int dev, int ino)
 
 void iput(MINODE *mip)
 {
- int i, block, offset;
- char buf[BLKSIZE];
- INODE *ip;
+    int i, block, offset;
+    char buf[BLKSIZE];
+    INODE *ip;
 
- if (mip==0) 
-     return;
+    if (mip==0) 
+        return;
 
- mip->refCount--;
+    mip->refCount--;
  
- if (mip->refCount > 0) return;
- if (!mip->dirty)       return;
- 
- /* write INODE back to disk */
- /**************** NOTE ******************************
-  For mountroot, we never MODIFY any loaded INODE
-                 so no need to write it back
-  FOR LATER WROK: MUST write INODE back to disk if refCount==0 && DIRTY
+    if (mip->refCount > 0) return;
+    if (!mip->dirty)       return;
 
-  Write YOUR code here to write INODE back to disk
- *****************************************************/
-} 
+    // Write inode back to disk
+    block = (mip->ino - 1) / 8 + iblk;
+    offset = (mip->ino -1) %8;
+
+    // Get block containing inode
+    get_block(mip->dev, block, buf);
+    ip = (INODE *)buf + offset; // ip points at INODE
+    *ip = mip->INODE; // copy INODE to inode in block
+    put_block(mip->dev, block, buf); // write back to disk
+    midealloc(mip); // mip->refcount = 0 
+}
+
+int midealloc(MINODE *mip) {
+    mip->refCount = 0;
+    return 0;
+}
 
 int search(MINODE *mip, char *name)
 {
