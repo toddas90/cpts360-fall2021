@@ -26,4 +26,6 @@ int midealloc(MINODE *mip);
 
 int findino(MINODE *m, u32 *my);
 
+void printblk(MINODE *mip);
+
 #endif /* UTIL_H */

@@ -47,6 +47,10 @@ int lab_mkdir() {
     // This chunk gets a new INODE and puts it into the MINODE.
     // It also initializes the INODE to a DIR.
     mip = iget(dev, ino); // Load inode into a MINODE
+
+    printf("Original Parent Block:\n");
+    printblk(pmip);
+
     mip->INODE.i_mode = 0x41ED; // Set mode as DIR with standard permissions (04755)
     mip->INODE.i_uid = running->uid; // Set uid of INODE
     mip->INODE.i_gid = running->gid; // Set gid of INODE
@@ -80,7 +84,13 @@ int lab_mkdir() {
     dp->name[0] = dp->name[1] = '.';
     put_block(dev, bno, buf); // Write block to disk
 
+    //printf("New block():\n");
+    //printblk(mip);
+
     enter_child(pmip, ino, base); // Put child name in parent
+    
+    printf("Updated Parent Block:\n");
+    printblk(pmip);
 
     pmip->INODE.i_links_count += 1;
     pmip->dirty = 1; // set parent dirty
@@ -169,25 +179,26 @@ int enter_child(MINODE *pmip, int ino, char *basename) {
             break;
         get_block(pmip->dev, pmip->INODE.i_block[i], buf); // Read block
         need_len = ideal_length(basename); // Get length needed for new entry
-        
+       
         dp = (DIR *)buf;
         cp = buf;
-        printf("First name: %s, len: %d\n", dp->name, dp->rec_len);
+        //printf("First name: %s, len: %d\n", dp->name, dp->rec_len);
         while (cp + dp->rec_len < buf + BLKSIZE) { // Skip to last element
             cp += dp->rec_len;
             dp = (DIR *)cp;
-            printf("Current name: %s, len: %d\n", dp->name, dp->rec_len);
+            //printf("Current name: %s, len: %d\n", dp->name, dp->rec_len);
         } // dp now should point to last entry in block.
         remain = dp->rec_len - ideal_length(dp->name); // Get remaining free block space
         if (remain >= need_len) { // If there is enough space for the new item
             dp->rec_len = ideal_length(dp->name); // Shrink the space
-            printf("%s new len: %d\n", dp->name, dp->rec_len);
+            //printf("%s new len: %d\n", dp->name, dp->rec_len);
             cp += dp->rec_len; // Move past item
             dp = (DIR *)cp;
             dp->inode = ino; // Put the new item at the end
             dp->rec_len = remain;
+            dp->name_len = strlen(basename);
             strcpy(dp->name, basename);
-            printf("New entry name: %s, len: %d\n", dp->name, dp->rec_len);
+            //printf("New entry name: %s, len: %d\n", dp->name, dp->rec_len);
             put_block(dev, pmip->INODE.i_block[i], buf); // Write block back to disk.
         }
     }

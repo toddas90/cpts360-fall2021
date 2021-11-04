@@ -262,3 +262,22 @@ int findino(MINODE *mip, u32 *myino) // myino = i# of . return i# of ..
     dp = (DIR*)cp;
     return dp->inode;
 }
+
+void printblk(MINODE *mip) {
+    DIR *dp;
+    char *cp;
+    char buf[BLKSIZE];
+
+    get_block(dev, mip->INODE.i_block[0], buf);
+    dp = (DIR *)buf;
+    cp = buf;
+
+    while (cp + dp->rec_len < buf + BLKSIZE) {
+        printf("Name: %s\n Name_Len: %d\n Rec_Len: %d\n Inode: %d\n", 
+                dp->name, dp->name_len, dp->rec_len, dp->inode);
+        cp += dp->rec_len;
+        dp = (DIR *)cp;
+    }
+    printf("Name: %s\n Name_Len: %d\n Rec_Len: %d\n Inode: %d\n", 
+                dp->name, dp->name_len, dp->rec_len, dp->inode);
+}
