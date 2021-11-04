@@ -182,12 +182,12 @@ int enter_child(MINODE *pmip, int ino, char *basename) {
             dp->rec_len = remain;
             strcpy(dp->name, basename);
             printf("New entry name: %s, len: %d\n", dp->name, dp->rec_len);
-            put_block(pmip->dev, pmip->INODE.i_block[i], buf);
+            put_block(dev, pmip->INODE.i_block[i], buf);
         }
     }
     return 0;
 }
 
 int ideal_length(char *name) {
-    return 4 * ((8 + sizeof(name) + 3) / 4);
+    return 4 * ((8 + strlen(name) + 3) / 4);
 }
