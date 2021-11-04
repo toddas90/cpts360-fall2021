@@ -2,6 +2,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <ext2fs/ext2fs.h>
+#include <libgen.h>
+#include <sys/stat.h>
 
 #include "../include/mkdir_creat.h"
 #include "../include/util.h"
@@ -18,17 +20,31 @@ int lab_mkdir() {
     int ino = 0;
     int bno = 0;
     MINODE *mip;
+   
+    if (!strcmp(pathname, "")) {
+        printf("No path provided\n");
+        return -1;
+    }
     
-    // Check for empty global pathname
-    // Do code from book.
-    // 1. divide pathname in dirname and basename.
-    //     ex. a/b/c -> dirname = a/b basename = c
-    // 2. dirname must exist and is a DIR type.
-    //     pino = getino(dirname);
-    //     pmip = iget(dev, pino);
-    //     check if pmip INODE is a DIR
-    // 3. basename must not exist in parent DIR.
-    //     search(pmip, basename) must return 0.
+    char *dir = dirname(pathname);
+    char *base = basename(pathname);
+    
+    //if (!S_ISDIR(search(mip, dir))) {
+        //printf("Can only use mkdir() inside a directory\n");
+        //return -1;
+    //}
+    
+    int pino = getino(dir);
+    MINODE *pmip = iget(dev, pino);
+
+    if (!S_ISDIR(pmip->INODE.i_mode)) {
+        printf("Parent is not a directory\n");
+        return -1;
+    }
+    if (search(pmip, base) != 0) {
+        printf("Directory exists\n");
+        return -1;
+    }
     
     ino = ialloc(dev); // Allocate inode
     bno = balloc(dev); // Allocate disk block
@@ -68,7 +84,7 @@ int lab_mkdir() {
     dp->name[0] = dp->name[1] = '.';
     put_block(dev, bno, buf);
 
-    enter_child(pmip, ino, basename);
+    enter_child(pmip, ino, base);
     return 0;
 }
 
@@ -135,7 +151,7 @@ int balloc(int dev) {
         if (test_bit(buf, i)==0) {
             set_bit(buf, i);
             put_block(dev, bmap, buf);
-            printf("allocated bno = %d\n", i+1);
+            //printf("allocated bno = %d\n", i+1);
             return i+1;
         }
     }
