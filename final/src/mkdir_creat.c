@@ -74,15 +74,12 @@ int lab_mkdir() {
     dp->name_len = 1;
     dp->name[0] = '.';
 
-    dp = (char *)dp + 12;
+    dp = (char *)dp + 12; // This line caused me so much pain
     dp->inode = pino;
     dp->rec_len = BLKSIZE - 12;
     dp->name_len = 2;
     dp->name[0] = dp->name[1] = '.';
     put_block(dev, bno, buf); // Write block to disk
-
-    printf("New block():\n");
-    printblk(mip);
 
     enter_child(pmip, ino, base); // Put child name in parent
     
