@@ -4,6 +4,7 @@
 #include <ext2fs/ext2fs.h>
 #include <libgen.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #include "../include/mkdir_creat.h"
 #include "../include/util.h"
@@ -57,6 +58,7 @@ int lab_mkdir() {
     for (int j = 1; j < 15; j++) {
         mip->INODE.i_block[j] = 0; // Set blocks 1-14 to 0
     }
+    mip->INODE.i_ctime = time(NULL);
     
     // Sets MINODE dirty and writes it to disk.
     mip->dirty = 1; // Set new MINODE to dirty.
@@ -76,9 +78,13 @@ int lab_mkdir() {
     dp->rec_len = BLKSIZE - 12;
     dp->name_len = 2;
     dp->name[0] = dp->name[1] = '.';
-    put_block(dev, bno, buf);
+    put_block(dev, bno, buf); // Write block to disk
 
-    enter_child(pmip, ino, base);
+    enter_child(pmip, ino, base); // Put child name in parent
+
+    pmip->INODE.i_links_count += 1;
+    pmip->dirty = 1; // set parent dirty
+    iput(pmip); // write to disk
     return 0;
 }
 
