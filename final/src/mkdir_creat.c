@@ -90,8 +90,58 @@ int lab_mkdir() {
 }
 
 int lab_creat() {
-    // Check for empty global path.
-    // Do code in book.
+    int ino = 0, bno = 0;
+    MINODE *mip;
+   
+    if (!strcmp(pathname, "")) { // Check if path was provided
+        printf("No path provided\n");
+        return -1;
+    }
+    
+    char *dir = dirname(pathname); // Get dirname
+    char *base = basename(pathname); // get basename
+    
+    int pino = getino(dir); // Get parent inode number
+    MINODE *pmip = iget(dev, pino); // Get parent MINODE
+
+    if (!S_ISDIR(pmip->INODE.i_mode)) { // Check if parent is DIR
+        printf("Parent is not a directory\n");
+        return -1;
+    }
+    if (search(pmip, base) != 0) { // Check if basename already exists
+        printf("Directory exists\n");
+        return -1;
+    }
+    
+    ino = ialloc(dev); // Allocate inode
+    bno = balloc(dev); // Allocate disk block
+    
+    // This chunk gets a new INODE and puts it into the MINODE.
+    // It also initializes the INODE to a DIR.
+    mip = iget(dev, ino); // Load inode into a MINODE
+
+    mip->INODE.i_mode = 0x81A4; // Set mode as REG with standard permissions (020644)
+    mip->INODE.i_uid = running->uid; // Set uid of INODE
+    mip->INODE.i_gid = running->gid; // Set gid of INODE
+    mip->INODE.i_size = BLKSIZE; // Set block size
+    mip->INODE.i_links_count = 1; // one link
+    mip->INODE.i_ctime = time(NULL); // Set to current time
+    mip->INODE.i_atime = mip->INODE.i_mtime = mip->INODE.i_ctime;
+    mip->INODE.i_blocks = 2; // . and ..
+    for (int j = 1; j < 12; j++) {
+        mip->INODE.i_block[j] = 0; // Set blocks 1-14 to 0
+    }
+    
+    // Sets MINODE dirty and writes it to disk.
+    mip->dirty = 1; // Set new MINODE to dirty.
+    iput(mip); // Write new MINODE to the disk.
+    
+    enter_child(pmip, ino, base); // Put child name in parent
+    
+    pmip->dirty = 1; // set parent dirty
+    iput(pmip); // write to disk
+    return 0;
+   
     return 0;
 }
 
