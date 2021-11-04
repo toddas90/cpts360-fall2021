@@ -158,31 +158,31 @@ int enter_child(MINODE *pmip, int ino, char *basename) {
     DIR *dp;
     char *cp;
 
-    for (int i = 0; i < 12; i++) {
-        if (pmip->INODE.i_block[i] == 0)
+    for (int i = 0; i < 12; i++) { // KC said to assume 12 in the book?
+        if (pmip->INODE.i_block[i] == 0) // If the block doesn't exist, break.
             break;
-        get_block(pmip->dev, pmip->INODE.i_block[i], buf);
-        need_len = ideal_length(basename);
+        get_block(pmip->dev, pmip->INODE.i_block[i], buf); // Read block
+        need_len = ideal_length(basename); // Get length needed for new entry
         
         dp = (DIR *)buf;
         cp = buf;
         printf("First name: %s, len: %d\n", dp->name, dp->rec_len);
-        while (cp + dp->rec_len < buf + BLKSIZE) {
+        while (cp + dp->rec_len < buf + BLKSIZE) { // Skip to last element
             cp += dp->rec_len;
             dp = (DIR *)cp;
             printf("Current name: %s, len: %d\n", dp->name, dp->rec_len);
         } // dp now should point to last entry in block.
-        remain = dp->rec_len - ideal_length(dp->name);
-        if (remain >= need_len) {
-            dp->rec_len = ideal_length(dp->name);
+        remain = dp->rec_len - ideal_length(dp->name); // Get remaining free block space
+        if (remain >= need_len) { // If there is enough space for the new item
+            dp->rec_len = ideal_length(dp->name); // Shrink the space
             printf("%s new len: %d\n", dp->name, dp->rec_len);
-            cp += dp->rec_len;
+            cp += dp->rec_len; // Move past item
             dp = (DIR *)cp;
-            dp->inode = ino;
+            dp->inode = ino; // Put the new item at the end
             dp->rec_len = remain;
             strcpy(dp->name, basename);
             printf("New entry name: %s, len: %d\n", dp->name, dp->rec_len);
-            put_block(dev, pmip->INODE.i_block[i], buf);
+            put_block(dev, pmip->INODE.i_block[i], buf); // Write block back to disk.
         }
     }
     return 0;
