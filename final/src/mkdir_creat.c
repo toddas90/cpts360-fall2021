@@ -55,7 +55,7 @@ int lab_mkdir() {
     mip->INODE.i_atime = mip->INODE.i_ctime;
     mip->INODE.i_blocks = 2; // . and ..
     mip->INODE.i_block[0] = bno; // New dir has 1 data block
-    for (int j = 1; j < 15; j++) {
+    for (int j = 1; j < 12; j++) {
         mip->INODE.i_block[j] = 0; // Set blocks 1-14 to 0
     }
     mip->INODE.i_ctime = time(NULL);
@@ -160,11 +160,11 @@ int balloc(int dev) {
 
 int enter_child(MINODE *pmip, int ino, char *basename) {
     char buf[BLKSIZE];
-    int need_len = 0, remain = 0;
+    int need_len = 0, remain = 0, i = 0;
     DIR *dp;
     char *cp;
 
-    for (int i = 0; i < 12; i++) { // KC said to assume 12 in the book?
+    for (i = 0; i < pmip->INODE.i_size/BLKSIZE; i++) { // KC said to assume 12 in the book?
         if (pmip->INODE.i_block[i] == 0) // If the block doesn't exist, break.
             break;
         get_block(pmip->dev, pmip->INODE.i_block[i], buf); // Read block
