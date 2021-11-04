@@ -14,4 +14,6 @@ int test_bit(char *buf, int bit);
 int set_bit(char *buf, int bit);
 int dec_free_inodes(int dev);
 
+int ideal_length(char *name);
+
 #endif /* MKDIR_CREAT_H */

@@ -17,31 +17,25 @@ extern GD *gp;
 extern PROC *running;
 
 int lab_mkdir() {
-    int ino = 0;
-    int bno = 0;
+    int ino = 0, bno = 0;
     MINODE *mip;
    
-    if (!strcmp(pathname, "")) {
+    if (!strcmp(pathname, "")) { // Check if path was provided
         printf("No path provided\n");
         return -1;
     }
     
-    char *dir = dirname(pathname);
-    char *base = basename(pathname);
+    char *dir = dirname(pathname); // Get dirname
+    char *base = basename(pathname); // get basename
     
-    //if (!S_ISDIR(search(mip, dir))) {
-        //printf("Can only use mkdir() inside a directory\n");
-        //return -1;
-    //}
-    
-    int pino = getino(dir);
-    MINODE *pmip = iget(dev, pino);
+    int pino = getino(dir); // Get parent inode number
+    MINODE *pmip = iget(dev, pino); // Get parent MINODE
 
-    if (!S_ISDIR(pmip->INODE.i_mode)) {
+    if (!S_ISDIR(pmip->INODE.i_mode)) { // Check if parent is DIR
         printf("Parent is not a directory\n");
         return -1;
     }
-    if (search(pmip, base) != 0) {
+    if (search(pmip, base) != 0) { // Check if basename already exists
         printf("Directory exists\n");
         return -1;
     }
@@ -60,7 +54,7 @@ int lab_mkdir() {
     mip->INODE.i_atime = mip->INODE.i_ctime;
     mip->INODE.i_blocks = 2; // . and ..
     mip->INODE.i_block[0] = bno; // New dir has 1 data block
-    for (int j = 14; j > 0; j--) {
+    for (int j = 1; j < 15; j++) {
         mip->INODE.i_block[j] = 0; // Set blocks 1-14 to 0
     }
     
@@ -69,15 +63,15 @@ int lab_mkdir() {
     iput(mip); // Write new MINODE to the disk.
     
     // Creates the . and .. entries in the new INODE
-    char buf[BLKSIZE];
-    bzero(buf, BLKSIZE);
+    char buf[BLKSIZE]; // Create buf
+    bzero(buf, BLKSIZE); // Zero out the buffer
     DIR *dp = (DIR *)buf;
     dp->inode = ino;
     dp->rec_len = 12;
     dp->name_len = 1;
     dp->name[0] = '.';
 
-    dp = (char *)dp + 12;
+    dp = (DIR *)(char *)dp + 12;
     dp->inode = pino;
     dp->rec_len = BLKSIZE - 12;
     dp->name_len = 2;
@@ -159,5 +153,41 @@ int balloc(int dev) {
 }
 
 int enter_child(MINODE *pmip, int ino, char *basename) {
+    char buf[BLKSIZE];
+    int need_len = 0, remain = 0;
+    DIR *dp;
+    char *cp;
+
+    for (int i = 0; i < 12; i++) {
+        if (pmip->INODE.i_block[i] == 0)
+            break;
+        get_block(pmip->dev, pmip->INODE.i_block[i], buf);
+        need_len = ideal_length(basename);
+        
+        dp = (DIR *)buf;
+        cp = buf;
+        printf("First name: %s, len: %d\n", dp->name, dp->rec_len);
+        while (cp + dp->rec_len < buf + BLKSIZE) {
+            cp += dp->rec_len;
+            dp = (DIR *)cp;
+            printf("Current name: %s, len: %d\n", dp->name, dp->rec_len);
+        } // dp now should point to last entry in block.
+        remain = dp->rec_len - ideal_length(dp->name);
+        if (remain >= need_len) {
+            dp->rec_len = ideal_length(dp->name);
+            printf("%s new len: %d\n", dp->name, dp->rec_len);
+            cp += dp->rec_len;
+            dp = (DIR *)cp;
+            dp->inode = ino;
+            dp->rec_len = remain;
+            strcpy(dp->name, basename);
+            printf("New entry name: %s, len: %d\n", dp->name, dp->rec_len);
+            put_block(pmip->dev, pmip->INODE.i_block[i], buf);
+        }
+    }
     return 0;
+}
+
+int ideal_length(char *name) {
+    return 4 * ((8 + sizeof(name) + 3) / 4);
 }
