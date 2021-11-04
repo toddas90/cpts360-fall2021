@@ -20,6 +20,12 @@ int getino(char *p);
 
 int findmyname(MINODE *p, u32 m, char *my);
 
+MINODE *mialloc();
+
+int midealloc(MINODE *mip);
+
 int findino(MINODE *m, u32 *my);
+
+void printblk(MINODE *mip);
 
 #endif /* UTIL_H */
