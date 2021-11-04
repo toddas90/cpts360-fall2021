@@ -191,6 +191,22 @@ int enter_child(MINODE *pmip, int ino, char *basename) {
             strcpy(dp->name, basename);
             //printf("New entry name: %s, len: %d\n", dp->name, dp->rec_len);
             put_block(dev, pmip->INODE.i_block[i], buf); // Write block back to disk.
+            return 0;
+        } else { // If new dir can't fit in current block
+            char nbuf[BLKSIZE];
+            int new_bno = balloc(dev);
+            pmip->INODE.i_block[i] = new_bno;
+            pmip->INODE.i_size += BLKSIZE;
+            pmip->dirty = 1;
+            get_block(dev, new_bno, nbuf);
+            DIR *ndp = (DIR *)buf;
+            char *ncp = buf;
+            dp->inode = ino;
+            dp->rec_len = BLKSIZE;
+            dp->name_len = strlen(basename);
+            strcpy(dp->name, basename);
+            put_block(dev, new_bno, nbuf);
+            return 0;
         }
     }
     return 0;
