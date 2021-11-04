@@ -123,7 +123,7 @@ void iput(MINODE *mip)
 
     // Write inode back to disk
     block = (mip->ino - 1) / 8 + iblk;
-    offset = (mip->ino -1) %8;
+    offset = (mip->ino - 1) % 8;
 
     // Get block containing inode
     get_block(mip->dev, block, buf);
