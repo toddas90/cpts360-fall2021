@@ -48,21 +48,18 @@ int lab_mkdir() {
     // It also initializes the INODE to a DIR.
     mip = iget(dev, ino); // Load inode into a MINODE
 
-    printf("Original Parent Block:\n");
-    printblk(pmip);
-
     mip->INODE.i_mode = 0x41ED; // Set mode as DIR with standard permissions (04755)
     mip->INODE.i_uid = running->uid; // Set uid of INODE
     mip->INODE.i_gid = running->gid; // Set gid of INODE
     mip->INODE.i_size = BLKSIZE; // Set block size
     mip->INODE.i_links_count = 2; // two links, . and ..
-    mip->INODE.i_atime = mip->INODE.i_ctime;
+    mip->INODE.i_ctime = time(NULL); // Set to current time
+    mip->INODE.i_atime = mip->INODE.i_mtime = mip->INODE.i_ctime;
     mip->INODE.i_blocks = 2; // . and ..
     mip->INODE.i_block[0] = bno; // New dir has 1 data block
     for (int j = 1; j < 12; j++) {
         mip->INODE.i_block[j] = 0; // Set blocks 1-14 to 0
     }
-    mip->INODE.i_ctime = time(NULL);
     
     // Sets MINODE dirty and writes it to disk.
     mip->dirty = 1; // Set new MINODE to dirty.
@@ -77,21 +74,18 @@ int lab_mkdir() {
     dp->name_len = 1;
     dp->name[0] = '.';
 
-    dp = (DIR *)(char *)dp + 12;
+    dp = (char *)dp + 12;
     dp->inode = pino;
     dp->rec_len = BLKSIZE - 12;
     dp->name_len = 2;
     dp->name[0] = dp->name[1] = '.';
     put_block(dev, bno, buf); // Write block to disk
 
-    //printf("New block():\n");
-    //printblk(mip);
+    printf("New block():\n");
+    printblk(mip);
 
     enter_child(pmip, ino, base); // Put child name in parent
     
-    printf("Updated Parent Block:\n");
-    printblk(pmip);
-
     pmip->INODE.i_links_count += 1;
     pmip->dirty = 1; // set parent dirty
     iput(pmip); // write to disk
