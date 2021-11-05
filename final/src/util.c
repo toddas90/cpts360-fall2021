@@ -142,6 +142,11 @@ int set_bit(char *buf, int bit) {
     return 0;
 }
 
+int clr_bit(char *buf, int bit) {
+    buf[bit / 8] &= ~(1 << (bit % 8));
+    return 0;
+}
+
 int dec_free_inodes(int dev) {
     char buf[BLKSIZE];
 
@@ -349,4 +354,22 @@ void printblk(MINODE *mip) {
     }
     printf("Name: %s\n Name_Len: %d\n Rec_Len: %d\n Inode: %d\n", 
                 dp->name, dp->name_len, dp->rec_len, dp->inode);
+}
+
+int numblks(MINODE *mip) {
+    DIR *dp;
+    char *cp;
+    char buf[BLKSIZE];
+    int count= 0;
+
+    get_block(dev, mip->INODE.i_block[0], buf);
+    dp = (DIR *)buf;
+    cp = buf;
+
+    while (cp + dp->rec_len < buf + BLKSIZE) {
+        count += 1;
+        cp += dp->rec_len;
+        dp = (DIR *)cp;
+    }
+    return count + 1;
 }

@@ -1,0 +1,4 @@
+rmdir:
+    finish the commented out functions in rmdir.c
+    The funtions should start on page 338
+    (already finished clr_bit())

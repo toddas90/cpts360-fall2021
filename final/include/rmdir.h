@@ -1,6 +1,6 @@
 #ifndef RMDIR_H
 #define RMDIR_H
 
-// code
+int rmdir();
 
 #endif /* RMDIR_H */
