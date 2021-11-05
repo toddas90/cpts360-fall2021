@@ -5,15 +5,6 @@
 
 int lab_mkdir();
 int lab_creat();
-
-int ialloc(int dev);
-int balloc(int dev);
 int enter_child(MINODE *pmip, int ino, char *basename);
-
-int test_bit(char *buf, int bit);
-int set_bit(char *buf, int bit);
-int dec_free_inodes(int dev);
-
-int ideal_length(char *name);
 
 #endif /* MKDIR_CREAT_H */

@@ -145,70 +145,6 @@ int lab_creat() {
     return 0;
 }
 
-int test_bit(char *buf, int bit) {
-    return buf[bit/8] & (1 << (bit % 8));
-}
-
-int set_bit(char *buf, int bit) {
-    buf[bit/8] |= (1 << (bit % 8));
-    return 0;
-}
-
-int dec_free_inodes(int dev) {
-    char buf[BLKSIZE];
-
-    // I want to check for errors in this, but
-    // I'd have to modify KC's get/put_block code
-    // in util.c first.
-
-    get_block(dev, 1, buf); // get block into buf
-    sp = (SUPER *)buf; // cast buf as SUPER
-    sp->s_free_inodes_count -= 1; // decrement inode counter
-    put_block(dev, 1, buf); // write buf back
-
-    get_block(dev, 2, buf); // get gd into buf
-    gp = (GD *)buf; // cast buf as GD
-    gp->bg_free_inodes_count -= 1; // decrement inode count
-    put_block(dev, 2, buf); // write buf back
-    return 0;
-}
-
-int ialloc(int dev) {
-    // KC's code from the website, not the book.
-    char buf[BLKSIZE];
-
-    get_block(dev, imap, buf); // read inode bitmap into buf
-
-    for (int i = 0; i < ninodes; i++) { // loop through number of inodes
-        if (test_bit(buf, i)==0) { // test the bit
-            set_bit(buf, i); // Set the bit
-            put_block(dev, imap, buf); // write to block
-            //printf("allocated ino = %d\n", i+1); // bits count from 0; ino from 1
-            return i+1;
-        }
-    }
-    return 0;
-}
-
-int balloc(int dev) {
-    // Current code is a mirror of
-    // ialloc() except it is using
-    // the bmap instead of imap.
-    char buf[BLKSIZE];
-
-    get_block(dev, bmap, buf);
-    
-    for (int i = 0; i < nblocks; i++) {
-        if (test_bit(buf, i)==0) {
-            set_bit(buf, i);
-            put_block(dev, bmap, buf);
-            //printf("allocated bno = %d\n", i+1);
-            return i+1;
-        }
-    }
-    return 0;
-}
-
 int enter_child(MINODE *pmip, int ino, char *basename) {
     char buf[BLKSIZE];
     int need_len = 0, remain = 0, i = 0;
@@ -260,8 +196,4 @@ int enter_child(MINODE *pmip, int ino, char *basename) {
         }
     }
     return 0;
-}
-
-int ideal_length(char *name) {
-    return 4 * ((8 + strlen(name) + 3) / 4);
 }
