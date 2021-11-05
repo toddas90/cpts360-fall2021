@@ -81,12 +81,12 @@ int ls_file(MINODE *mip, char *name) {
     printf("%2d ", mip->INODE.i_links_count); // Print link count
 
     if ((pwd = getpwuid(mip->INODE.i_uid)) != NULL) // Print name
-        printf("%-4.8s ", pwd->pw_name);
+        printf("%-8s ", pwd->pw_name);
     else
         printf("%-4d ", mip->INODE.i_uid);
 
     if ((grp = getgrgid(mip->INODE.i_gid)) != NULL) // Print group
-        printf("%-4.8s", grp->gr_name);
+        printf("%-8s", grp->gr_name); // originally -4.8
     else
         printf("%-4d", mip->INODE.i_gid);
 
