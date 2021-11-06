@@ -24,7 +24,8 @@ int ialloc(int dev);
 int balloc(int dev);
 int numblks(MINODE *mip);
 int clr_bit(char *buf, int bit);
-int incFreeInodes(int dev);
+int inc_free_inodes(int dev);
+
 int idalloc(int dev, int ino);
 int bdalloc(int dev, int bno);
 

@@ -150,10 +150,6 @@ int clr_bit(char *buf, int bit) {
 int dec_free_inodes(int dev) {
     char buf[BLKSIZE];
 
-    // I want to check for errors in this, but
-    // I'd have to modify KC's get/put_block code
-    // in util.c first.
-
     get_block(dev, 1, buf); // get block into buf
     sp = (SUPER *)buf; // cast buf as SUPER
     sp->s_free_inodes_count -= 1; // decrement inode counter
@@ -163,6 +159,19 @@ int dec_free_inodes(int dev) {
     gp = (GD *)buf; // cast buf as GD
     gp->bg_free_inodes_count -= 1; // decrement inode count
     put_block(dev, 2, buf); // write buf back
+    return 0;
+}
+
+int inc_free_inodes(int dev) {
+    char buf[BLKSIZE];
+    get_block(dev, 1, buf);
+    sp = (SUPER *)buf;
+    sp->s_free_inodes_count += 1;
+    put_block(dev, 1, buf);
+    get_block(dev, 2, buf);
+    gp = (GD *)buf;
+    gp->bg_free_inodes_count += 1;
+    put_block(dev, 2, buf);
     return 0;
 }
 
@@ -180,6 +189,23 @@ int ialloc(int dev) {
             return i+1;
         }
     }
+    return 0;
+}
+
+int idalloc(int dev, int ino) {
+    int i;  
+    char buf[BLKSIZE];
+
+    if (ino > ninodes){  
+        printf("inumber %d out of range\n", ino);
+        return -1;
+    }
+  
+    get_block(dev, imap, buf);  // get inode bitmap block into buf[]
+  
+    clr_bit(buf, ino-1);        // clear bit ino-1 to 0
+
+    put_block(dev, imap, buf);  // write buf back
     return 0;
 }
 
@@ -202,6 +228,22 @@ int balloc(int dev) {
     return 0;
 }
 
+int bdalloc(int dev, int bno) {
+    int i;  
+    char buf[BLKSIZE];
+
+    if (bno > nblocks){  
+        printf("bnumber %d out of range\n", bno);
+        return -1;
+    }
+  
+    get_block(dev, bmap, buf);  // get inode bitmap block into buf[]
+  
+    clr_bit(buf, bno-1);        // clear bit ino-1 to 0
+
+    put_block(dev, bmap, buf);  // write buf back
+    return 0;
+}
 
 MINODE *mialloc() {
     for (int i = 0; i < NMINODE; i++) {

@@ -47,9 +47,49 @@ int rmdir() {
     pmip->dirty = 1;
     iput(pmip);
 
-    //bdalloc(mip->dev, mip->INODE.i_block[0]);
-    //idalloc(mip->dev, mip->ino);
+    bdalloc(mip->dev, mip->INODE.i_block[0]);
+    idalloc(mip->dev, mip->ino);
     iput(mip);
 
     return 0;
+}
+
+int rm_child(MINODE *pmip, char *name) {
+    char buf[BLKSIZE];
+    DIR *dp;
+    char *cp;
+    int i = 0;
+
+    int ino = search(pmip, name);
+    if (ino == 0) {
+        printf("Couldn't find child to remove\n");
+        return -1;
+    }
+
+    for (i = 0; i < pmip->INODE.i_size/BLKSIZE; i++) {
+        if (pmip->INODE.i_block[i] == 0)
+            break;
+        get_block(dev, pmip->INODE.i_block[i], buf);
+        
+        dp = (DIR *)buf;
+        cp = buf;
+
+        while (cp + dp->rec_len < buf + BLKSIZE) {
+
+            if (dp->inode == ino && dp->rec_len == BLKSIZE) { // If first and only entry in data block
+                bdalloc(dev, pmip->INODE.i_block[i]); // deallocate block
+                pmip->INODE.i_size -= BLKSIZE; // Reduce parent size by BLKSIZE
+                if (i < 0 && pmip->INODE.i_block[i+1] != 0) { // if block was between other blocks
+                    memmove(&pmip->INODE.i_block[i], &pmip->INODE.i_block[i+1], BLKSIZE); // shift blocks down 1
+                }
+            } //else if (last entry in block ) {
+
+            //} else { // entry is first but not only entry, or in middle of block
+            //
+            //}
+        }
+    }
+
+
+    return 0; 
 }
