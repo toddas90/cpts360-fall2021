@@ -3,7 +3,7 @@
 
 #include "type.h"
 
-int rmdir();
+int my_rmdir();
 int rm_child(MINODE *pmip, char *name);
 
 #endif /* RMDIR_H */

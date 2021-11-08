@@ -13,7 +13,7 @@ extern char pathname[128];
 extern int dev;
 extern PROC *running;
 
-int rmdir() {
+int my_rmdir() {
     if (!strcmp(pathname, "")) {
         printf("No path was provided\n");
         return -1;
@@ -27,7 +27,7 @@ int rmdir() {
         return -1;
     }
 
-    if (mip->refCount != 1) {
+    if (mip->refCount > 1) {
         printf("Directory busy\n");
         return -1;
     }
