@@ -73,6 +73,7 @@ int rm_child(MINODE *pmip, char *name) {
         
         dp = (DIR *)buf;
         cp = buf;
+        int temp = 0;
 
         while (cp + dp->rec_len < buf + BLKSIZE) {
 
@@ -82,11 +83,25 @@ int rm_child(MINODE *pmip, char *name) {
                 if (i < 0 && pmip->INODE.i_block[i+1] != 0) { // if block was between other blocks
                     memmove(&pmip->INODE.i_block[i], &pmip->INODE.i_block[i+1], BLKSIZE); // shift blocks down 1
                 }
-            } //else if (last entry in block ) {
-
-            //} else { // entry is first but not only entry, or in middle of block
-            //
-            //}
+                return 0;
+            } else if (dp->inode == ino) { // entry is first but not only entry, or in middle of block
+                temp = dp->rec_len; // store rec_len
+                memmove(dp, (DIR *)cp+dp->rec_len, dp->rec_len); // Shift items in block
+                while (cp + dp->rec_len < buf + BLKSIZE) { // Move to last item
+                    cp += dp->rec_len;
+                    dp = (DIR *)cp;
+                }
+                dp->rec_len += temp; // add removed rec_len to end
+                return 0;
+            }
+            cp += dp->rec_len;
+            dp = (DIR *)cp;
+        }
+        if (dp->inode == ino) { // if last entry in block
+            temp = dp->rec_len; // last item's rec_len
+            cp -= dp->rec_len; // go to prev element
+            dp = (DIR *)cp;
+            dp->rec_len += temp; // Add old last item's rec len to new last item
         }
     }
 
