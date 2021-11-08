@@ -41,7 +41,7 @@ int my_rmdir() {
     MINODE *pmip = iget(mip->dev, pino);
     char name[64];
     findmyname(pmip, ino, name);
-    //rm_child(pmip, name);
+    rm_child(pmip, name);
 
     pmip->INODE.i_links_count -= 1;
     pmip->dirty = 1;
