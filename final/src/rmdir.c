@@ -27,7 +27,7 @@ int my_rmdir() {
         return -1;
     }
 
-    if (mip->refCount > 1) {
+    if (mip->refCount != 1) {
         printf("Directory busy\n");
         return -1;
     }
@@ -38,10 +38,17 @@ int my_rmdir() {
     }
 
     int pino = findino(mip, ino);
+
+    printf("pino = %d, ino = %d\n", pino, ino); // debug
+
     MINODE *pmip = iget(mip->dev, pino);
     char name[64];
     findmyname(pmip, ino, name);
-    rm_child(pmip, name);
+
+    printf("Name: %s\n", name); // debug
+
+    //rm_child(pmip, name);
+    printf("rm_child() = %d\n", rm_child(pmip, name));
 
     pmip->INODE.i_links_count -= 1;
     pmip->dirty = 1;
@@ -83,6 +90,8 @@ int rm_child(MINODE *pmip, char *name) {
                 if (i < 0 && pmip->INODE.i_block[i+1] != 0) { // if block was between other blocks
                     memmove(&pmip->INODE.i_block[i], &pmip->INODE.i_block[i+1], BLKSIZE); // shift blocks down 1
                 }
+                put_block(dev, pmip->INODE.i_block[i], buf);
+                printf("First and only item\n"); // debug
                 return 0;
             } else if (dp->inode == ino) { // entry is first but not only entry, or in middle of block
                 temp = dp->rec_len; // store rec_len
@@ -92,19 +101,29 @@ int rm_child(MINODE *pmip, char *name) {
                     dp = (DIR *)cp;
                 }
                 dp->rec_len += temp; // add removed rec_len to end
+                put_block(dev, pmip->INODE.i_block[i], buf);
+                printf("First or middle, not empty\n");
                 return 0;
             }
             cp += dp->rec_len;
             dp = (DIR *)cp;
         }
         if (dp->inode == ino) { // if last entry in block
+            printf("Last item's name: %s\n", dp->name);
             temp = dp->rec_len; // last item's rec_len
-            cp -= dp->rec_len; // go to prev element
+            dp->rec_len = 0; // Remove last item's length
+            printf("Last item rec_len = %d\n", temp);
+            cp -= (BLKSIZE - temp); // go to prev element BAD
             dp = (DIR *)cp;
+            printf("New last item's name: %s\n", dp->name);
+            printf("New last item's old rec_len = %d\n", dp->rec_len);
             dp->rec_len += temp; // Add old last item's rec len to new last item
+            printf("New last item's rec_len = %d\n", dp->rec_len);
+            printf("Last item\n"); // debug
+            put_block(dev, pmip->INODE.i_block[i], buf);
+            return 0;
         }
     }
-
-
-    return 0; 
+    put_block(dev, pmip->INODE.i_block[i], buf); // Write block back
+    return -1; 
 }

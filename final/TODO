@@ -1,1 +1,3 @@
 Add print statements to rmdir for debugging!
+Do I need to change refcount during cd_ls_pwd()??? Also, do I need to iput???
+Line 116 in rmdir.c is broken because it's going back the wrong length!
