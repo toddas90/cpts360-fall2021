@@ -5,4 +5,6 @@
 #include "colors.h"
 #include "util.h"
 
+int my_link();
+
 #endif /* LINK_UNLINK_H */

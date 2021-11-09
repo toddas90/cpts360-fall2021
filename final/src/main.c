@@ -15,6 +15,8 @@
 #include "../include/cd_ls_pwd.h"
 #include "../include/mkdir_creat.h"
 #include "../include/colors.h"
+#include "../include/link_unlink.h"
+#include "../include/rmdir.h"
 
 extern MINODE *iget();
 
@@ -33,7 +35,7 @@ DIR *dp;
 
 int fd, dev;
 int nblocks, ninodes, bmap, imap, iblk;
-char line[128], cmd[32], pathname[128];
+char line[128], cmd[32], pathname[128], extra_arg[128];
 
 int init()
 {
@@ -127,7 +129,7 @@ int main(int argc, char *argv[ ])
   // WRTIE code here to create P1 as a USER process
   
   while(1){
-    printf("input command : [ls|cd|pwd|mkdir|rmdir|creat|quit] ");
+    printf("input command : [ls|cd|pwd|mkdir|rmdir|creat|link|unlink|quit] ");
     fgets(line, 128, stdin);
     line[strlen(line)-1] = 0;
 
@@ -135,7 +137,7 @@ int main(int argc, char *argv[ ])
        continue;
     pathname[0] = 0;
 
-    sscanf(line, "%s %s", cmd, pathname);
+    sscanf(line, "%s %s %s", cmd, pathname, extra_arg);
     //printf("cmd=%s pathname=%s\n", cmd, pathname);
   
     if (strcmp(cmd, "ls")==0)
@@ -148,6 +150,8 @@ int main(int argc, char *argv[ ])
         lab_mkdir();
     else if (strcmp(cmd, "rmdir")==0)
         my_rmdir();
+    else if (strcmp(cmd, "link")==0)
+        my_link();
     else if (strcmp(cmd, "creat")==0)
         lab_creat();
     else if (strcmp(cmd, "quit")==0)
