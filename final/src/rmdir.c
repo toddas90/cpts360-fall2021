@@ -95,14 +95,15 @@ int rm_child(MINODE *pmip, char *name) {
                 return 0;
             } else if (dp->inode == ino) { // entry is first but not only entry, or in middle of block
                 temp = dp->rec_len; // store rec_len
-                memmove(dp, (DIR *)cp+dp->rec_len, dp->rec_len); // Shift items in block
+                idalloc(dev, ino);
+                cp += temp;
+                memcpy(dp, cp, temp);
                 while (cp + dp->rec_len < buf + BLKSIZE) { // Move to last item
                     cp += dp->rec_len;
                     dp = (DIR *)cp;
                 }
                 dp->rec_len += temp; // add removed rec_len to end
                 put_block(dev, pmip->INODE.i_block[i], buf);
-                printf("Case: First or middle, not empty\n");
                 return 0;
             }
             tdp = dp;
@@ -110,19 +111,11 @@ int rm_child(MINODE *pmip, char *name) {
             dp = (DIR *)cp;
         }
         if (dp->inode == ino) { // if last entry in block
-            printf("Last item's name: %s\n", dp->name);
             temp = dp->rec_len; // last item's rec_len
             dp->rec_len = 0; // Remove last item's length
-            printf("Last item rec_len = %d\n", temp);
             idalloc(dev, ino);
             dp = tdp; 
-            //cp -= (BLKSIZE - temp); // go to prev element BAD
-            //dp = (DIR *)cp;
-            printf("New last item's name: %s\n", dp->name);
-            printf("New last item's old rec_len = %d\n", dp->rec_len);
             dp->rec_len += temp; // Add old last item's rec len to new last item
-            printf("New last item's rec_len = %d\n", dp->rec_len);
-            printf("Case: Last item\n"); // debug
             put_block(dev, pmip->INODE.i_block[i], buf);
             return 0;
         }
