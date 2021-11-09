@@ -65,7 +65,7 @@ int rm_child(MINODE *pmip, char *name) {
     char buf[BLKSIZE];
     DIR *dp, *tdp;
     char *cp;
-    int i = 0;
+    int i = 0, temp = 0;
 
     int ino = search(pmip, name);
     if (ino == 0) {
@@ -80,10 +80,8 @@ int rm_child(MINODE *pmip, char *name) {
         
         dp = (DIR *)buf;
         cp = buf;
-        int temp = 0;
 
         while (cp + dp->rec_len < buf + BLKSIZE) {
-
             if (dp->inode == ino && dp->rec_len == BLKSIZE) { // If first and only entry in data block
                 idalloc(dev, ino);
                 bdalloc(dev, pmip->INODE.i_block[i]); // deallocate block
@@ -94,10 +92,11 @@ int rm_child(MINODE *pmip, char *name) {
                 put_block(dev, pmip->INODE.i_block[i], buf);
                 return 0;
             } else if (dp->inode == ino) { // entry is first but not only entry, or in middle of block
+                int size = ((buf + BLKSIZE) - (cp + dp->rec_len));
                 temp = dp->rec_len; // store rec_len
                 idalloc(dev, ino); // deallocate node
                 cp += temp;
-                memcpy(dp, cp, temp); // move items left
+                memcpy(dp, cp, size); // move items left
                 while (cp + dp->rec_len < buf + BLKSIZE) { // Move to last item
                     cp += dp->rec_len;
                     dp = (DIR *)cp;
