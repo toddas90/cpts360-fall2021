@@ -25,15 +25,17 @@ int cd() {
         ino = 2; // use the root inode
     } else { // If global path is NOT empty
         ino = getino(pathname); // get inode number
-         if (ino <= 0) {
+        if (ino <= 0) {
             //fprintf(stderr, YEL "ino = 0\n" RESET);
             return -1;
         }
     }
 
     MINODE *mip = iget(dev, ino); // get minode of path dir
-
-    if (!((mip->INODE.i_mode & 0xF000) == 0x4000)) { // If inode is not a dir, quit
+    
+    if ((mip->INODE.i_mode & 0xF000) == 0xA000) { // Check if link
+        // If symlink 
+    } else if(!((mip->INODE.i_mode & 0xF000) == 0x4000)) { // If inode is not a dir, quit
         fprintf(stderr, YEL "INODE is not a dir\n" RESET);
         return -1;
     }
