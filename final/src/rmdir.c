@@ -84,7 +84,6 @@ int rm_child(MINODE *pmip, char *name) {
 
         while (cp + dp->rec_len < buf + BLKSIZE) {
             if (!strcmp(name, dp->name) && dp->inode == ino && dp->rec_len == BLKSIZE) { // If first and only entry in data block
-                //size = ((buf + BLKSIZE) - (cp + dp->rec_len));
                 idalloc(dev, ino);
                 bdalloc(dev, pmip->INODE.i_block[i]); // deallocate block
                 pmip->INODE.i_size -= BLKSIZE; // Reduce parent size by BLKSIZE
@@ -122,6 +121,5 @@ int rm_child(MINODE *pmip, char *name) {
         }
         put_block(dev, pmip->INODE.i_block[i], buf);
     }
-    //put_block(dev, pmip->INODE.i_block[i], buf); // Write block back
     return -1; 
 }
