@@ -123,6 +123,17 @@ int ls_dir(MINODE *mip) {
     char *cp;
     MINODE *mmip;
   
+    if ((mip->INODE.i_mode & 0xF000) == 0xA000) { // Check if link
+        // If symlink
+        char buf[BLKSIZE];
+        get_block(dev, mip->INODE.i_block[0], buf);
+        DIR *dp = (DIR *)buf;
+        int lino = getino(dp->name);
+        put_block(dev, mip->INODE.i_block[0], buf);
+        iput(mip);
+        mip = iget(dev, lino);
+    }
+
     get_block(mip->dev, mip->INODE.i_block[0], buf);
     dp = (DIR *)buf;
     cp = buf;
