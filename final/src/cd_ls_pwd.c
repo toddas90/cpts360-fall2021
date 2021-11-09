@@ -123,10 +123,11 @@ int ls_dir(MINODE *mip) {
         
         mmip = iget(mip->dev, dp->inode); // Child inode
         ls_file(mmip, temp); // Call ls_file with each child node
-        //iput(mip);
+        iput(mmip); // NEW
         cp += dp->rec_len;
         dp = (DIR *)cp;
     }
+    put_block(mip->dev, mip->INODE.i_block[0], buf); // NEW
     printf("\n");
     return 0;
 }
@@ -139,7 +140,7 @@ int ls() {
         int d = running->cwd->dev; // get device num
         MINODE *m = iget(d, i); // get minode of path dir
         ls_dir(m);
-        //iput(m);
+        iput(m); // NEW
     }
     return 0;
 }

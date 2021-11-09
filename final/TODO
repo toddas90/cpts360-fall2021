@@ -1,0 +1,3 @@
+Bug in the middle case of rm_child(). First case is completely untested.
+    (bug is when you remove the dir, you can still ls the deleted dir)
+
