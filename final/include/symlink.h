@@ -3,6 +3,6 @@
 
 #include "type.h"
 
-int symlink();
+int my_symlink();
 
 #endif /* SYMLINK_H */

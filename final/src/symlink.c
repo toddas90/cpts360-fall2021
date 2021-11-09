@@ -17,7 +17,7 @@ extern char pathname[128], extra_arg[128];
 extern int dev;
 extern PROC *running;
 
-int symlink() {
+int my_symlink() {
     if (!strcmp(pathname, "")) {
         printf(YEL "Source file not found\n" RESET);
         return -1;
@@ -41,7 +41,8 @@ int symlink() {
         return -1;
     }
 
-    char *copy_pathname[128];
+    char buf[BLKSIZE];
+    char *copy_pathname;
     strcpy(copy_pathname, pathname);
     strcpy(pathname, extra_arg);
 
@@ -61,6 +62,18 @@ int symlink() {
         // iput new_file
     // mark new_file's parent minode dirty
     // iput new_file's parent.
+    
+    DIR *dp = (DIR *)buf;
+    char *cp = buf;
 
+    get_block(dev, mip->INODE.i_block[0], buf);
+    strncpy(dp->name, copy_pathname, strlen(copy_pathname));
+    dp->name_len = strlen(copy_pathname);
+    put_block(dev, mip->INODE.i_block[0], buf);
+    mip->INODE.i_size = strlen(copy_pathname);
+    mip->dirty = 1;
+    iput(mip);
+    old_mip->dirty = 1;
+    iput(old_mip);
     return 0;
 }

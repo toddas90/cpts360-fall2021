@@ -17,6 +17,7 @@
 #include "../include/colors.h"
 #include "../include/link_unlink.h"
 #include "../include/rmdir.h"
+#include "../include/symlink.h"
 
 extern MINODE *iget();
 
@@ -155,7 +156,7 @@ int main(int argc, char *argv[ ])
     else if (strcmp(cmd, "unlink")==0)
         my_unlink();
     else if (strcmp(cmd, "symlink")==0)
-        symlink();
+        my_symlink();
     else if (strcmp(cmd, "creat")==0)
         lab_creat();
     else if (strcmp(cmd, "quit")==0)

@@ -75,7 +75,8 @@ int ls_file(MINODE *mip, char *name) {
     }
 
     if (mip->INODE.i_mode & S_IXUSR && ftype != 1) {
-        ftype = 2;
+        if (ftype != 3)
+            ftype = 2;
     }
 
     printf("%2d ", mip->INODE.i_links_count); // Print link count
@@ -100,7 +101,7 @@ int ls_file(MINODE *mip, char *name) {
     } else if (ftype == 2) {
         printf(BLD GRN "%s" RESET "*\n", name); // print executable green
     } else if (ftype == 3) {
-        printf(BLD CYN "%s" RESET "@\n", name);
+        printf(BLD CYN "%s" RESET "@\n", name); // print symlink cyan
     } else {
         printf("%s\n", name); // print name normally
     }
