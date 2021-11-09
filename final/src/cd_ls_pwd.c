@@ -110,7 +110,9 @@ int ls_file(MINODE *mip, char *name) {
     } else if (ftype == 2) {
         printf(BLD GRN "%s" RESET "*\n", name); // print executable green
     } else if (ftype == 3) {
-        printf(BLD CYN "%s" RESET "@\n", name); // print symlink cyan
+        // point will be the variable holding the symlink name;
+        char point[128] = "Placeholder";
+        printf(BLD CYN "%s" RESET " -> " "%s\n", name, point); // print symlink cyan
     } else {
         printf("%s\n", name); // print name normally
     }
