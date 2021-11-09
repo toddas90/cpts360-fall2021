@@ -63,7 +63,7 @@ int my_rmdir() {
 
 int rm_child(MINODE *pmip, char *name) {
     char buf[BLKSIZE];
-    DIR *dp;
+    DIR *dp, *tdp;
     char *cp;
     int i = 0;
 
@@ -91,7 +91,7 @@ int rm_child(MINODE *pmip, char *name) {
                     memmove(&pmip->INODE.i_block[i], &pmip->INODE.i_block[i+1], BLKSIZE); // shift blocks down 1
                 }
                 put_block(dev, pmip->INODE.i_block[i], buf);
-                printf("First and only item\n"); // debug
+                printf("Case: First and only item\n"); // debug
                 return 0;
             } else if (dp->inode == ino) { // entry is first but not only entry, or in middle of block
                 temp = dp->rec_len; // store rec_len
@@ -102,9 +102,10 @@ int rm_child(MINODE *pmip, char *name) {
                 }
                 dp->rec_len += temp; // add removed rec_len to end
                 put_block(dev, pmip->INODE.i_block[i], buf);
-                printf("First or middle, not empty\n");
+                printf("Case: First or middle, not empty\n");
                 return 0;
             }
+            tdp = dp;
             cp += dp->rec_len;
             dp = (DIR *)cp;
         }
@@ -113,13 +114,15 @@ int rm_child(MINODE *pmip, char *name) {
             temp = dp->rec_len; // last item's rec_len
             dp->rec_len = 0; // Remove last item's length
             printf("Last item rec_len = %d\n", temp);
-            cp -= (BLKSIZE - temp); // go to prev element BAD
-            dp = (DIR *)cp;
+            idalloc(dev, ino);
+            dp = tdp; 
+            //cp -= (BLKSIZE - temp); // go to prev element BAD
+            //dp = (DIR *)cp;
             printf("New last item's name: %s\n", dp->name);
             printf("New last item's old rec_len = %d\n", dp->rec_len);
             dp->rec_len += temp; // Add old last item's rec len to new last item
             printf("New last item's rec_len = %d\n", dp->rec_len);
-            printf("Last item\n"); // debug
+            printf("Case: Last item\n"); // debug
             put_block(dev, pmip->INODE.i_block[i], buf);
             return 0;
         }
