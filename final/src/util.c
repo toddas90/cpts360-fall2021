@@ -323,7 +323,7 @@ int getino(char *pathname)
 
       if (ino==0){
          iput(mip);
-         printf(YEL "name %s does not exist\n" RESET, name[i]);
+         //printf(YEL "name %s does not exist\n" RESET, name[i]);
          return 0;
       }
       iput(mip);
