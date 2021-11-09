@@ -61,6 +61,16 @@ int my_rmdir() {
     return 0;
 }
 
+void debug_rmdir(DIR *dp) {
+    printf(YEL);
+    printf("----------\n");
+    printf("Name: %s\n", dp->name);
+    printf("Len: %d\n", dp->rec_len);
+    printf("Current ino: %d\n", dp->inode);
+    printf("----------\n");
+    printf(RESET);
+}
+
 int rm_child(MINODE *pmip, char *name) {
     char buf[BLKSIZE];
     DIR *dp, *tdp;
@@ -79,11 +89,22 @@ int rm_child(MINODE *pmip, char *name) {
             break;
         get_block(dev, pmip->INODE.i_block[i], buf);
         
+        printf("Initial block: \n");
+        printblk(pmip);
+
         dp = (DIR *)buf;
         cp = buf;
-
+        printf(GRN "Searching for ino: %d\n" RESET, ino);
+        printf(GRN "Searching for name: %s\n" RESET, name);
+        
         while (cp + dp->rec_len < buf + BLKSIZE) {
-            if (!strcmp(name, dp->name) && dp->inode == ino && dp->rec_len == BLKSIZE) { // If first and only entry in data block
+            printf("Checking: \n");
+            debug_rmdir(dp);
+            printf("Name Check: %d\n", !strcmp(name, dp->name));
+            printf("Ino Check: %d\n", dp->inode == ino);
+            printf("rec_len check: %d\n", dp->rec_len == BLKSIZE);
+            if (!strncmp(name, dp->name, dp->name_len) && dp->inode == ino && dp->rec_len == BLKSIZE) { // If first and only entry in data block
+                printf(GRN "First and Only\n" RESET);
                 idalloc(dev, ino);
                 bdalloc(dev, pmip->INODE.i_block[i]); // deallocate block
                 pmip->INODE.i_size -= BLKSIZE; // Reduce parent size by BLKSIZE
@@ -92,7 +113,8 @@ int rm_child(MINODE *pmip, char *name) {
                 }
                 put_block(dev, pmip->INODE.i_block[i], buf);
                 return 0;
-            } else if (dp->inode == ino && !strcmp(name, dp->name)) { // entry is first but not only entry, or in middle of block
+            } else if (dp->inode == ino && !strncmp(name, dp->name, dp->name_len)) { // entry is first but not only entry, or in middle of block
+                printf(GRN "First or Middle\n" RESET);
                 size = ((buf + BLKSIZE) - (cp + dp->rec_len));
                 temp = dp->rec_len; // store rec_len
                 idalloc(dev, ino); // deallocate node
@@ -110,7 +132,8 @@ int rm_child(MINODE *pmip, char *name) {
             cp += dp->rec_len;
             dp = (DIR *)cp;
         }
-        if (dp->inode == ino && !strcmp(name, dp->name)) { // if last entry in block
+        if (dp->inode == ino && !strncmp(name, dp->name, dp->name_len)) { // if last entry in block
+            printf(GRN "Last\n" RESET);
             temp = dp->rec_len; // last item's rec_len
             dp->rec_len = 0; // Remove last item's length
             idalloc(dev, ino);
@@ -121,5 +144,7 @@ int rm_child(MINODE *pmip, char *name) {
         }
         put_block(dev, pmip->INODE.i_block[i], buf);
     }
+
+    printf(RED "Conditions weren't met\n" RESET);
     return -1; 
 }
