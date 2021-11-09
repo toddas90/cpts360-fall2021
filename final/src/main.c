@@ -17,6 +17,7 @@
 #include "../include/colors.h"
 #include "../include/link_unlink.h"
 #include "../include/rmdir.h"
+#include "../include/symlink.h"
 
 extern MINODE *iget();
 
@@ -129,7 +130,7 @@ int main(int argc, char *argv[ ])
   // WRTIE code here to create P1 as a USER process
   
   while(1){
-    printf("input command : [ls|cd|pwd|mkdir|rmdir|creat|link|unlink|quit] ");
+    printf("input command : [ls|cd|pwd|mkdir|rmdir|creat|link|unlink|symlink|quit] ");
     fgets(line, 128, stdin);
     line[strlen(line)-1] = 0;
 
@@ -154,6 +155,8 @@ int main(int argc, char *argv[ ])
         my_link();
     else if (strcmp(cmd, "unlink")==0)
         my_unlink();
+    else if (strcmp(cmd, "symlink")==0)
+        my_symlink();
     else if (strcmp(cmd, "creat")==0)
         lab_creat();
     else if (strcmp(cmd, "quit")==0)
@@ -161,4 +164,3 @@ int main(int argc, char *argv[ ])
     bzero(pathname, 128);
   }
 }
-

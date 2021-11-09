@@ -25,15 +25,24 @@ int cd() {
         ino = 2; // use the root inode
     } else { // If global path is NOT empty
         ino = getino(pathname); // get inode number
-         if (ino <= 0) {
+        if (ino <= 0) {
             //fprintf(stderr, YEL "ino = 0\n" RESET);
             return -1;
         }
     }
 
     MINODE *mip = iget(dev, ino); // get minode of path dir
-
-    if (!((mip->INODE.i_mode & 0xF000) == 0x4000)) { // If inode is not a dir, quit
+    
+    if ((mip->INODE.i_mode & 0xF000) == 0xA000) { // Check if link
+        // If symlink
+        char buf[BLKSIZE];
+        get_block(dev, mip->INODE.i_block[0], buf);
+        DIR *dp = (DIR *)buf;
+        int lino = getino(dp->name);
+        put_block(dev, mip->INODE.i_block[0], buf);
+        iput(mip);
+        mip = iget(dev, lino);
+    } else if(!((mip->INODE.i_mode & 0xF000) == 0x4000)) { // If inode is not a dir, quit
         fprintf(stderr, YEL "INODE is not a dir\n" RESET);
         return -1;
     }
@@ -43,8 +52,8 @@ int cd() {
     return 0;
 }
 
-int ls_file(MINODE *mip, char *name) {
-    char *t1 = "xwrxwrxwr-------";
+int ls_file(MINODE *mip, char *name, char *lname) {
+    char *t1 = "xwrxwrxwr-------"; 
     char *t2 = "----------------";
 
     struct group *grp; // For group name
@@ -75,7 +84,8 @@ int ls_file(MINODE *mip, char *name) {
     }
 
     if (mip->INODE.i_mode & S_IXUSR && ftype != 1) {
-        ftype = 2;
+        if (ftype != 3)
+            ftype = 2;
     }
 
     printf("%2d ", mip->INODE.i_links_count); // Print link count
@@ -100,7 +110,7 @@ int ls_file(MINODE *mip, char *name) {
     } else if (ftype == 2) {
         printf(BLD GRN "%s" RESET "*\n", name); // print executable green
     } else if (ftype == 3) {
-        printf(BLD CYN "%s" RESET "@\n", name);
+        printf(BLD CYN "%s" RESET " -> " "%s\n", name, lname); // print symlink cyan
     } else {
         printf("%s\n", name); // print name normally
     }
@@ -108,11 +118,23 @@ int ls_file(MINODE *mip, char *name) {
 }
 
 int ls_dir(MINODE *mip) {
-    char buf[BLKSIZE], temp[256];
+    char buf[BLKSIZE], temp[256], lname[64];
     DIR *dp;
     char *cp;
     MINODE *mmip;
   
+    if ((mip->INODE.i_mode & 0xF000) == 0xA000) { // Check if link
+        // If symlink
+        char buf[BLKSIZE];
+        get_block(dev, mip->INODE.i_block[0], buf);
+        DIR *dp = (DIR *)buf;
+        int lino = getino(dp->name);
+        //strncpy(lname, dp->name, strlen(dp->name));
+        put_block(dev, mip->INODE.i_block[0], buf);
+        iput(mip);
+        mip = iget(dev, lino);
+    }
+
     get_block(mip->dev, mip->INODE.i_block[0], buf);
     dp = (DIR *)buf;
     cp = buf;
@@ -122,7 +144,18 @@ int ls_dir(MINODE *mip) {
         temp[dp->name_len] = 0;
         
         mmip = iget(mip->dev, dp->inode); // Child inode
-        ls_file(mmip, temp); // Call ls_file with each child node
+        if ((mmip->INODE.i_mode & 0xF000) == 0xA000) { // Check if link
+            // If symlink
+            char lbuf[BLKSIZE];
+            get_block(dev, mmip->INODE.i_block[0], lbuf);
+            DIR *ldp = (DIR *)lbuf;
+            int lino = getino(ldp->name);
+            strncpy(lname, ldp->name, strlen(ldp->name));
+            put_block(dev, mmip->INODE.i_block[0], lbuf);
+            iput(mmip);
+            mmip = iget(dev, dp->inode);
+        }
+        ls_file(mmip, temp, lname); // Call ls_file with each child node
         iput(mmip); // NEW
         cp += dp->rec_len;
         dp = (DIR *)cp;
@@ -176,4 +209,3 @@ void pwd(MINODE *wd) {
     }
     return;
 }
-

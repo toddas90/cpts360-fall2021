@@ -141,8 +141,6 @@ int lab_creat() {
     pmip->dirty = 1; // set parent dirty
     iput(pmip); // write to disk
     return 0;
-   
-    return 0;
 }
 
 int enter_child(MINODE *pmip, int ino, char *basename) {
