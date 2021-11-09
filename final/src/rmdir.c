@@ -15,7 +15,7 @@ extern PROC *running;
 
 int my_rmdir() {
     if (!strcmp(pathname, "")) {
-        printf("No path was provided\n");
+        printf(YEL "No path was provided\n" RESET);
         return -1;
     }
 
@@ -23,32 +23,32 @@ int my_rmdir() {
     MINODE *mip = iget(dev, ino);
     
     if (!S_ISDIR(mip->INODE.i_mode)) {
-        printf("Not a directory\n");
+        printf(YEL "Not a directory\n" RESET);
         return -1;
     }
 
     if (mip->refCount != 1) {
-        printf("Directory busy\n");
+        printf(YEL "Directory busy\n" RESET);
         return -1;
     }
 
     if (numblks(mip) != 2) {
-        printf("Dir not empty\n");
+        printf( YEL "Dir not empty\n" RESET);
         return -1;
     }
 
     int pino = findino(mip, ino);
 
-    printf("pino = %d, ino = %d\n", pino, ino); // debug
+    //printf("pino = %d, ino = %d\n", pino, ino); // debug
 
     MINODE *pmip = iget(mip->dev, pino);
     char name[64];
     findmyname(pmip, ino, name);
 
-    printf("Name: %s\n", name); // debug
+    //printf("Name: %s\n", name); // debug
 
-    //rm_child(pmip, name);
-    printf("rm_child() = %d\n", rm_child(pmip, name));
+    rm_child(pmip, name);
+    //printf("rm_child() = %d\n", rm_child(pmip, name));
 
     pmip->INODE.i_links_count -= 1;
     pmip->dirty = 1;
@@ -69,7 +69,7 @@ int rm_child(MINODE *pmip, char *name) {
 
     int ino = search(pmip, name);
     if (ino == 0) {
-        printf("Couldn't find child to remove\n");
+        printf(YEL "Couldn't find child to remove\n" RESET);
         return -1;
     }
 
