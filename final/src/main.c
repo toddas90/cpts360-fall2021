@@ -152,6 +152,8 @@ int main(int argc, char *argv[ ])
         my_rmdir();
     else if (strcmp(cmd, "link")==0)
         my_link();
+    else if (strcmp(cmd, "unlink")==0)
+        my_unlink();
     else if (strcmp(cmd, "creat")==0)
         lab_creat();
     else if (strcmp(cmd, "quit")==0)

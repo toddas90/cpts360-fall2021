@@ -1,3 +1,8 @@
 Bug in the middle case of rm_child(). First case is completely untested.
     (bug is when you remove the dir, you can still ls the deleted dir)
 
+Bus in unlink.
+    (bug is when you unlink a file, it removes the original file instead.)
+        (My idea is that since they have the same inode number, it just removes the first one that it sees.)
+
+rm_child() inside rmdir.c seems to be the culprit in both cases. I will have to look into it more.

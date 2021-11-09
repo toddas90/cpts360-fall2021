@@ -6,5 +6,6 @@
 #include "util.h"
 
 int my_link();
+int my_unlink();
 
 #endif /* LINK_UNLINK_H */

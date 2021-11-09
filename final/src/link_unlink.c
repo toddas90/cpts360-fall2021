@@ -6,6 +6,7 @@
 #include <libgen.h>
 
 #include "../include/link_unlink.h"
+#include "../include/rmdir.h"
 #include "../include/mkdir_creat.h"
 #include "../include/util.h"
 #include "../include/colors.h"
@@ -51,3 +52,38 @@ int my_link() {
     iput(pmip);
     return 0;
 }
+
+int my_unlink() {
+    int ino = getino(pathname);
+    MINODE *mip = iget(dev, ino);
+
+    if (S_ISDIR(mip->INODE.i_mode)) {
+        printf(YEL "File is a dir\n" RESET);
+        return -1;
+    }
+
+    char *parent = dirname(pathname);
+    char *child = basename(pathname);
+
+    int pino = getino(parent);
+    MINODE *pmip = iget(dev, pino);
+    rm_child(pmip, child);
+    pmip->dirty = 1;
+    iput(pmip);
+
+    mip->INODE.i_links_count -= 1;
+    if (mip->INODE.i_links_count > 0)
+        mip->dirty = 1;
+    else {
+        for (int i = 0; i < mip->INODE.i_size/BLKSIZE; i++) {
+            if (mip->INODE.i_block[i] == 0)
+                break;
+            bdalloc(dev, pmip->INODE.i_block[i]);
+        }
+        idalloc(dev, ino);
+    }
+    iput(mip);
+    return 0;
+}
+
+
