@@ -25,7 +25,7 @@ int cd() {
         ino = 2; // use the root inode
     } else { // If global path is NOT empty
         ino = getino(pathname); // get inode number
-         if (ino == 0) {
+         if (ino <= 0) {
             fprintf(stderr, YEL "ino = 0\n" RESET);
             return -1;
         }
