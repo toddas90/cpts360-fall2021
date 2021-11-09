@@ -137,6 +137,8 @@ int ls() {
         ls_dir(running->cwd);
     else {
         int i = getino(pathname); // get path inode number
+        if (i < 2)
+            return -1;
         int d = running->cwd->dev; // get device num
         MINODE *m = iget(d, i); // get minode of path dir
         ls_dir(m);

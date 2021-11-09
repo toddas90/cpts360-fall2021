@@ -73,7 +73,8 @@ int rm_child(MINODE *pmip, char *name) {
         return -1;
     }
 
-    for (i = 0; i < pmip->INODE.i_size/BLKSIZE; i++) {
+    for (i = 0; i < 12; i++) {
+    //for (i = 0; i < pmip->INODE.i_size/BLKSIZE; i++) {
         if (pmip->INODE.i_block[i] == 0)
             break;
         get_block(dev, pmip->INODE.i_block[i], buf);
@@ -82,7 +83,7 @@ int rm_child(MINODE *pmip, char *name) {
         cp = buf;
 
         while (cp + dp->rec_len < buf + BLKSIZE) {
-            if (dp->inode == ino && dp->rec_len == BLKSIZE) { // If first and only entry in data block
+            if (!strcmp(name, dp->name) && dp->inode == ino && dp->rec_len == BLKSIZE) { // If first and only entry in data block
                 //size = ((buf + BLKSIZE) - (cp + dp->rec_len));
                 idalloc(dev, ino);
                 bdalloc(dev, pmip->INODE.i_block[i]); // deallocate block
@@ -92,7 +93,7 @@ int rm_child(MINODE *pmip, char *name) {
                 }
                 put_block(dev, pmip->INODE.i_block[i], buf);
                 return 0;
-            } else if (dp->inode == ino) { // entry is first but not only entry, or in middle of block
+            } else if (dp->inode == ino && !strcmp(name, dp->name)) { // entry is first but not only entry, or in middle of block
                 size = ((buf + BLKSIZE) - (cp + dp->rec_len));
                 temp = dp->rec_len; // store rec_len
                 idalloc(dev, ino); // deallocate node
@@ -110,7 +111,7 @@ int rm_child(MINODE *pmip, char *name) {
             cp += dp->rec_len;
             dp = (DIR *)cp;
         }
-        if (dp->inode == ino) { // if last entry in block
+        if (dp->inode == ino && !strcmp(name, dp->name)) { // if last entry in block
             temp = dp->rec_len; // last item's rec_len
             dp->rec_len = 0; // Remove last item's length
             idalloc(dev, ino);
@@ -119,7 +120,8 @@ int rm_child(MINODE *pmip, char *name) {
             put_block(dev, pmip->INODE.i_block[i], buf);
             return 0;
         }
+        put_block(dev, pmip->INODE.i_block[i], buf);
     }
-    put_block(dev, pmip->INODE.i_block[i], buf); // Write block back
+    //put_block(dev, pmip->INODE.i_block[i], buf); // Write block back
     return -1; 
 }
