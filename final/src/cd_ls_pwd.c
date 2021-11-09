@@ -52,8 +52,8 @@ int cd() {
     return 0;
 }
 
-int ls_file(MINODE *mip, char *name) {
-    char *t1 = "xwrxwrxwr-------";
+int ls_file(MINODE *mip, char *name, char *lname) {
+    char *t1 = "xwrxwrxwr-------"; 
     char *t2 = "----------------";
 
     struct group *grp; // For group name
@@ -110,9 +110,7 @@ int ls_file(MINODE *mip, char *name) {
     } else if (ftype == 2) {
         printf(BLD GRN "%s" RESET "*\n", name); // print executable green
     } else if (ftype == 3) {
-        // point will be the variable holding the symlink name;
-        char point[128] = "Placeholder";
-        printf(BLD CYN "%s" RESET " -> " "%s\n", name, point); // print symlink cyan
+        printf(BLD CYN "%s" RESET " -> " "%s\n", name, lname); // print symlink cyan
     } else {
         printf("%s\n", name); // print name normally
     }
@@ -120,7 +118,7 @@ int ls_file(MINODE *mip, char *name) {
 }
 
 int ls_dir(MINODE *mip) {
-    char buf[BLKSIZE], temp[256];
+    char buf[BLKSIZE], temp[256], lname[64];
     DIR *dp;
     char *cp;
     MINODE *mmip;
@@ -131,6 +129,7 @@ int ls_dir(MINODE *mip) {
         get_block(dev, mip->INODE.i_block[0], buf);
         DIR *dp = (DIR *)buf;
         int lino = getino(dp->name);
+        //strncpy(lname, dp->name, strlen(dp->name));
         put_block(dev, mip->INODE.i_block[0], buf);
         iput(mip);
         mip = iget(dev, lino);
@@ -145,7 +144,18 @@ int ls_dir(MINODE *mip) {
         temp[dp->name_len] = 0;
         
         mmip = iget(mip->dev, dp->inode); // Child inode
-        ls_file(mmip, temp); // Call ls_file with each child node
+        if ((mmip->INODE.i_mode & 0xF000) == 0xA000) { // Check if link
+            // If symlink
+            char lbuf[BLKSIZE];
+            get_block(dev, mmip->INODE.i_block[0], lbuf);
+            DIR *ldp = (DIR *)lbuf;
+            int lino = getino(ldp->name);
+            strncpy(lname, ldp->name, strlen(ldp->name));
+            put_block(dev, mmip->INODE.i_block[0], lbuf);
+            iput(mmip);
+            mmip = iget(dev, dp->inode);
+        }
+        ls_file(mmip, temp, lname); // Call ls_file with each child node
         iput(mmip); // NEW
         cp += dp->rec_len;
         dp = (DIR *)cp;

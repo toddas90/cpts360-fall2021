@@ -5,7 +5,7 @@
 
 int cd();
 
-int ls_file(MINODE *mip, char *n);
+int ls_file(MINODE *mip, char *n, char *l);
 
 int ls_dir(MINODE *m);
 
