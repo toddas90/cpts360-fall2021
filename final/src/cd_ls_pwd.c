@@ -34,7 +34,14 @@ int cd() {
     MINODE *mip = iget(dev, ino); // get minode of path dir
     
     if ((mip->INODE.i_mode & 0xF000) == 0xA000) { // Check if link
-        // If symlink 
+        // If symlink
+        char buf[BLKSIZE];
+        get_block(dev, mip->INODE.i_block[0], buf);
+        DIR *dp = (DIR *)buf;
+        int lino = getino(dp->name);
+        put_block(dev, mip->INODE.i_block[0], buf);
+        iput(mip);
+        mip = iget(dev, lino);
     } else if(!((mip->INODE.i_mode & 0xF000) == 0x4000)) { // If inode is not a dir, quit
         fprintf(stderr, YEL "INODE is not a dir\n" RESET);
         return -1;
