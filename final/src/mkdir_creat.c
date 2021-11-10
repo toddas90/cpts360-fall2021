@@ -25,10 +25,11 @@ int lab_mkdir() {
         printf("No path provided\n");
         return -1;
     }
-    
+   
+    char *path2 = strdup(pathname);
     char *dir = dirname(pathname); // Get dirname
-    char *base = basename(pathname); // get basename
-    
+    char *base = basename(path2); // get basename
+
     int pino = getino(dir); // Get parent inode number
     MINODE *pmip = iget(dev, pino); // Get parent MINODE
 
@@ -98,9 +99,10 @@ int lab_creat() {
         return -1;
     }
     
+    char *path2 = strdup(pathname);
     char *dir = dirname(pathname); // Get dirname
-    char *base = basename(pathname); // get basename
-    
+    char *base = basename(path2); // get basename
+
     int pino = getino(dir); // Get parent inode number
     MINODE *pmip = iget(dev, pino); // Get parent MINODE
 
@@ -173,7 +175,8 @@ int enter_child(MINODE *pmip, int ino, char *basename) {
             dp->rec_len = remain;
             dp->name_len = strlen(basename);
             strcpy(dp->name, basename);
-            //printf("New entry name: %s, len: %d\n", dp->name, dp->rec_len);
+            // printf("dp->name = %s, basename = %s\n", dp->name, basename);
+            // printf("New entry name: %s, len: %d\n", dp->name, dp->rec_len);
             put_block(dev, pmip->INODE.i_block[i], buf); // Write block back to disk.
             return 0;
         } else { // If new dir can't fit in current block

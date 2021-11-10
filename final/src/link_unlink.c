@@ -40,8 +40,10 @@ int my_link() {
         return -1;
     }
 
+    char *path2 = strdup(extra_arg);
     char *parent = dirname(extra_arg);
-    char *child = basename(extra_arg);
+    char *child = basename(path2);
+    
     int pino = getino(parent);
     MINODE *pmip = iget(dev, pino);
     enter_child(pmip, old_ino, child);
@@ -62,8 +64,9 @@ int my_unlink() {
         return -1;
     }
 
+    char *path2 = strdup(pathname);
     char *parent = dirname(pathname);
-    char *child = basename(pathname);
+    char *child = basename(path2);
 
     int pino = getino(parent);
     MINODE *pmip = iget(dev, pino);
