@@ -1,0 +1,30 @@
+1. mkdir and creat depend on enter_child.
+    a. What does enter_child do?
+    b. Show enter_child code. Explain entering DIR info into parent block.
+
+2. rmdir and unlink depend on rm_child.
+    a. What does it do?
+    b. How do you remove the child if it is the last entry in parent block?
+
+-------------------------------------------------------------------------------
+
+1a. It goes through the parent's data blocks until it finds one that has enough
+    space for the new entry. It goes to the end of the block. If there is 
+    enough space for the child, it shrinks the current last item down to its
+    ideal length, moves past the old last item, and it places the new item at
+    the end. Then it puts the block back. If the child won't fit in the block,
+    it allocates a new block, then places the child at the first entry in the
+    new block.
+
+1b. mkdir_creat.c, lines 170:180 (item at end), lines 183:196 (new block).
+
+2a. It goes through the parent's blocks until it finds the child to remove.
+    If it is the first and only entry in the block, it deallocates the block,
+    subtracts BLKSIZE from the parent, then shifts the remaining blocks 
+    (if any) down one spot. If it's not the only entry, or it is somewhere in 
+    the middle, it deallocates the child inode, shifts the remaining inodes
+    down one spot, then adds the child inodes rec_len to the last item in the
+    block. If the child is the last item in the block, it deallocates the child
+    inode, and adds the child's rec_len to the previous item (new last).
+
+2b. rmdir.c lines 135:144
