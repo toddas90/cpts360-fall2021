@@ -109,27 +109,158 @@ MINODE *iget(int dev, int ino)
 
 void iput(MINODE *mip)
 {
- int i, block, offset;
- char buf[BLKSIZE];
- INODE *ip;
+    int i, block, offset;
+    char buf[BLKSIZE];
+    INODE *ip;
 
- if (mip==0) 
-     return;
+    if (mip==0) 
+        return;
 
- mip->refCount--;
+    mip->refCount--;
  
- if (mip->refCount > 0) return;
- if (!mip->dirty)       return;
- 
- /* write INODE back to disk */
- /**************** NOTE ******************************
-  For mountroot, we never MODIFY any loaded INODE
-                 so no need to write it back
-  FOR LATER WROK: MUST write INODE back to disk if refCount==0 && DIRTY
+    if (mip->refCount > 0) return;
+    if (!mip->dirty)       return;
 
-  Write YOUR code here to write INODE back to disk
- *****************************************************/
-} 
+    // Write inode back to disk
+    block = (mip->ino - 1) / 8 + iblk;
+    offset = (mip->ino - 1) % 8;
+
+    // Get block containing inode
+    get_block(mip->dev, block, buf);
+    ip = (INODE *)buf + offset; // ip points at INODE
+    *ip = mip->INODE; // copy INODE to inode in block
+    put_block(mip->dev, block, buf); // write back to disk
+    midealloc(mip); // mip->refcount = 0 
+}
+
+int test_bit(char *buf, int bit) {
+    return buf[bit/8] & (1 << (bit % 8));
+}
+
+int set_bit(char *buf, int bit) {
+    buf[bit/8] |= (1 << (bit % 8));
+    return 0;
+}
+
+int clr_bit(char *buf, int bit) {
+    buf[bit / 8] &= ~(1 << (bit % 8));
+    return 0;
+}
+
+int dec_free_inodes(int dev) {
+    char buf[BLKSIZE];
+
+    get_block(dev, 1, buf); // get block into buf
+    sp = (SUPER *)buf; // cast buf as SUPER
+    sp->s_free_inodes_count -= 1; // decrement inode counter
+    put_block(dev, 1, buf); // write buf back
+
+    get_block(dev, 2, buf); // get gd into buf
+    gp = (GD *)buf; // cast buf as GD
+    gp->bg_free_inodes_count -= 1; // decrement inode count
+    put_block(dev, 2, buf); // write buf back
+    return 0;
+}
+
+int inc_free_inodes(int dev) {
+    char buf[BLKSIZE];
+    get_block(dev, 1, buf);
+    sp = (SUPER *)buf;
+    sp->s_free_inodes_count += 1;
+    put_block(dev, 1, buf);
+    get_block(dev, 2, buf);
+    gp = (GD *)buf;
+    gp->bg_free_inodes_count += 1;
+    put_block(dev, 2, buf);
+    return 0;
+}
+
+int ialloc(int dev) {
+    // KC's code from the website, not the book.
+    char buf[BLKSIZE];
+
+    get_block(dev, imap, buf); // read inode bitmap into buf
+
+    for (int i = 0; i < ninodes; i++) { // loop through number of inodes
+        if (test_bit(buf, i)==0) { // test the bit
+            set_bit(buf, i); // Set the bit
+            put_block(dev, imap, buf); // write to block
+            //printf("allocated ino = %d\n", i+1); // bits count from 0; ino from 1
+            return i+1;
+        }
+    }
+    return 0;
+}
+
+int idalloc(int dev, int ino) {
+    int i;  
+    char buf[BLKSIZE];
+
+    if (ino > ninodes){  
+        printf("inumber %d out of range\n", ino);
+        return -1;
+    }
+  
+    get_block(dev, imap, buf);  // get inode bitmap block into buf[]
+  
+    clr_bit(buf, ino-1);        // clear bit ino-1 to 0
+
+    put_block(dev, imap, buf);  // write buf back
+    return 0;
+}
+
+int balloc(int dev) {
+    // Current code is a mirror of
+    // ialloc() except it is using
+    // the bmap instead of imap.
+    char buf[BLKSIZE];
+
+    get_block(dev, bmap, buf);
+    
+    for (int i = 0; i < nblocks; i++) {
+        if (test_bit(buf, i)==0) {
+            set_bit(buf, i);
+            put_block(dev, bmap, buf);
+            //printf("allocated bno = %d\n", i+1);
+            return i+1;
+        }
+    }
+    return 0;
+}
+
+int bdalloc(int dev, int bno) {
+    int i;  
+    char buf[BLKSIZE];
+
+    if (bno > nblocks){  
+        printf("bnumber %d out of range\n", bno);
+        return -1;
+    }
+  
+    get_block(dev, bmap, buf);  // get inode bitmap block into buf[]
+  
+    clr_bit(buf, bno-1);        // clear bit ino-1 to 0
+
+    put_block(dev, bmap, buf);  // write buf back
+    return 0;
+}
+
+MINODE *mialloc() {
+    for (int i = 0; i < NMINODE; i++) {
+        MINODE *mp = &minode[i];
+        if (mp->refCount == 0) {
+            mp->refCount = 1;
+            return mp;
+        }
+    }
+    printf(YEL "Out of MINODES\n" RESET);
+    return 0;
+}
+
+int midealloc(MINODE *mip) {
+    mip->refCount = 0;
+    return 0;
+}
 
 int search(MINODE *mip, char *name)
 {
@@ -192,7 +323,7 @@ int getino(char *pathname)
 
       if (ino==0){
          iput(mip);
-         printf(YEL "name %s does not exist\n" RESET, name[i]);
+         //printf(YEL "name %s does not exist\n" RESET, name[i]);
          return 0;
       }
       iput(mip);
@@ -242,4 +373,45 @@ int findino(MINODE *mip, u32 *myino) // myino = i# of . return i# of ..
     cp += dp->rec_len;
     dp = (DIR*)cp;
     return dp->inode;
+}
+
+int ideal_length(char *name) {
+    return 4 * ((8 + strlen(name) + 3) / 4);
+}
+
+void printblk(MINODE *mip) {
+    DIR *dp;
+    char *cp;
+    char buf[BLKSIZE];
+
+    get_block(dev, mip->INODE.i_block[0], buf);
+    dp = (DIR *)buf;
+    cp = buf;
+
+    while (cp + dp->rec_len < buf + BLKSIZE) {
+        printf("Name: %s\n Name_Len: %d\n Rec_Len: %d\n Inode: %d\n", 
+                dp->name, dp->name_len, dp->rec_len, dp->inode);
+        cp += dp->rec_len;
+        dp = (DIR *)cp;
+    }
+    printf("Name: %s\n Name_Len: %d\n Rec_Len: %d\n Inode: %d\n", 
+                dp->name, dp->name_len, dp->rec_len, dp->inode);
+}
+
+int numblks(MINODE *mip) {
+    DIR *dp;
+    char *cp;
+    char buf[BLKSIZE];
+    int count= 0;
+
+    get_block(dev, mip->INODE.i_block[0], buf);
+    dp = (DIR *)buf;
+    cp = buf;
+
+    while (cp + dp->rec_len < buf + BLKSIZE) {
+        count += 1;
+        cp += dp->rec_len;
+        dp = (DIR *)cp;
+    }
+    return count + 1;
 }
