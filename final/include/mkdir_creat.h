@@ -3,8 +3,8 @@
 
 #include "type.h"
 
-int lab_mkdir();
-int lab_creat();
+int my_mkdir(char *pathname);
+int my_creat(char *pathname);
 int enter_child(MINODE *pmip, int ino, char *basename);
 
 #endif /* MKDIR_CREAT_H */

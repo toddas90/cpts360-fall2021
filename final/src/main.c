@@ -14,10 +14,11 @@
 #include "../include/util.h"
 #include "../include/cd_ls_pwd.h"
 #include "../include/mkdir_creat.h"
-#include "../include/colors.h"
+#include "../include/terminal.h"
 #include "../include/link_unlink.h"
 #include "../include/rmdir.h"
 #include "../include/symlink.h"
+#include "../include/open_close_lseek.h"
 
 extern MINODE *iget();
 
@@ -44,7 +45,7 @@ int init()
   MINODE *mip;
   PROC   *p;
 
-  printf("init()\n");
+  printf("initializing...\n");
 
   for (i=0; i<NMINODE; i++){
     mip = &minode[i];
@@ -58,6 +59,9 @@ int init()
     p->pid = i;
     p->uid = p->gid = 0;
     p->cwd = 0;
+    for (int k = 0; k<NFD; k++) {
+      p->fd[k] = 0;
+    }
   }
   return 0;
 }
@@ -65,7 +69,7 @@ int init()
 // load root INODE and set root pointer to it
 int mount_root()
 {  
-  printf("mount_root()\n");
+  printf("mounting root...\n");
   root = iget(dev, 2);
   return 0;
 }
@@ -105,7 +109,7 @@ int main(int argc, char *argv[ ])
       printf(RED "magic = %x is not an ext2 filesystem\n" RESET, sp->s_magic);
       exit(1);
   }     
-  printf("EXT2 FS OK\n");
+  printf(" OK\n");
   ninodes = sp->s_inodes_count;
   nblocks = sp->s_blocks_count;
 
@@ -115,22 +119,25 @@ int main(int argc, char *argv[ ])
   bmap = gp->bg_block_bitmap;
   imap = gp->bg_inode_bitmap;
   iblk = gp->bg_inode_table;
-  printf("bmp=%d imap=%d inode_start = %d\n", bmap, imap, iblk);
+  //printf("bmp=%d imap=%d inode_start = %d\n", bmap, imap, iblk);
 
   init();  
   mount_root();
-  printf("root refCount = %d\n", root->refCount);
+  //printf("root refCount = %d\n", root->refCount);
 
-  printf("creating P0 as running process\n");
+  //printf("creating P0 as running process\n");
   running = &proc[0];
   running->status = READY;
   running->cwd = iget(dev, 2);
-  printf("root refCount = %d\n", root->refCount);
+  //printf("root refCount = %d\n", root->refCount);
 
   // WRTIE code here to create P1 as a USER process
+
+  printf("\n");
+  banner();
   
   while(1){
-    printf("input command : [ls|cd|pwd|mkdir|rmdir|creat|link|unlink|symlink|quit] ");
+    printf(BLNK"> ");
     fgets(line, 128, stdin);
     line[strlen(line)-1] = 0;
 
@@ -139,6 +146,7 @@ int main(int argc, char *argv[ ])
     pathname[0] = 0;
 
     sscanf(line, "%s %s %s", cmd, pathname, extra_arg);
+    printf(RESET);
     //printf("cmd=%s pathname=%s\n", cmd, pathname);
   
     if (strcmp(cmd, "ls")==0)
@@ -148,7 +156,7 @@ int main(int argc, char *argv[ ])
     else if (strcmp(cmd, "pwd")==0)
        pwd(running->cwd);
     else if (strcmp(cmd, "mkdir")==0)
-        lab_mkdir();
+        my_mkdir(pathname);
     else if (strcmp(cmd, "rmdir")==0)
         my_rmdir();
     else if (strcmp(cmd, "link")==0)
@@ -158,9 +166,68 @@ int main(int argc, char *argv[ ])
     else if (strcmp(cmd, "symlink")==0)
         my_symlink();
     else if (strcmp(cmd, "creat")==0)
-        lab_creat();
+        my_creat(pathname);
     else if (strcmp(cmd, "quit")==0)
        quit();
+    else if (strcmp(cmd, "clear")==0)
+        clear();
+    else if (strcmp(cmd, "pfd")==0)
+        print_fd();
+    else if (strcmp(cmd, "help")==0)
+        help();
     bzero(pathname, 128);
   }
+}
+
+void banner() {
+    printf(GRN BLD"  ________              __       ______         ________  ______  \n \
+/        |            /  |     /      \\       /        |/      \\ \n \
+$$$$$$$$/  __    __  _$$ |_   /$$$$$$  |      $$$$$$$$//$$$$$$  | \n \
+$$ |__    /  \\  /  |/ $$   |  $$____$$ |      $$ |__   $$ \\__$$/ \n \
+$$    |   $$  \\/$$/ $$$$$$/    /    $$/       $$    |  $$      \\ \n \
+$$$$$/     $$  $$<    $$ | __ /$$$$$$/        $$$$$/    $$$$$$  | \n \
+$$ |_____  /$$$$  \\   $$ |/  |$$ |_____       $$ |     /  \\__$$ | \n \
+$$       |/$$/ $$  |  $$  $$/ $$       |      $$ |     $$    $$/ \n \
+$$$$$$$$/ $$/   $$/    $$$$/  $$$$$$$$/       $$/       $$$$$$/  \n\n"RESET);
+}
+
+void help() {
+    printf(BLD BLU "ls" RESET "      - ");
+    printf(GRN "Args(1) " RESET "Show file contents\n");
+
+    printf(BLD BLU "cd" RESET "      - ");
+    printf(GRN "Args(1) " RESET "Change directory\n");
+
+    printf(BLD BLU "pwd" RESET "     - ");
+    printf(GRN "Args(0) " RESET "Print working directory\n");
+
+    printf(BLD BLU "mkdir" RESET "   - ");
+    printf(GRN "Args(1) " RESET "Create directory\n");
+
+    printf(BLD BLU "rmdir" RESET "   - ");
+    printf(GRN "Args(1) " RESET "Remove directory\n");
+
+    printf(BLD BLU "creat" RESET "   - ");
+    printf(GRN "Args(1) " RESET "Create file\n");
+
+    printf(BLD BLU "link" RESET "    - ");
+    printf(GRN "Args(2) " RESET "Create hard link\n");
+
+    printf(BLD BLU "unlink" RESET "  - ");
+    printf(GRN "Args(1) " RESET "Remove link\n");
+
+    printf(BLD BLU "symlink" RESET " - ");
+    printf(GRN "Args(2) " RESET "Create symbolic link\n");
+
+    printf(BLD BLU "pfd" RESET "     - ");
+    printf(GRN "Args(0) " RESET "Print opened files\n");
+
+    printf(BLD BLU "clear" RESET "   - ");
+    printf(GRN "Args(0) " RESET "Clear screen\n");
+
+    printf(BLD BLU "help" RESET "    - ");
+    printf(GRN "Args(0) " RESET "Display this message\n");
+
+    printf(BLD BLU "quit" RESET "    - ");
+    printf(GRN "Args(0) " RESET "Quit\n");
 }

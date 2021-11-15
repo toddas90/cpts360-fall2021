@@ -24,6 +24,7 @@ extern DIR   *dp;
 #define BLKSIZE  1024
 #define NMINODE   128
 #define NPROC       2
+#define NFD        64
 
 typedef struct minode{
   INODE INODE;           // INODE structure on disk
@@ -35,6 +36,13 @@ typedef struct minode{
   struct mntable *mptr;  // for level-3
 }MINODE;
 
+typedef struct oft {
+  int mode;
+  int refCount;
+  MINODE *minodePtr;
+  int offset;
+}OFT;
+
 typedef struct proc{
   struct proc *next;
   int          pid;      // process ID  
@@ -42,7 +50,8 @@ typedef struct proc{
   int          status;
   int          uid;      // user ID
   int          gid;
-  MINODE      *cwd;      // CWD directory pointer  
+  MINODE      *cwd;      // CWD directory pointer
+  OFT *fd[NFD];
 }PROC;
 
 #endif /* TYPE_H */
