@@ -105,7 +105,7 @@ int main(int argc, char *argv[ ])
       printf(RED "magic = %x is not an ext2 filesystem\n" RESET, sp->s_magic);
       exit(1);
   }     
-  printf("Checking ext2fs... OK\n");
+  printf(" OK\n");
   ninodes = sp->s_inodes_count;
   nblocks = sp->s_blocks_count;
 
@@ -133,7 +133,7 @@ int main(int argc, char *argv[ ])
   banner();
   
   while(1){
-    printf("> ");
+    printf(BLNK"> ");
     fgets(line, 128, stdin);
     line[strlen(line)-1] = 0;
 
@@ -142,6 +142,7 @@ int main(int argc, char *argv[ ])
     pathname[0] = 0;
 
     sscanf(line, "%s %s %s", cmd, pathname, extra_arg);
+    printf(RESET);
     //printf("cmd=%s pathname=%s\n", cmd, pathname);
   
     if (strcmp(cmd, "ls")==0)
