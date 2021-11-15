@@ -90,21 +90,25 @@ int my_truncate(MINODE *mip) {
 
 int close_file(int fd)
 {
-//   1. verify fd is within range.
+    if (fd > 64 || fd < 0) {
+        printf(RED "fd out of range\n" RESET);
+        return -1;
+    }
 
-//   2. verify running->fd[fd] is pointing at a OFT entry
+    if (running->fd[fd] == NULL) {
+        printf(RED "fd not a valid file descriptor\n" RESET);
+        return -1;
+    }
 
-//   3. The following code segments should be fairly obvious:
-//      oftp = running->fd[fd];
-//      running->fd[fd] = 0;
-//      oftp->refCount--;
-//      if (oftp->refCount > 0) return 0;
+    OFT *oftp = running->fd[fd];
+    running->fd[fd] = NULL;
+    oftp->refCount -= 1;
+    if (oftp->refCount > 0)
+        return;
 
-//      // last user of this OFT entry ==> dispose of the Minode[]
-//      mip = oftp->inodeptr;
-//      iput(mip);
-
-//      return 0; 
+    MINODE *mip = oftp->minodePtr;
+    iput(mip);
+    return 0;
 }
 
 int my_lseek(int fd, int pos) {
