@@ -18,6 +18,7 @@
 #include "../include/link_unlink.h"
 #include "../include/rmdir.h"
 #include "../include/symlink.h"
+#include "../include/open_close_lseek.h"
 
 extern MINODE *iget();
 
@@ -170,6 +171,8 @@ int main(int argc, char *argv[ ])
        quit();
     else if (strcmp(cmd, "clear")==0)
         clear();
+    else if (strcmp(cmd, "pfd")==0)
+        print_fd();
     else if (strcmp(cmd, "help")==0)
         help();
     bzero(pathname, 128);
@@ -216,8 +219,11 @@ void help() {
     printf(BLD BLU "symlink" RESET " - ");
     printf(GRN "Args(2) " RESET "Create symbolic link\n");
 
+    printf(BLD BLU "pfd" RESET "     - ");
+    printf(GRN "Args(0) " RESET "Print opened files\n");
+
     printf(BLD BLU "clear" RESET "   - ");
-    printf(GRN "Args(0) " RESET "Clear screenk\n");
+    printf(GRN "Args(0) " RESET "Clear screen\n");
 
     printf(BLD BLU "help" RESET "    - ");
     printf(GRN "Args(0) " RESET "Display this message\n");

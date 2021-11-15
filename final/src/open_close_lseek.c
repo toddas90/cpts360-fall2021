@@ -44,11 +44,11 @@ int my_open(char *filename, int flags) {
         case 0 : oftp->offset = 0; // Read
             mip->INODE.i_atime = time(NULL);
             break;
-        case 1 : truncate(mip); // Write
+        case 1 : my_truncate(mip); // Write
             mip->INODE.i_atime = time(NULL);
             mip->INODE.i_mtime = time(NULL);
             oftp->offset = 0;
-            breakl
+            break;
         case 2 : oftp->offset = 0; // RW
             mip->INODE.i_atime = time(NULL);
             mip->INODE.i_mtime = time(NULL);
@@ -73,6 +73,59 @@ int my_open(char *filename, int flags) {
     return -1;
 }
 
-int my_lseek(int fd, ) {
+int my_truncate(MINODE *mip) {
+    for (int i = 0; i < mip->INODE.i_size/BLKSIZE; i++) {
+        if (mip->INODE.i_block[i] == 0)
+            continue;
+        else {
+            bdalloc(dev, mip->INODE.i_block[i]);
+        }
+    }
+    mip->INODE.i_atime = time(NULL);
+    mip->INODE.i_mtime = time(NULL);
+    mip->INODE.i_size = 0;
+    mip->dirty = 1;
+    return 0;
+}
 
+int close_file(int fd)
+{
+//   1. verify fd is within range.
+
+//   2. verify running->fd[fd] is pointing at a OFT entry
+
+//   3. The following code segments should be fairly obvious:
+//      oftp = running->fd[fd];
+//      running->fd[fd] = 0;
+//      oftp->refCount--;
+//      if (oftp->refCount > 0) return 0;
+
+//      // last user of this OFT entry ==> dispose of the Minode[]
+//      mip = oftp->inodeptr;
+//      iput(mip);
+
+//      return 0; 
+}
+
+int my_lseek(int fd, int pos) {
+/*
+  From fd, find the OFT entry. 
+
+  change OFT entry's offset to position but make sure NOT to over run either end
+  of the file.
+
+  return originalPosition
+*/
+}
+
+void print_fd() {
+    OFT *temp;
+    printf("fd     mode     offset     INODE\n");
+    printf("--     ----     ------     -----\n");
+    for (int i = 0; i<NFD; i++) {
+        temp = running->fd[i];
+        if (temp == 0)
+            continue;
+        printf(" %d   %d    %d   [%d, %d]\n", i, temp->mode, temp->offset, temp->minodePtr->dev, temp->minodePtr->ino);
+    }
 }
