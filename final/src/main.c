@@ -59,8 +59,7 @@ int init()
     p->uid = p->gid = 0;
     p->cwd = 0;
     for (int k = 0; k<NFD; k++) {
-      p->fd[k].mode = 0;
-      p->fd[k].refCount = 0;
+      p->fd[k] = 0;
     }
   }
   return 0;
