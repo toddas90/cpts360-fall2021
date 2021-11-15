@@ -1,7 +1,7 @@
 #ifndef MKDIR_CREAT_H
 #define MKDIR_CREAT_H
 
-#include "../include/type.h"
+#include "type.h"
 
 int lab_mkdir();
 int lab_creat();
