@@ -22,4 +22,19 @@ int my_open(char *filename, int flags) {
         ino = getino(filename);
     }
     MINODE *mip = iget(dev, ino);
+
+    OFT *newoft;
+    newoft->mode = flags;
+    newoft->minodePtr = mip;
+    newoft->refCount = 1;
+    newoft->offset = 0;
+
+    for (int i = 0; i<NFD; i++) {
+        if (running->fd[i].refCount == 0) {
+            running->fd[i] = &newoft;
+            return i;
+        }
+    }
+
+    return -1;
 }
