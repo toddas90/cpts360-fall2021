@@ -88,8 +88,7 @@ int my_truncate(MINODE *mip) {
     return 0;
 }
 
-int close_file(int fd)
-{
+int my_close(int fd) {
     if (fd > 64 || fd < 0) {
         printf(RED "fd out of range\n" RESET);
         return -1;
@@ -104,7 +103,7 @@ int close_file(int fd)
     running->fd[fd] = NULL;
     oftp->refCount -= 1;
     if (oftp->refCount > 0)
-        return;
+        return 0;
 
     MINODE *mip = oftp->minodePtr;
     iput(mip);
@@ -112,14 +111,26 @@ int close_file(int fd)
 }
 
 int my_lseek(int fd, int pos) {
-/*
-  From fd, find the OFT entry. 
+    if (fd > 64 || fd < 0) {
+        printf(RED "fd out of range\n" RESET);
+        return -1;
+    }
 
-  change OFT entry's offset to position but make sure NOT to over run either end
-  of the file.
+    if (running->fd[fd] == NULL) {
+        printf(RED "fd not a valid file descriptor\n" RESET);
+        return -1;
+    }
 
-  return originalPosition
-*/
+    OFT *oftp = running->fd[fd];
+
+    if (oftp->minodePtr->INODE.i_size < pos || pos < 0) {
+        printf(YEL "Pos greater than file size\n" RESET);
+        return -1;
+    }
+
+    oftp->offset = pos;
+
+    return pos;
 }
 
 void print_fd() {
@@ -132,4 +143,5 @@ void print_fd() {
             continue;
         printf(" %d   %d    %d   [%d, %d]\n", i, temp->mode, temp->offset, temp->minodePtr->dev, temp->minodePtr->ino);
     }
+    printf("--------------------------------\n");
 }
