@@ -11,7 +11,7 @@
 
 #include "../include/type.h"
 #include "../include/util.h"
-#include "../include/colors.h"
+#include "../include/terminal.h"
 
 /**** globals defined in main.c file ****/
 extern MINODE minode[NMINODE];

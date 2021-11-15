@@ -3,6 +3,6 @@
 
 #include "type.h"
 
-int my_open();
+int my_open(char *filename, int flags);
 
 #endif /* OPEN_H */

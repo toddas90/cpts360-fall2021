@@ -10,9 +10,12 @@
 #define WHT   "\x1B[37m"
 
 #define RESET "\x1B[0m"
+#define CLR   "\x1b[2J\033[1;1H"
 
 #define BLD   "\x1b[1m"
 #define DIM   "\x1b[2m"
 #define BLNK  "\x1b[5m"
+
+void clear();
 
 #endif /* COLOR_H */

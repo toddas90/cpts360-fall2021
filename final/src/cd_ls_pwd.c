@@ -9,7 +9,7 @@
 #include "../include/util.h" 
 #include "../include/type.h"
 #include "../include/cd_ls_pwd.h" 
-#include "../include/colors.h"
+#include "../include/terminal.h"
 
 extern PROC *running;
 extern MINODE *root;

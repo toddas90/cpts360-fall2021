@@ -6,7 +6,7 @@
 
 #include "../include/rmdir.h"
 #include "../include/util.h"
-#include "../include/colors.h"
+#include "../include/terminal.h"
 #include "../include/type.h"
 
 extern char pathname[128];
