@@ -139,9 +139,12 @@ void print_fd() {
     printf("--     ----     ------     -----\n");
     for (int i = 0; i<NFD; i++) {
         temp = running->fd[i];
-        if (temp == 0)
+        if (temp == 0) {
+            if (i == 63)
+                printf(" 0      0         0       [0, 0]\n");
             continue;
-        printf(" %d   %d    %d   [%d, %d]\n", i, temp->mode, temp->offset, temp->minodePtr->dev, temp->minodePtr->ino);
+        }
+        printf(" %d      %d         %d      [%d, %d]\n", i, temp->mode, temp->offset, temp->minodePtr->dev, temp->minodePtr->ino);
     }
     printf("--------------------------------\n");
 }
