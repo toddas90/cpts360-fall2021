@@ -8,8 +8,11 @@
 #define MAG   "\x1B[35m"
 #define CYN   "\x1B[36m"
 #define WHT   "\x1B[37m"
+
 #define RESET "\x1B[0m"
 
-#define BLD   "\033[1m"
+#define BLD   "\x1b[1m"
+#define DIM   "\x1b[2m"
+#define BLNK  "\x1b[5m"
 
 #endif /* COLOR_H */

@@ -125,7 +125,7 @@ int lab_creat() {
     mip->INODE.i_mode = 0x81A4; // Set mode as REG with standard permissions (020644)
     mip->INODE.i_uid = running->uid; // Set uid of INODE
     mip->INODE.i_gid = running->gid; // Set gid of INODE
-    mip->INODE.i_size = BLKSIZE; // Set block size
+    mip->INODE.i_size = 0; // Set block size
     mip->INODE.i_links_count = 1; // one link
     mip->INODE.i_ctime = time(NULL); // Set to current time
     mip->INODE.i_atime = mip->INODE.i_mtime = mip->INODE.i_ctime;
