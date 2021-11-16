@@ -39,25 +39,31 @@ int my_read(int fd, char *buf, int nbytes) {
             get_block(mip->dev, mip->INODE.i_block[12], ibuf);
             blk = ibuf[lbk - 12];
             put_block(mip->dev, mip->INODE.i_block[12], ibuf);
+        } else { // Double indirect blocks
+            get_block(mip->dev, mip->INODE.i_block[13], ibuf);
+            blk = ibuf[lbk - 12];
+            put_block(mip->dev, mip->INODE.i_block[13], ibuf);
         }
 
         get_block(mip->dev, blk, readbuf);
 
-       /* copy from startByte to buf[ ], at most remain bytes in this block */
-       char *cp = readbuf + startByte;   
-       int remain = BLKSIZE - startByte;   // number of bytes remain in readbuf[]
+        /* copy from startByte to buf[ ], at most remain bytes in this block */
+        char *cp = readbuf + startByte;   
+        int remain = BLKSIZE - startByte;   // number of bytes remain in readbuf[]
 
-       while (remain > 0){
+        while (remain > 0){
             *cq++ = *cp++;             // copy byte from readbuf[] into buf[]
-             oftp->offset += 1;           // advance offset 
-             count += 1;                  // inc count as number of bytes read
-             avil -= 1; 
-             nbytes -= 1;  
-             remain -= 1;
-             if (nbytes <= 0 || avil <= 0) 
-                 break;
-       }
-       // if one data block is not enough, loop back to OUTER while for more ...
+            oftp->offset += 1;           // advance offset 
+            count += 1;                  // inc count as number of bytes read
+            avil -= 1; 
+            nbytes -= 1;  
+            remain -= 1;
+            if (nbytes <= 0 || avil <= 0) 
+                break;
+        }
+
+        put_block(mip->dev, blk, readbuf);
+        // if one data block is not enough, loop back to OUTER while for more ...
     }
     //printf("myread: read %d char from file descriptor %d\n", count, fd);  
     return count;   // count is the actual number of bytes read
@@ -71,6 +77,7 @@ int cat(char *file) {
 
     while ((n = my_read(fd, mybuf, BLKSIZE))) {
         mybuf[n] = 0;
+        //puts(mybuf);
         printf("%s", mybuf); // Works but not ideal, will change later.
     }
     my_close(fd);
