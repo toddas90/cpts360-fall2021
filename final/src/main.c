@@ -135,6 +135,8 @@ int main(int argc, char *argv[ ])
 
   printf("\n");
   banner();
+  printf("\nEnter a command or type \"help\"\n");
+
   
   while(1){
     printf(BLNK"> ");
