@@ -21,22 +21,24 @@ int my_read(int fd, char *buf, int nbytes) {
     MINODE *mip = running->fd[fd]->minodePtr;
 
     OFT *oftp = running->fd[fd];
-    char readbuf[BLKSIZE];
+    char readbuf[BLKSIZE]; 
+    int ibuf[256];
     char *cq = buf;
 
-    int count = 0, lbk = 0, startByte = 0, blk = 0;
+    int count = 0, lbk = 0, startByte = 0, blk = 0, buf_dirty = 0;
     int avil = mip->INODE.i_size - oftp->offset;
 
     while (nbytes && avil) {
         lbk = oftp->offset / BLKSIZE;
         startByte = oftp->offset % BLKSIZE;
 
-        if (lbk < 12) {
+        //blk = map(mip->INODE, lbk); // Map function inside util.c is broken despite being the same code.
+        if (lbk < 12) { // Direct blocks
             blk = mip->INODE.i_block[lbk];
-        } else if (lbk >= 12 && lbk < 256  + 12) {
-            // Indirect block
-        } else {
-            // Double indirect
+        } else if (lbk >= 12 && lbk < (12 + 256)) { // Indirect blocks
+            get_block(mip->dev, mip->INODE.i_block[12], ibuf);
+            blk = ibuf[lbk - 12];
+            put_block(mip->dev, mip->INODE.i_block[12], ibuf);
         }
 
         get_block(mip->dev, blk, readbuf);
@@ -58,7 +60,7 @@ int my_read(int fd, char *buf, int nbytes) {
        // if one data block is not enough, loop back to OUTER while for more ...
     }
     //printf("myread: read %d char from file descriptor %d\n", count, fd);  
-   return count;   // count is the actual number of bytes read
+    return count;   // count is the actual number of bytes read
 }
 
 int cat(char *file) {
@@ -67,7 +69,7 @@ int cat(char *file) {
 
     int fd = my_open(file, 0); // Open file for read
 
-    while (n = my_read(fd, mybuf, BLKSIZE)) {
+    while ((n = my_read(fd, mybuf, BLKSIZE))) {
         mybuf[n] = 0;
         printf("%s", mybuf); // Works but not ideal, will change later.
     }

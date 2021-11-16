@@ -7,6 +7,7 @@
 #include <time.h>
 
 #include "../include/open_close_lseek.h"
+#include "../include/mkdir_creat.h"
 #include "../include/util.h"
 #include "../include/terminal.h"
 #include "../include/type.h"
@@ -23,7 +24,7 @@ int my_open(char *filename, int flags) {
         ino = getino(filename);
     }
 
-    printf(GRN "Open: ino = %d\n" RESET, ino);
+    //printf(GRN "Open: ino = %d\n" RESET, ino);
 
     MINODE *mip = iget(dev, ino);
 
@@ -65,7 +66,7 @@ int my_open(char *filename, int flags) {
     for (int i = 0; i<NFD; i++) {
         if (running->fd[i] == 0) {
             running->fd[i] = oftp;
-            printf(GRN "Open: returning fd %d\n" RESET, i);
+            //printf(GRN "Open: returning fd %d\n" RESET, i);
             return i;
         }
     }
