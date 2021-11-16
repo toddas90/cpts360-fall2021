@@ -175,6 +175,21 @@ int inc_free_inodes(int dev) {
     return 0;
 }
 
+int map(INODE ip, int lbk) {
+    char ibuf[256];
+    int blk = 0;
+    if (lbk < 12) { // Direct blocks
+        blk = ip.i_block[lbk];
+    } else if (12 <= lbk && lbk < 12 + 256) {// Indirect blocks
+        get_block(dev, ip.i_block[12], ibuf);
+        blk = ibuf[lbk - 12];
+        put_block(dev, ip.i_block[12], ibuf);
+    } else { // Double indirect blocks
+        // Implement
+    }
+    return blk;
+}
+
 int ialloc(int dev) {
     // KC's code from the website, not the book.
     char buf[BLKSIZE];

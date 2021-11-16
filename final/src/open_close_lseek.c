@@ -7,6 +7,7 @@
 #include <time.h>
 
 #include "../include/open_close_lseek.h"
+#include "../include/mkdir_creat.h"
 #include "../include/util.h"
 #include "../include/terminal.h"
 #include "../include/type.h"
@@ -22,6 +23,9 @@ int my_open(char *filename, int flags) {
         my_creat(filename);
         ino = getino(filename);
     }
+
+    //printf(GRN "Open: ino = %d\n" RESET, ino);
+
     MINODE *mip = iget(dev, ino);
 
     if (!S_ISREG(mip->INODE.i_mode)) {
@@ -29,16 +33,14 @@ int my_open(char *filename, int flags) {
         return  -1;
     }
 
-    if (access(filename, R_OK) != 0) {
-        printf(RED "Permission denied\n" RESET);
-        return -1;
-    }
+    // if (access(filename, R_OK) != 0) {
+    //     printf(RED "Permission denied\n" RESET);
+    //     return -1;
+    // }
 
-    OFT *oftp;
-    oftp->mode = flags;
+    OFT *oftp = (OFT *)malloc(sizeof(OFT)); // NEED TO FREE THIS
     oftp->minodePtr = mip;
     oftp->refCount = 1;
-    oftp->offset = 0;
 
     switch(flags) {
         case 0 : oftp->offset = 0; // Read
@@ -63,13 +65,12 @@ int my_open(char *filename, int flags) {
 
     for (int i = 0; i<NFD; i++) {
         if (running->fd[i] == 0) {
-            running->fd[i] = &oftp;
+            running->fd[i] = oftp;
+            //printf(GRN "Open: returning fd %d\n" RESET, i);
             return i;
         }
     }
-
     mip->dirty = 1;
-
     return -1;
 }
 
