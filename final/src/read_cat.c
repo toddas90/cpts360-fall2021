@@ -75,6 +75,11 @@ int my_read(int fd, char *buf, int nbytes) {
 }
 
 int cat(char *file) {
+    if (!strcmp(file, "")) {
+        printf(YEL "No file provided\n" RESET);
+        return -1;
+    }
+
     char mybuf[BLKSIZE], dummy = 0;
     int n = 0;
 

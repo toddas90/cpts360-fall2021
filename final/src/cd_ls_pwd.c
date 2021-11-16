@@ -165,7 +165,6 @@ int ls_dir(MINODE *mip) {
         dp = (DIR *)cp;
     }
     put_block(mip->dev, mip->INODE.i_block[0], buf); // NEW
-    printf("\n");
     return 0;
 }
 

@@ -19,6 +19,7 @@
 #include "../include/rmdir.h"
 #include "../include/symlink.h"
 #include "../include/open_close_lseek.h"
+#include "../include/read_cat.h"
 
 extern MINODE *iget();
 
@@ -38,6 +39,9 @@ DIR *dp;
 int fd, dev;
 int nblocks, ninodes, bmap, imap, iblk;
 char line[128], cmd[32], pathname[128], extra_arg[128];
+
+void my_banner();
+void help();
 
 int init()
 {
@@ -134,7 +138,7 @@ int main(int argc, char *argv[ ])
   // WRTIE code here to create P1 as a USER process
 
   printf("\n");
-  banner();
+  my_banner();
   printf("\nEnter a command or type \"help\"\n");
 
   
@@ -179,11 +183,12 @@ int main(int argc, char *argv[ ])
         print_fd();
     else if (strcmp(cmd, "help")==0)
         help();
+    printf("\n");
     bzero(pathname, 128);
   }
 }
 
-void banner() {
+void my_banner() {
     printf(GRN BLD"  ________              __       ______         ________  ______  \n \
 /        |            /  |     /      \\       /        |/      \\ \n \
 $$$$$$$$/  __    __  _$$ |_   /$$$$$$  |      $$$$$$$$//$$$$$$  | \n \
