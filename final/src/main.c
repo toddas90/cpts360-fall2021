@@ -171,6 +171,8 @@ int main(int argc, char *argv[ ])
        quit();
     else if (strcmp(cmd, "clear")==0)
         clear();
+    else if (strcmp(cmd, "cat")==0)
+        cat(pathname);
     else if (strcmp(cmd, "pfd")==0)
         print_fd();
     else if (strcmp(cmd, "help")==0)
@@ -218,6 +220,9 @@ void help() {
 
     printf(BLD BLU "symlink" RESET " - ");
     printf(GRN "Args(2) " RESET "Create symbolic link\n");
+
+    printf(BLD BLU "cat" RESET "     - ");
+    printf(GRN "Args(1) " RESET "Print file to screen\n");
 
     printf(BLD BLU "pfd" RESET "     - ");
     printf(GRN "Args(0) " RESET "Print opened files\n");
