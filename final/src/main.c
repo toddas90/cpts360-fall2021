@@ -139,7 +139,7 @@ int main(int argc, char *argv[ ])
 
   
   while(1){
-    printf(BLNK"> ");
+    printf(BLD MAG""RESET);
     fgets(line, 128, stdin);
     line[strlen(line)-1] = 0;
 
