@@ -25,6 +25,7 @@ int balloc(int dev);
 int numblks(MINODE *mip);
 int clr_bit(char *buf, int bit);
 int inc_free_inodes(int dev);
+int map(INODE ip, int lbk);
 
 int idalloc(int dev, int ino);
 int bdalloc(int dev, int bno);

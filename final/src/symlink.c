@@ -10,7 +10,7 @@
 #include "../include/rmdir.h"
 #include "../include/mkdir_creat.h"
 #include "../include/util.h"
-#include "../include/colors.h"
+#include "../include/terminal.h"
 #include "../include/type.h"
 
 extern char pathname[128], extra_arg[128];
@@ -48,7 +48,7 @@ int my_symlink() {
     strcpy(copy_pathname, pathname);
     strcpy(pathname, extra_arg);
 
-    lab_creat(); // create new file
+    my_creat(pathname); // create new file
 
     int ino = getino(extra_arg); // get new file
     MINODE *mip = iget(dev, ino);

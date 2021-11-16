@@ -9,7 +9,7 @@
 #include "../include/util.h" 
 #include "../include/type.h"
 #include "../include/cd_ls_pwd.h" 
-#include "../include/colors.h"
+#include "../include/terminal.h"
 
 extern PROC *running;
 extern MINODE *root;
@@ -122,7 +122,11 @@ int ls_dir(MINODE *mip) {
     DIR *dp;
     char *cp;
     MINODE *mmip;
-  
+ 
+    if (S_ISREG(mip->INODE.i_mode)) {
+        return -1; // if file, return
+    }
+
     if ((mip->INODE.i_mode & 0xF000) == 0xA000) { // Check if link
         // If symlink
         char buf[BLKSIZE];

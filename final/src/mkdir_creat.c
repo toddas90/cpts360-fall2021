@@ -8,16 +8,16 @@
 
 #include "../include/mkdir_creat.h"
 #include "../include/util.h"
-#include "../include/colors.h"
+#include "../include/terminal.h"
 #include "../include/type.h"
 
-extern char pathname[128];
+//extern char pathname[128];
 extern int dev, ninodes, nblocks, imap, bmap;
 extern SUPER *sp;
 extern GD *gp;
 extern PROC *running;
 
-int lab_mkdir() {
+int my_mkdir(char *pathname) {
     int ino = 0, bno = 0;
     MINODE *mip;
    
@@ -90,7 +90,7 @@ int lab_mkdir() {
     return 0;
 }
 
-int lab_creat() {
+int my_creat(char *pathname) {
     int ino = 0, bno = 0;
     MINODE *mip;
    
