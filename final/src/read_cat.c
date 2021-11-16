@@ -66,7 +66,6 @@ int cat(char *file) {
     int n = 0;
 
     int fd = my_open(file, 0); // Open file for read
-    //printf(GRN "cat fd = %d\n" RESET, fd);
 
     while (n = my_read(fd, mybuf, BLKSIZE)) {
         mybuf[n] = 0;

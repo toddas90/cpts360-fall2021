@@ -37,7 +37,7 @@ int my_open(char *filename, int flags) {
     //     return -1;
     // }
 
-    OFT *oftp = (OFT *)malloc(sizeof(OFT));
+    OFT *oftp = (OFT *)malloc(sizeof(OFT)); // NEED TO FREE THIS
     oftp->minodePtr = mip;
     oftp->refCount = 1;
 
