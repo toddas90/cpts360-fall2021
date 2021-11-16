@@ -25,7 +25,7 @@ int my_read(int fd, char *buf, int nbytes) {
     int ibuf[256];
     char *cq = buf;
 
-    int count = 0, lbk = 0, startByte = 0, blk = 0, buf_dirty = 0;
+    int count = 0, lbk = 0, startByte = 0, blk = 0;
     int avil = mip->INODE.i_size - oftp->offset;
 
     while (nbytes && avil) {
@@ -41,12 +41,13 @@ int my_read(int fd, char *buf, int nbytes) {
             put_block(mip->dev, mip->INODE.i_block[12], ibuf);
         } else { // Double indirect blocks
             int tmpblk = 0, tmpbuf[256];
-            get_block(mip->dev, mip->INODE.i_block[13], ibuf);
-            tmpblk = ibuf[lbk - 12];
-            get_block(mip->dev, tmpblk, tmpbuf);
-            blk = tmpbuf[lbk - 12];
-            put_block(mip->dev, tmpblk, tmpbuf);
-            put_block(mip->dev, mip->INODE.i_block[13], ibuf);
+            get_block(mip->dev, mip->INODE.i_block[13], ibuf); // get double indirect
+            lbk -= (12 + 256);
+            tmpblk = ibuf[lbk / 256]; // store block number
+            get_block(mip->dev, tmpblk, tmpbuf); // load indirect
+            blk = tmpbuf[lbk % 256]; // get physical block
+            put_block(mip->dev, tmpblk, tmpbuf); // put back
+            put_block(mip->dev, mip->INODE.i_block[13], ibuf); // put back
         }
 
         get_block(mip->dev, blk, readbuf);
