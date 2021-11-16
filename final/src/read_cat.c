@@ -72,4 +72,5 @@ int cat(char *file) {
         mybuf[n] = 0;
         printf("%s", mybuf); // Works but not ideal, will change later.
     }
+    my_close(fd);
 }
