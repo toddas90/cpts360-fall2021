@@ -64,8 +64,8 @@ int my_open(char *filename, int flags) {
 
     for (int i = 0; i<NFD; i++) {
         if (running->fd[i] == 0) {
-            running->fd[i] = &oftp;
-            printf(GRN "Open: returning %d\n" RESET, i);
+            running->fd[i] = oftp;
+            printf(GRN "Open: returning fd %d\n" RESET, i);
             return i;
         }
     }

@@ -20,11 +20,6 @@ extern PROC *running;
 int my_read(int fd, char *buf, int nbytes) {
     MINODE *mip = running->fd[fd]->minodePtr;
 
-    if (access(mip->INODE.i_mode, F_OK) != 0) { // Check if reg file
-        printf(RED "Not a file\n" RESET);
-        return 0;
-    }
-
     OFT *oftp = running->fd[fd];
     char readbuf[BLKSIZE];
     char *cq = buf;
