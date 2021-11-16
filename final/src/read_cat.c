@@ -40,8 +40,12 @@ int my_read(int fd, char *buf, int nbytes) {
             blk = ibuf[lbk - 12];
             put_block(mip->dev, mip->INODE.i_block[12], ibuf);
         } else { // Double indirect blocks
+            int tmpblk = 0, tmpbuf[256];
             get_block(mip->dev, mip->INODE.i_block[13], ibuf);
-            blk = ibuf[lbk - 12];
+            tmpblk = ibuf[lbk - 12];
+            get_block(mip->dev, tmpblk, tmpbuf);
+            blk = tmpbuf[lbk - 12];
+            put_block(mip->dev, tmpblk, tmpbuf);
             put_block(mip->dev, mip->INODE.i_block[13], ibuf);
         }
 
