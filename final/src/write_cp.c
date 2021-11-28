@@ -72,7 +72,7 @@ int my_write(int fd, char *buf, int nbytes) {
     return count;
 }
 
-int cat(char *src, char *dest) {
+int cp(char *src, char *dest) {
     if (!strcmp(src, "")) {
         printf(YEL "No source file provided\n" RESET);
         return -1;
