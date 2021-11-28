@@ -20,6 +20,7 @@
 #include "../include/symlink.h"
 #include "../include/open_close_lseek.h"
 #include "../include/read_cat.h"
+#include "../include/write_cp.h"
 
 extern MINODE *iget();
 
@@ -179,6 +180,8 @@ int main(int argc, char *argv[ ])
         clear();
     else if (strcmp(cmd, "cat")==0)
         cat(pathname);
+    else if (strcmp(cmd, "cp")==0)
+        cp(pathname, extra_arg);
     else if (strcmp(cmd, "pfd")==0)
         print_fd();
     else if (strcmp(cmd, "help")==0)
@@ -230,6 +233,9 @@ void help() {
 
     printf(BLD BLU "cat" RESET "     - ");
     printf(GRN "Args(1) " RESET "Print file to screen\n");
+
+    printf(BLD BLU "cp" RESET "      - ");
+    printf(GRN "Args(2) " RESET "Print from src file to dest\n");
 
     printf(BLD BLU "pfd" RESET "     - ");
     printf(GRN "Args(0) " RESET "Print opened files\n");
