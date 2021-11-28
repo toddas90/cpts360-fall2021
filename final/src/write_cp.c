@@ -7,6 +7,7 @@
 #include <time.h>
 
 #include "../include/write_cp.h"
+#include "../include/read_cat.h"
 #include "../include/open_close_lseek.h"
 #include "../include/util.h"
 #include "../include/terminal.h"
@@ -30,8 +31,8 @@ int my_write(int fd, char *buf, int nbytes) {
     char *cp;
 
     while (nbytes) {
-        lbk = (oftp->offset / BLKSIZE);
-        start = (oftp->offset & BLKSIZE);
+        lbk = oftp->offset / BLKSIZE;
+        start = oftp->offset & BLKSIZE;
 
         //blk = map(mip->INODE, lbk); // Map function inside util.c is broken despite being the same code.
         if (lbk < 12) { // Direct blocks
@@ -57,14 +58,15 @@ int my_write(int fd, char *buf, int nbytes) {
 
         while (remain) {
             *cp++ = *buf++;
-            oftp->offset++; count++;
-            remain--; nbytes--;
+            oftp->offset++; 
+            count++;
+            remain--; 
+            nbytes--;
             if (oftp->offset > mip->INODE.i_size)
                 mip->INODE.i_size++;
             if (nbytes <= 0)
                 break;
         }
-
         put_block(mip->dev, blk, kbuf);
     }
 
@@ -88,10 +90,10 @@ int cp(char *src, char *dest) {
     int dfd = my_open(dest, 1); // Open file for write
 
     while ((n = my_read(sfd, mybuf, BLKSIZE))) {
-        printf("n = %d\n", n);
         mybuf[n] = 0;
-        my_write(dfd, mybuf, strlen(mybuf));
+        my_write(dfd, mybuf, n);
     }
     my_close(sfd);
     my_close(dfd);
+    return 0;
 }
