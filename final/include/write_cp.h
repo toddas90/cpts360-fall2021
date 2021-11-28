@@ -4,6 +4,6 @@
 #include "type.h"
 
 int my_write(int fd, char *buf, int nbytes);
-int cp();
+int cp(char *src, char *dest);
 
 #endif /* WRITE_CP_H */

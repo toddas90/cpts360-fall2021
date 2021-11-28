@@ -72,6 +72,26 @@ int my_write(int fd, char *buf, int nbytes) {
     return count;
 }
 
-int cp() {
+int cat(char *src, char *dest) {
+    if (!strcmp(src, "")) {
+        printf(YEL "No source file provided\n" RESET);
+        return -1;
+    } else if (!strcmp(dest, "")) {
+        printf(YEL "No destination file provided\n" RESET);
+        return -1;
+    }
 
+    char mybuf[BLKSIZE], dummy = 0;
+    int n = 0;
+
+    int sfd = my_open(src, 0); // Open file for read
+    int dfd = my_open(dest, 1); // Open file for read
+
+    while ((n = my_read(sfd, mybuf, BLKSIZE))) {
+        mybuf[n] = 0;
+        //puts(mybuf);
+        my_write(dfd, mybuf, strlen(mybuf));
+    }
+    my_close(sfd);
+    my_close(dfd);
 }
