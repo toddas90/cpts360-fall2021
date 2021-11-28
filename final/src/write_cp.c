@@ -85,11 +85,11 @@ int cp(char *src, char *dest) {
     int n = 0;
 
     int sfd = my_open(src, 0); // Open file for read
-    int dfd = my_open(dest, 1); // Open file for read
+    int dfd = my_open(dest, 1); // Open file for write
 
     while ((n = my_read(sfd, mybuf, BLKSIZE))) {
+        printf("n = %d\n", n);
         mybuf[n] = 0;
-        //puts(mybuf);
         my_write(dfd, mybuf, strlen(mybuf));
     }
     my_close(sfd);
