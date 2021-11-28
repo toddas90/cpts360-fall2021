@@ -18,7 +18,58 @@ extern GD *gp;
 extern PROC *running;
 
 int my_write(int fd, char *buf, int nbytes) {
+    MINODE *mip = running->fd[fd]->minodePtr;
 
+    OFT *oftp = running->fd[fd];
+    char kbuf[BLKSIZE]; 
+    int ibuf[256];
+    char *cq = buf;
+
+    int count = 0; // Num bytes written
+    int lbk = 0, blk = 0, start = 0, remain = 0;
+    char *cp;
+
+    while (nbytes) {
+        lbk = (oftp->offset / BLKSIZE);
+        start = (oftp->offset & BLKSIZE);
+
+        //blk = map(mip->INODE, lbk); // Map function inside util.c is broken despite being the same code.
+        if (lbk < 12) { // Direct blocks
+            blk = mip->INODE.i_block[lbk];
+        } else if (lbk >= 12 && lbk < (12 + 256)) { // Indirect blocks
+            get_block(mip->dev, mip->INODE.i_block[12], ibuf);
+            blk = ibuf[lbk - 12];
+            put_block(mip->dev, mip->INODE.i_block[12], ibuf);
+        } else { // Double indirect blocks
+            int tmpblk = 0, tmpbuf[256];
+            get_block(mip->dev, mip->INODE.i_block[13], ibuf); // get double indirect
+            lbk -= (12 + 256);
+            tmpblk = ibuf[lbk / 256]; // store block number
+            get_block(mip->dev, tmpblk, tmpbuf); // load indirect
+            blk = tmpbuf[lbk % 256]; // get physical block
+            put_block(mip->dev, tmpblk, tmpbuf); // put back
+            put_block(mip->dev, mip->INODE.i_block[13], ibuf); // put back
+        }
+
+        get_block(mip->dev, blk, kbuf);
+        cp = kbuf + start;
+        remain = BLKSIZE - start;
+
+        while (remain) {
+            *cp++ = *buf++;
+            oftp->offset++; count++;
+            remain--; nbytes--;
+            if (oftp->offset > mip->INODE.i_size)
+                mip->INODE.i_size++;
+            if (nbytes <= 0)
+                break;
+        }
+
+        put_block(mip->dev, blk, kbuf);
+    }
+
+    mip->dirty = 1;
+    return count;
 }
 
 int cp() {
