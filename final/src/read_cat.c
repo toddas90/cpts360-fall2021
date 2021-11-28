@@ -80,6 +80,11 @@ int cat(char *file) {
         return -1;
     }
 
+    if (getino(file) <= 0) {
+        printf(YEL "File not found\n" RESET);
+        return -1;
+    }
+
     char mybuf[BLKSIZE], dummy = 0;
     int n = 0;
 
