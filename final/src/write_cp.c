@@ -23,11 +23,9 @@ int my_write(int fd, char *buf, int nbytes) {
     OFT *oftp = running->fd[fd];
     char kbuf[BLKSIZE]; 
     int ibuf[256];
-    char *cq = buf;
 
     int count = 0; // Num bytes written
-    int lbk = 0, blk = 0, start = 0, remain = 0;
-    char *cp;
+    int lbk = 0, blk = 0, start = 0;
 
     while (nbytes) {
         lbk = (oftp->offset / BLKSIZE);
@@ -52,8 +50,8 @@ int my_write(int fd, char *buf, int nbytes) {
         }
 
         get_block(mip->dev, blk, kbuf);
-        cp = kbuf + start;
-        remain = BLKSIZE - start;
+        char *cp = kbuf + start;
+        int remain = BLKSIZE - start;
 
         while (remain) {
             *cp++ = *buf++;
