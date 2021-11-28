@@ -30,7 +30,7 @@ int my_write(int fd, char *buf, int nbytes) {
 
     while (nbytes) {
         lbk = oftp->offset / BLKSIZE;
-        start = oftp->offset & BLKSIZE;
+        start = oftp->offset % BLKSIZE;
 
         //blk = map(mip->INODE, lbk); // Map function inside util.c is broken despite being the same code.
         if (lbk < 12) { // Direct blocks
