@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <time.h>
 
+#include "../include/write_cp.h"
 #include "../include/read_cat.h"
 #include "../include/open_close_lseek.h"
 #include "../include/util.h"
@@ -17,20 +18,19 @@ extern SUPER *sp;
 extern GD *gp;
 extern PROC *running;
 
-int my_read(int fd, char *buf, int nbytes) {
+int my_write(int fd, char *buf, int nbytes) {
     MINODE *mip = running->fd[fd]->minodePtr;
 
     OFT *oftp = running->fd[fd];
-    char readbuf[BLKSIZE]; 
+    char kbuf[BLKSIZE]; 
     int ibuf[256];
-    char *cq = buf;
 
-    int count = 0, lbk = 0, startByte = 0, blk = 0;
-    int avil = mip->INODE.i_size - oftp->offset;
+    int count = 0; // Num bytes written
+    int lbk = 0, blk = 0, start = 0;
 
-    while (nbytes && avil) {
+    while (nbytes) {
         lbk = oftp->offset / BLKSIZE;
-        startByte = oftp->offset % BLKSIZE;
+        start = oftp->offset % BLKSIZE;
 
         //blk = map(mip->INODE, lbk); // Map function inside util.c is broken despite being the same code.
         if (lbk < 12) { // Direct blocks
@@ -50,50 +50,48 @@ int my_read(int fd, char *buf, int nbytes) {
             put_block(mip->dev, mip->INODE.i_block[13], ibuf); // put back
         }
 
-        get_block(mip->dev, blk, readbuf);
+        get_block(mip->dev, blk, kbuf);
+        char *cp = kbuf + start;
+        int remain = BLKSIZE - start;
 
-        /* copy from startByte to buf[ ], at most remain bytes in this block */
-        char *cp = readbuf + startByte;   
-        int remain = BLKSIZE - startByte;   // number of bytes remain in readbuf[]
-
-        while (remain > 0){
-            *cq++ = *cp++;             // copy byte from readbuf[] into buf[]
-            oftp->offset += 1;           // advance offset 
-            count += 1;                  // inc count as number of bytes read
-            avil -= 1; 
-            nbytes -= 1;  
-            remain -= 1;
-            if (nbytes <= 0 || avil <= 0) 
+        while (remain) {
+            *cp++ = *buf++;
+            oftp->offset++; 
+            count++;
+            remain--; 
+            nbytes--;
+            if (oftp->offset > mip->INODE.i_size)
+                mip->INODE.i_size++;
+            if (nbytes <= 0)
                 break;
         }
-
-        put_block(mip->dev, blk, readbuf);
-        // if one data block is not enough, loop back to OUTER while for more ...
+        put_block(mip->dev, blk, kbuf);
     }
-    //printf("myread: read %d char from file descriptor %d\n", count, fd);  
-    return count;   // count is the actual number of bytes read
+
+    mip->dirty = 1;
+    return count;
 }
 
-int cat(char *file) {
-    if (!strcmp(file, "")) {
-        printf(YEL "No file provided\n" RESET);
+int cp(char *src, char *dest) {
+    if (!strcmp(src, "")) {
+        printf(YEL "No source file provided\n" RESET);
         return -1;
-    }
-
-    if (getino(file) <= 0) {
-        printf(YEL "File not found\n" RESET);
+    } else if (!strcmp(dest, "")) {
+        printf(YEL "No destination file provided\n" RESET);
         return -1;
     }
 
     char mybuf[BLKSIZE], dummy = 0;
     int n = 0;
 
-    int fd = my_open(file, 0); // Open file for read
+    int sfd = my_open(src, 0); // Open file for read
+    int dfd = my_open(dest, 1); // Open file for write
 
-    while ((n = my_read(fd, mybuf, BLKSIZE))) {
+    while ((n = my_read(sfd, mybuf, BLKSIZE))) {
         mybuf[n] = 0;
-        //puts(mybuf);
-        printf("%s", mybuf); // Works but not ideal, will change later.
+        my_write(dfd, mybuf, n);
     }
-    my_close(fd);
+    my_close(sfd);
+    my_close(dfd);
+    return 0;
 }
