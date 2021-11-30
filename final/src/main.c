@@ -96,6 +96,9 @@ int main(int argc, char *argv[ ]) {
     int ino;
     char buf[BLKSIZE];
 
+    printf("\n");
+    my_banner();
+
     // Get disk from user
     printf("Enter disk to mount: ");
     fgets(disk, 32, stdin);
@@ -143,8 +146,8 @@ int main(int argc, char *argv[ ]) {
 
     // WRTIE code here to create P1 as a USER process
 
-    printf("\n");
-    my_banner();
+    //printf("\n");
+    //my_banner();
     printf("\nEnter a command or type \"help\"\n");
  
     while(1){
@@ -186,8 +189,6 @@ int main(int argc, char *argv[ ]) {
             cat(pathname);
         else if (strcmp(cmd, "cp")==0)
             cp(pathname, extra_arg);
-        else if (strcmp(cmd, "pfd")==0)
-            print_fd();
         else if (strcmp(cmd, "help")==0)
             help();
         printf("\n");
@@ -240,9 +241,6 @@ void help() {
 
     printf(BLD BLU "cp" RESET "      - ");
     printf(GRN "Args(2) " RESET "Print from src file to dest\n");
-
-    printf(BLD BLU "pfd" RESET "     - ");
-    printf(GRN "Args(0) " RESET "Print opened files\n");
 
     printf(BLD BLU "clear" RESET "   - ");
     printf(GRN "Args(0) " RESET "Clear screen\n");
