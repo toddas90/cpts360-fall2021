@@ -26,6 +26,18 @@ extern DIR   *dp;
 #define NPROC       2
 #define NFD        64
 
+typedef struct mount {
+    int dev; // 0 means free
+    int ninodes; // From superblock
+    int nblocks;
+    int bmap; // From GD block
+    int imap;
+    int iblk;
+    struct minode *mounted_inode;
+    char name[64]; // device name
+    char mount_name[64]; // Mounted DIR pathname
+}MOUNT;
+
 typedef struct minode{
   INODE INODE;           // INODE structure on disk
   int dev, ino;          // (dev, ino) of INODE
