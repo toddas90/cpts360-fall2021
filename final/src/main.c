@@ -123,7 +123,7 @@ int main(int argc, char *argv[ ]) {
         //printf(RED "magic = %x is not an ext2 filesystem\n" RESET, sp->s_magic);
         exit(1);
     }      
-    printf(" OK\n");
+    printf("OK\n");
     ninodes = sp->s_inodes_count;
     nblocks = sp->s_blocks_count;
 
@@ -152,7 +152,7 @@ int main(int argc, char *argv[ ]) {
     printf("\nEnter a command or type \"help\"\n");
  
     while(1){
-        printf(BLD MAG""RESET);
+        printf(BLD MAG " " RESET);
         fgets(line, 128, stdin);
         line[strlen(line)-1] = 0;
 
@@ -180,7 +180,7 @@ int main(int argc, char *argv[ ]) {
             my_unlink();
         else if (strcmp(cmd, "symlink")==0)
             my_symlink();
-        else if (strcmp(cmd, "creat")==0)
+        else if (strcmp(cmd, "touch")==0)
             my_creat(pathname);
         else if (strcmp(cmd, "quit")==0)
             quit();
@@ -225,7 +225,7 @@ void help() {
     printf(BLD BLU "rmdir" RESET "   - ");
     printf(GRN "Args(1) " RESET "Remove directory\n");
 
-    printf(BLD BLU "creat" RESET "   - ");
+    printf(BLD BLU "touch" RESET "   - ");
     printf(GRN "Args(1) " RESET "Create file\n");
 
     printf(BLD BLU "link" RESET "    - ");
