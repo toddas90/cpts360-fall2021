@@ -21,6 +21,7 @@
 #include "../include/open_close_lseek.h"
 #include "../include/read_cat.h"
 #include "../include/write_cp.h"
+#include "../include/mount_umount.h"
 
 extern MINODE *iget();
 
