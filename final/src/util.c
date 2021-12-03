@@ -17,6 +17,7 @@
 extern MINODE minode[NMINODE];
 extern MINODE *root;
 extern PROC   proc[NPROC], *running;
+extern MOUNT mountTable[NMOUNT];
 
 extern char gpath[128];
 extern char *name[64];
@@ -26,6 +27,15 @@ extern int fd, dev;
 extern int nblocks, ninodes, bmap, imap, iblk;
 
 extern char line[128], cmd[32], pathname[128];
+
+MOUNT *getmptr(int dev) {
+    for (int i = 0; i < NMOUNT; i++) {
+        if (dev == mountTable[i].dev) {
+            return &mountTable[i];
+        }
+    }
+    return 0;
+}
 
 int get_block(int dev, int blk, char *buf)
 {

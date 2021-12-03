@@ -27,6 +27,7 @@ extern MINODE *iget();
 MINODE minode[NMINODE];
 MINODE *root;
 PROC   proc[NPROC], *running;
+MOUNT mountTable[NMOUNT];
 
 char gpath[128]; // global for tokenized components
 char *name[64];  // assume at most 64 components in pathname
@@ -49,6 +50,7 @@ int init()
   int i, j;
   MINODE *mip;
   PROC   *p;
+  MOUNT *m;
 
   printf("initializing...\n");
 
@@ -68,6 +70,15 @@ int init()
       p->fd[k] = 0;
     }
   }
+  for (i=0; i<NMOUNT; i++) {
+      m = &mountTable[i];
+      m->dev = 0;
+      m->bmap = 0;
+      m->iblk = 0;
+      m->imap = 0;
+      m->nblocks = 0;
+      m->ninodes = 0;
+  }
   return 0;
 }
 
@@ -75,6 +86,13 @@ int init()
 int mount_root() { 
     printf("mounting root...\n");
     root = iget(dev, 2);
+    mountTable[0].mounted_inode = root;
+    mountTable[0].bmap = bmap;
+    mountTable[0].dev = dev;
+    mountTable[0].iblk = iblk;
+    mountTable[0].ninodes = ninodes;
+    mountTable[0].nblocks = nblocks;
+    mountTable[0].imap = imap;
     return 0;
 }
 

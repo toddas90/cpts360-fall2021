@@ -24,6 +24,7 @@ extern DIR   *dp;
 #define BLKSIZE  1024
 #define NMINODE   128
 #define NPROC       2
+#define NMOUNT      8
 #define NFD        64
 
 typedef struct mount {
