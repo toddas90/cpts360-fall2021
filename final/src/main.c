@@ -180,7 +180,7 @@ int main(int argc, char *argv[ ]) {
             my_unlink();
         else if (strcmp(cmd, "symlink")==0)
             my_symlink();
-        else if (strcmp(cmd, "touch")==0)
+        else if (strcmp(cmd, "touch")==0 || strcmp(cmd, "creat")==0)
             my_creat(pathname);
         else if (strcmp(cmd, "quit")==0)
             quit();
