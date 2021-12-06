@@ -21,6 +21,11 @@ extern char gpath[128];
 extern char *name[64];
 extern int n;
 
+extern SUPER *sp;
+extern GD *gp;
+extern INODE *ip;
+extern DIR *dp;
+
 extern int fd, dev;
 extern int nblocks, ninodes, bmap, imap, iblk;
 
