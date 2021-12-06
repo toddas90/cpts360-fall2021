@@ -126,7 +126,7 @@ int main(int argc, char *argv[ ]) {
     disk[strlen(disk)-1] = 0;
     printf("\n");
 
-    dev = checkfs(disk, 0);
+    dev = checkfs(disk);
 
     ninodes = sp->s_inodes_count;
     nblocks = sp->s_blocks_count;

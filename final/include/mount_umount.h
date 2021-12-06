@@ -3,6 +3,6 @@
 
 int mount();
 int umount(char *filesys);
-int checkfs(char *disk, int index);
+int checkfs(char *disk);
 
 #endif

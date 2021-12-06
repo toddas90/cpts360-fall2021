@@ -4,6 +4,7 @@
 #include <string.h>
 #include <libgen.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 
 #include "../include/type.h"
 #include "../include/util.h"
@@ -25,7 +26,7 @@ extern int nblocks, ninodes, bmap, imap, iblk;
 
 extern char line[128], cmd[32], pathname[128], extra_arg[128];
 
-int checkfs(char *disk, int index) {
+int checkfs(char *disk) {
     printf("checking EXT2 FS .... ");
     int nfd = 0;
     char buf[BLKSIZE];
@@ -34,10 +35,8 @@ int checkfs(char *disk, int index) {
         exit(1);
     }
 
-    mountTable[index].dev = nfd;    // dev same as this fd
-
     /********** read super block  ****************/
-    get_block(mountTable[index].dev, 1, buf);
+    get_block(nfd, 1, buf);
     sp = (SUPER *)buf;
 
     /* verify it's an ext2 file system ***********/
@@ -76,41 +75,53 @@ int mount() {
     char *dir = dirname(pathname); // Get dirname
     char *base = basename(path2); // get basename
 
-    int newdev = 0;
+    int index = 0;
     int nfd = 0;
 
-    for (newdev; newdev < NMOUNT; newdev++) {
-        if (mountTable[newdev].dev == 0)
-            if((nfd = my_open(pathname, 0)) < 0){ //open new disk
-                printf(YEL "Failed to open %s for mounting\n" RESET, pathname);
-                return -1;
-            }
+    for (index; index < NMOUNT; index++) {
+        if (mountTable[index].dev == 0)
+            nfd = checkfs(base); // Check to see if ext2 fs
+            printf("Back from checkfs, nfd = %d\n", nfd);
             break;
-        if (!strcmp(mountTable[newdev].name, base)) { // If name of thing to mount matches name of mounted thing
+        if (!strcmp(mountTable[index].name, base)) { // If name of thing to mount matches name of mounted thing
             printf(YEL "%s already mounted\n" RESET, base);
             return -1;
         }
     }
 
-    // 3. LINUX open filesys for RW; use its fd number as the new DEV;
-    // Check whether it's an EXT2 file system: if not, reject.
+    int ino  = getino(extra_arg);  // get ino:
+    MINODE *mip  = iget(dev, ino);    // get minode in memory;
 
-    // 4. For mount_point: find its ino, then get its minode:
-    //     ino  = getino(pathname);  // get ino:
-    //     mip  = iget(dev, ino);    // get minode in memory;    
+    // Check to see if the DIR is mountable
+    if (!S_ISDIR(mip->INODE.i_mode)) {
+        printf(YEL "Directory required for mount\n" RESET);
+        return -1;
+    }
 
-    // 5. Check mount_point is a DIR.  
-    // Check mount_point is NOT busy (e.g. can't be someone's CWD)
+    if (!strcmp(extra_arg, running->cwd)) {
+        printf(YEL "Directory busy\n" RESET);
+        return -1; 
+    }
 
-    // 6. Allocate a FREE (dev=0) mountTable[] for newdev;
+    // Allocating a mountTable entry for the new device
+    char buf[BLKSIZE];
+    get_block(nfd, 2, buf); // Hanging because nfd is 0?
+    gp = (GD *)buf;
 
-    // Record new DEV, ninodes, nblocks, bmap, imap, iblk in mountTable[] 
+    mountTable[index].dev = nfd;
+    mountTable[index].mounted_inode = mip;
+    mountTable[index].bmap = gp->bg_block_bitmap;
+    mountTable[index].iblk = gp->bg_inode_table;
+    mountTable[index].ninodes = ninodes;
+    mountTable[index].nblocks = nblocks;
+    mountTable[index].imap = gp->bg_inode_bitmap;
+    strcpy(mountTable[index].name, base);
+    strcpy(mountTable[index].mount_name, extra_arg);
 
+    // Set minode as mounted on
+    mountTable[index].mounted_inode->mounted = True;
+    mountTable[index].mounted_inode->mptr = &mountTable[index];
 
-    // 7. Mark mount_point's minode as being mounted on and let it point at the
-    // MOUNT table entry, which points back to the mount_point minode.
-
-    // return 0 for SUCCESS;
     return 0;
 }
 
