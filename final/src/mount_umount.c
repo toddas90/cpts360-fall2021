@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <ext2fs/ext2_fs.h>
 #include <string.h>
+#include <libgen.h>
+#include <fcntl.h>
 
 #include "../include/type.h"
 #include "../include/util.h"
@@ -23,16 +25,41 @@ extern int nblocks, ninodes, bmap, imap, iblk;
 
 extern char line[128], cmd[32], pathname[128], extra_arg[128];
 
+int checkfs(char *disk, int index) {
+    printf("checking EXT2 FS .... ");
+    int nfd = 0;
+    char buf[BLKSIZE];
+    if ((nfd = open(disk, O_RDWR)) < 0){
+        printf(RED "open %s failed\n" RESET, disk);
+        exit(1);
+    }
+
+    mountTable[index].dev = nfd;    // dev same as this fd
+
+    /********** read super block  ****************/
+    get_block(mountTable[index].dev, 1, buf);
+    sp = (SUPER *)buf;
+
+    /* verify it's an ext2 file system ***********/
+    if (sp->s_magic != 0xEF53){
+        printf(RED "not an EXT2 filesystem!\n" RESET);
+        //printf(RED "magic = %x is not an ext2 filesystem\n" RESET, sp->s_magic);
+        exit(1);
+    }      
+    printf("OK\n");
+    return nfd;
+}
+
 int mount() {
     int display = False; // If empty, just print. If full, mount.
-    
-    if (!strcmp(pathname, "") && !strcmp(extra_arg, "")) { // If both empty
-        display = True;
-    }
 
     if (!strcmp(pathname, "") != !strcmp(extra_arg, "")) { // If only one empty
         printf(YEL "Not enough args\n" RESET);
         return -1;
+    }
+
+    if (!strcmp(pathname, "") && !strcmp(extra_arg, "")) { // If both empty
+        display = True;
     }
     
     if (display == True) { // If no parameters, print the mountTable values
@@ -45,10 +72,25 @@ int mount() {
         return 0;
     }
 
-    // 2. Check whether filesys is already mounted: 
-    // (you may store mounted filesys name in the MOUNT table entry). 
-    // If already mounted, reject;
-    // else: allocate a free MOUNT table entry (dev=0 means FREE).
+    char *path2 = strdup(pathname);
+    char *dir = dirname(pathname); // Get dirname
+    char *base = basename(path2); // get basename
+
+    int newdev = 0;
+    int nfd = 0;
+
+    for (newdev; newdev < NMOUNT; newdev++) {
+        if (mountTable[newdev].dev == 0)
+            if((nfd = my_open(pathname, 0)) < 0){ //open new disk
+                printf(YEL "Failed to open %s for mounting\n" RESET, pathname);
+                return -1;
+            }
+            break;
+        if (!strcmp(mountTable[newdev].name, base)) { // If name of thing to mount matches name of mounted thing
+            printf(YEL "%s already mounted\n" RESET, base);
+            return -1;
+        }
+    }
 
     // 3. LINUX open filesys for RW; use its fd number as the new DEV;
     // Check whether it's an EXT2 file system: if not, reject.

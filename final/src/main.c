@@ -126,25 +126,8 @@ int main(int argc, char *argv[ ]) {
     disk[strlen(disk)-1] = 0;
     printf("\n");
 
-    printf("checking EXT2 FS .... ");
-    if ((fd = open(disk, O_RDWR)) < 0){
-        printf(RED "open %s failed\n" RESET, disk);
-        exit(1);
-    }
+    dev = checkfs(disk, 0);
 
-    dev = fd;    // global dev same as this fd   
-
-    /********** read super block  ****************/
-    get_block(dev, 1, buf);
-    sp = (SUPER *)buf;
-
-    /* verify it's an ext2 file system ***********/
-    if (sp->s_magic != 0xEF53){
-        printf(RED "not an EXT2 filesystem!\n" RESET);
-        //printf(RED "magic = %x is not an ext2 filesystem\n" RESET, sp->s_magic);
-        exit(1);
-    }      
-    printf("OK\n");
     ninodes = sp->s_inodes_count;
     nblocks = sp->s_blocks_count;
 
