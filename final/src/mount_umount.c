@@ -84,10 +84,10 @@ int mount() {
     int nfd = 0;
 
     for (index; index < NMOUNT; index++) {
-        if (mountTable[index].dev == 0)
+        if (mountTable[index].dev == 0) {
             nfd = checkfs(base); // Check to see if ext2 fs
-            printf("Back from checkfs, nfd = %d\n", nfd);
             break;
+        }
         if (!strcmp(mountTable[index].name, base)) { // If name of thing to mount matches name of mounted thing
             printf(YEL "%s already mounted\n" RESET, base);
             return -1;
@@ -110,7 +110,7 @@ int mount() {
 
     // Allocating a mountTable entry for the new device
     char buf[BLKSIZE];
-    get_block(nfd, 2, buf); // Hanging because nfd is 0?
+    get_block(nfd, 2, buf);
     gp = (GD *)buf;
 
     mountTable[index].dev = nfd;
