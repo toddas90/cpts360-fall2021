@@ -94,6 +94,8 @@ int mount_root() {
     mountTable[0].ninodes = ninodes;
     mountTable[0].nblocks = nblocks;
     mountTable[0].imap = imap;
+    strcpy(mountTable[0].name, "root");
+    strcpy(mountTable[0].mount_name, "/");
     return 0;
 }
 
@@ -201,6 +203,8 @@ int main(int argc, char *argv[ ]) {
             my_symlink();
         else if (strcmp(cmd, "touch")==0 || strcmp(cmd, "creat")==0)
             my_creat(pathname);
+        else if (strcmp(cmd, "mount")==0)
+            mount();
         else if (strcmp(cmd, "quit")==0)
             quit();
         else if (strcmp(cmd, "clear")==0)
@@ -213,6 +217,7 @@ int main(int argc, char *argv[ ]) {
             help();
         printf("\n");
         bzero(pathname, 128);
+        bzero(extra_arg, 128);
     }
 }
 

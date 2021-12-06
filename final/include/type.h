@@ -21,6 +21,9 @@ extern DIR   *dp;
 #define FREE        0
 #define READY       1
 
+#define True        1
+#define False       0
+
 #define BLKSIZE  1024
 #define NMINODE   128
 #define NPROC       2

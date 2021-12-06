@@ -21,11 +21,29 @@ extern int n;
 extern int fd, dev;
 extern int nblocks, ninodes, bmap, imap, iblk;
 
-extern char line[128], cmd[32], pathname[128];
+extern char line[128], cmd[32], pathname[128], extra_arg[128];
 
 int mount() {
-    // 1. Ask for filesys (a virtual disk) and mount_point (a DIR pathname).
-    // If no parameters: display current mounted filesystems.
+    int display = False; // If empty, just print. If full, mount.
+    
+    if (!strcmp(pathname, "") && !strcmp(extra_arg, "")) { // If both empty
+        display = True;
+    }
+
+    if (!strcmp(pathname, "") != !strcmp(extra_arg, "")) { // If only one empty
+        printf(YEL "Not enough args\n" RESET);
+        return -1;
+    }
+    
+    if (display == True) { // If no parameters, print the mountTable values
+        for (int i = 0; i < NMOUNT; i++) {
+            if (mountTable[i].dev != 0) {
+                printf("Device: " BLD "%s" RESET " -> Mount Point: " BLD BLU "%s\n" RESET, 
+                        mountTable[i].name, mountTable[i].mount_name);
+            }
+        }
+        return 0;
+    }
 
     // 2. Check whether filesys is already mounted: 
     // (you may store mounted filesys name in the MOUNT table entry). 
@@ -51,6 +69,7 @@ int mount() {
     // MOUNT table entry, which points back to the mount_point minode.
 
     // return 0 for SUCCESS;
+    return 0;
 }
 
 int umount(char *filesys) {
