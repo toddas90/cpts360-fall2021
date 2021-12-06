@@ -319,44 +319,71 @@ int search(MINODE *mip, char *name)
    return 0;
 }
 
-int getino(char *pathname)
-{
-  int i, ino, blk, offset;
-  char buf[BLKSIZE];
-  INODE *ip;
-  MINODE *mip;
+int getino(char *pathname) {
+    int i, ino, blk, offset;
+    char buf[BLKSIZE];
+    INODE *ip;
+    MINODE *mip;
 
-  //printf("getino: pathname=%s\n", pathname);
-  if (strcmp(pathname, "/")==0)
-      return 2;
+    //printf("getino: pathname=%s\n", pathname);
+    if (strcmp(pathname, "/")==0) {
+        dev = mountTable[0].dev;
+        return 2;
+    }
   
-  // starting mip = root OR CWD
-  if (pathname[0]=='/')
-     mip = root;
-  else
-     mip = running->cwd;
+    // starting mip = root OR CWD
+    if (pathname[0]== '/') {
+        dev = mountTable[0].dev;
+        mip = root;
+    } else {
+        mip = running->cwd;
+        dev = running->cwd->dev;
+    }
 
-  mip->refCount++;         // because we iput(mip) later
-  
-  tokenize(pathname);
+    mip->refCount += 1; // because we iput(mip) later
+    tokenize(pathname);
 
-  for (i=0; i<n; i++){
-      //printf("===========================================\n");
-      //printf("getino: i=%d name[%d]=%s\n", i, i, name[i]);
- 
-      ino = search(mip, name[i]);
+    for (i=0; i<n; i++){
+        if(!S_ISDIR(mip->INODE.i_mode)) { // Check dir
+            printf(YEL "%s is not a directory\n" RESET, name[i]);
+            iput(mip);
+            return 0;
+        }
 
-      if (ino==0){
-         iput(mip);
-         //printf(YEL "name %s does not exist\n" RESET, name[i]);
-         return 0;
-      }
-      iput(mip);
-      mip = iget(dev, ino);
-   }
+        ino = search(mip, name[i]);
+        
+        if (ino == 0) {
+            printf(YEL "name %s does not exist\n" RESET, name[i]);
+            iput(mip);
+            return 0;
+        }
 
-   iput(mip);
-   return ino;
+        iput(mip);
+        mip = iget(dev, ino); // switch to new minode
+
+        if (mip->mounted == 1) {
+            dev = mip->mptr->dev;
+            iput(mip);
+            mip = iget(dev, 2);
+            ino = mip->ino;
+        }
+
+        if (ino == 2 && mountTable[0].dev != dev && strcmp(name[i], "..") == 0) {
+            for (int j=0; j<NMOUNT; j++) {
+                if (mountTable[j].dev == dev) {
+                    mip = mountTable[j].mounted_inode;
+                    break;
+                }
+            }
+
+            mip->refCount += 1;
+            dev = mip->dev;
+            ino = search(mip, name[i]);
+        }
+    }
+
+    iput(mip);
+    return ino;
 }
 
 // These 2 functions are needed for pwd()

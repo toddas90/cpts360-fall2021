@@ -32,7 +32,6 @@ extern int nblocks, ninodes, bmap, imap, iblk;
 extern char line[128], cmd[32], pathname[128], extra_arg[128];
 
 int checkfs(char *disk) {
-    printf("checking EXT2 FS .... ");
     int nfd = 0;
     char buf[BLKSIZE];
     if ((nfd = open(disk, O_RDWR)) < 0){
@@ -50,7 +49,6 @@ int checkfs(char *disk) {
         //printf(RED "magic = %x is not an ext2 filesystem\n" RESET, sp->s_magic);
         exit(1);
     }      
-    printf("OK\n");
     return nfd;
 }
 
@@ -69,8 +67,8 @@ int mount() {
     if (display == True) { // If no parameters, print the mountTable values
         for (int i = 0; i < NMOUNT; i++) {
             if (mountTable[i].dev != 0) {
-                printf("Device: " BLD "%s" RESET " -> Mount Point: " BLD BLU "%s\n" RESET, 
-                        mountTable[i].name, mountTable[i].mount_name);
+                printf("Device [%d]: " BLD "%s" RESET " -> Mount Point: " BLD BLU "%s\n" RESET, 
+                        mountTable[i].dev, mountTable[i].name, mountTable[i].mount_name);
             }
         }
         return 0;
@@ -117,9 +115,9 @@ int mount() {
     mountTable[index].mounted_inode = mip;
     mountTable[index].bmap = gp->bg_block_bitmap;
     mountTable[index].iblk = gp->bg_inode_table;
-    mountTable[index].ninodes = ninodes;
-    mountTable[index].nblocks = nblocks;
     mountTable[index].imap = gp->bg_inode_bitmap;
+    mountTable[index].ninodes = sp->s_inodes_count;
+    mountTable[index].nblocks = sp->s_blocks_count;
     strcpy(mountTable[index].name, base);
     strcpy(mountTable[index].mount_name, extra_arg);
 

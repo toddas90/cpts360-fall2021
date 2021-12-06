@@ -53,8 +53,6 @@ int init()
   PROC   *p;
   MOUNT *m;
 
-  printf("initializing...\n");
-
   for (i=0; i<NMINODE; i++){
     mip = &minode[i];
     mip->dev = mip->ino = 0;
@@ -85,7 +83,6 @@ int init()
 
 // load root INODE and set root pointer to it
 int mount_root() { 
-    printf("mounting root...\n");
     root = iget(dev, 2);
     mountTable[0].mounted_inode = root;
     mountTable[0].bmap = bmap;
@@ -126,7 +123,9 @@ int main(int argc, char *argv[ ]) {
     disk[strlen(disk)-1] = 0;
     printf("\n");
 
+    printf("checking EXT2 FS... ");
     dev = checkfs(disk);
+    printf("OK\n");
 
     ninodes = sp->s_inodes_count;
     nblocks = sp->s_blocks_count;
@@ -139,8 +138,14 @@ int main(int argc, char *argv[ ]) {
     iblk = gp->bg_inode_table;
     //printf("bmp=%d imap=%d inode_start = %d\n", bmap, imap, iblk);
 
-    init();  
+    printf("initializing....... ");
+    init();
+    printf("OK\n");
+
+    printf("mounting root...... ");
     mount_root();
+    printf("OK\n");
+
     //printf("root refCount = %d\n", root->refCount);
 
     //printf("creating P0 as running process\n");
