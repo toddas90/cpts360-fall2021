@@ -25,9 +25,9 @@ int my_write(int fd, char *buf, int nbytes) {
 
     int lbk, blk, startByte, remain, count = 0;
     
-    char wbuf[BLKSIZE];
-    char indbuf[BLKSIZE/4]; //for indirects
-    char tbuf[BLKSIZE/4];
+    int wbuf[BLKSIZE];
+    int indbuf[BLKSIZE/4];
+    int tbuf[BLKSIZE/4];
 
     char ebuf[BLKSIZE];
     bzero(ebuf, BLKSIZE);
