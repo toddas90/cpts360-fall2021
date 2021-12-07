@@ -53,7 +53,6 @@ int checkfs(char *disk) {
 }
 
 int mount() {
-
     if (!strcmp(pathname, "") != !strcmp(extra_arg, "")) { // If only one empty
         printf(YEL "Not enough args\n" RESET);
         return -1;
@@ -73,6 +72,13 @@ int mount() {
     char *dir = dirname(pathname); // Get dirname
     char *base = basename(path2); // get basename
 
+    for (int i = 0; i < NMOUNT; i++) {
+        if (!strcmp(mountTable[i].name, base)) { // If name of thing to mount matches name of mounted thing
+            printf(YEL "%s already mounted\n" RESET, base);
+            return -1;
+        }
+    }
+
     int index = 1;
     int nfd = 0;
 
@@ -81,14 +87,10 @@ int mount() {
             nfd = checkfs(base); // Check to see if ext2 fs
             break;
         }
-        if (!strcmp(mountTable[index].name, base)) { // If name of thing to mount matches name of mounted thing
-            printf(YEL "%s already mounted\n" RESET, base);
-            return -1;
-        }
-    }
+    } 
 
-    int ino  = getino(extra_arg);  // get ino:
-    MINODE *mip  = iget(dev, ino);    // get minode in memory;
+    int ino  = getino(extra_arg); // get ino:
+    MINODE *mip  = iget(dev, ino); // get minode in memory;
 
     // Check to see if the DIR is mountable
     if (!S_ISDIR(mip->INODE.i_mode)) {

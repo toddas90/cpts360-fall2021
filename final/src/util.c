@@ -79,17 +79,17 @@ MINODE *iget(int dev, int ino)
 {
   int i;
   MINODE *mip;
-  MOUNT *mp;
+  //MOUNT *mp;
   char buf[BLKSIZE];
   int blk, offset;
   INODE *ip;
 
-    for (i = 0; i<NMOUNT; i++) {
-        if(dev == mountTable[i].dev) {
-            mp = &mountTable[i];
-            break;
-        }
-    }
+    // for (i = 0; i<NMOUNT; i++) {
+    //     if(dev == mountTable[i].dev) {
+    //         mp = &mountTable[i];
+    //         break;
+    //     }
+    // }
 
   for (i=0; i<NMINODE; i++){
     mip = &minode[i];
@@ -130,7 +130,7 @@ void iput(MINODE *mip)
     int i, block, offset;
     char buf[BLKSIZE];
     INODE *ip;
-    MOUNT *mp;
+    //MOUNT *mp;
 
     if (mip==0) 
         return;
@@ -140,12 +140,12 @@ void iput(MINODE *mip)
     if (mip->refCount > 0) return;
     if (!mip->dirty)       return;
 
-    for (i = 0; i<NMOUNT; i++) {
-        if (dev == mountTable[i].dev) {
-            mp = &mountTable[i];
-            break;
-        }
-    }
+    // for (i = 0; i<NMOUNT; i++) {
+    //     if (dev == mountTable[i].dev) {
+    //         mp = &mountTable[i];
+    //         break;
+    //     }
+    // }
 
     // Write inode back to disk
     block = (mip->ino - 1) / 8 + iblk;
@@ -369,7 +369,7 @@ int getino(char *pathname) {
         ino = search(mip, name[i]);
         
         if (ino == 0) {
-            printf(YEL "name %s does not exist\n" RESET, name[i]);
+            //printf(YEL "name %s does not exist\n" RESET, name[i]);
             iput(mip);
             return 0;
         }

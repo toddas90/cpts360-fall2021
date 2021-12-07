@@ -1,12 +1,18 @@
 # run under Linux:
 
-sudo mount disk2 /mnt
+sudo mount disk2 mount
+
+echo diff tiny with copied newtiny t
+sudo diff mount/tiny  mount/t
+
+echo diff small with copied newsmall s
+sudo diff mount/small  mount/s
 
 echo diff large with copied newlarge l
-sudo diff /mnt/large  /mnt/l
+sudo diff mount/large  mount/l
 
 echo diff huge  with copied newhuge  h
-sudo diff /mnt/huge   /mnt/h
+sudo diff mount/huge   mount/h
 
-sudo umount /mnt
+sudo umount mount
 

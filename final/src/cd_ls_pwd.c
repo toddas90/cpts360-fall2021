@@ -33,6 +33,7 @@ int cd() {
         }
     }
 
+    printf("Getting INODE with dev = %d and ino = %d\n", dev, ino);
     MINODE *mip = iget(dev, ino); // get minode of path dir
     
     if ((mip->INODE.i_mode & 0xF000) == 0xA000) { // Check if link
@@ -44,7 +45,7 @@ int cd() {
         put_block(dev, mip->INODE.i_block[0], buf);
         iput(mip);
         mip = iget(dev, lino);
-    } else if(!((mip->INODE.i_mode & 0xF000) == 0x4000)) { // If inode is not a dir, quit
+    } else if(!S_ISDIR(mip->INODE.i_mode)) { // If inode is not a dir, quit
         fprintf(stderr, YEL "INODE is not a dir\n" RESET);
         return -1;
     }
@@ -174,11 +175,12 @@ int ls() {
     if (!strcmp(pathname, "")) // If path empty, use cwd
         ls_dir(running->cwd);
     else {
-        int i = getino(pathname); // get path inode number
-        if (i < 2)
+        int ino = getino(pathname); // get path inode number
+        if (ino < 2)
             return -1;
-        int d = running->cwd->dev; // get device num
-        MINODE *m = iget(d, i); // get minode of path dir
+        //int d = running->cwd->dev; // get device num
+        //printf("Getting INODE with dev = %d and ino = %d\n", dev, ino);
+        MINODE *m = iget(dev, ino); // get minode of path dir
         ls_dir(m);
         iput(m); // NEW
     }
