@@ -19,40 +19,72 @@ extern GD *gp;
 extern PROC *running;
 
 int my_write(int fd, char *buf, int nbytes) {
-    MINODE *mip = running->fd[fd]->minodePtr;
-
     OFT *oftp = running->fd[fd];
-    char kbuf[BLKSIZE]; 
-    int ibuf[256];
+    MINODE *mip = oftp->minodePtr;
+    INODE *ip = &mip->INODE;
 
-    int count = 0; // Num bytes written
-    int lbk = 0, blk = 0, start = 0;
+    int lbk, blk, startByte, remain, count = 0;
+    
+    char wbuf[BLKSIZE];
+    char indbuf[BLKSIZE/4]; //for indirects
+    char tbuf[BLKSIZE/4];
 
-    while (nbytes) {
+    char ebuf[BLKSIZE];
+    bzero(ebuf, BLKSIZE);
+
+    while(nbytes) {
         lbk = oftp->offset / BLKSIZE;
-        start = oftp->offset % BLKSIZE;
+        startByte = oftp->offset % BLKSIZE;
 
-        //blk = map(mip->INODE, lbk); // Map function inside util.c is broken despite being the same code.
         if (lbk < 12) { // Direct blocks
+            if (ip->i_block[lbk] == 0) { //if no data block yet
+                ip->i_block[lbk] = balloc(mip->dev);
+            }
+
             blk = mip->INODE.i_block[lbk];
         } else if (lbk >= 12 && lbk < (12 + 256)) { // Indirect blocks
-            get_block(mip->dev, mip->INODE.i_block[12], ibuf);
-            blk = ibuf[lbk - 12];
-            put_block(mip->dev, mip->INODE.i_block[12], ibuf);
+            if (ip->i_block[12] == 0) {
+                ip->i_block[12] = balloc(mip->dev);
+                put_block(mip->dev, ip->i_block[12], ebuf);
+            }
+
+            get_block(mip->dev, ip->i_block[12], indbuf);
+            blk = indbuf[lbk-12];
+
+            if (blk == 0) {
+                indbuf[lbk-12] = balloc(mip->dev);
+                put_block(mip->dev, ip->i_block[12], indbuf);
+            }
+
+            blk = indbuf[lbk-12];
         } else { // Double indirect blocks
-            int tmpblk = 0, tmpbuf[256];
-            get_block(mip->dev, mip->INODE.i_block[13], ibuf); // get double indirect
-            lbk -= (12 + 256);
-            tmpblk = ibuf[lbk / 256]; // store block number
-            get_block(mip->dev, tmpblk, tmpbuf); // load indirect
-            blk = tmpbuf[lbk % 256]; // get physical block
-            put_block(mip->dev, tmpblk, tmpbuf); // put back
-            put_block(mip->dev, mip->INODE.i_block[13], ibuf); // put back
+            if (ip->i_block[13] == 0) {
+                ip->i_block[13] = balloc(mip->dev);
+                put_block(mip->dev, ip->i_block[13], ebuf);
+            }
+
+            get_block(mip->dev, ip->i_block[13], indbuf);
+            blk = indbuf[(lbk-(256+12))/256];
+
+            if (blk == 0) {
+                indbuf[(lbk-(256+12))/256] = balloc(mip->dev);
+                put_block(mip->dev, ip->i_block[(lbk-(256+12))/256], ebuf);
+            }
+
+            get_block(mip->dev, indbuf[(lbk-(256+12))/256], tbuf);
+            blk = tbuf[lbk-(256+12)%256];
+
+            if (blk == 0) {
+                tbuf[lbk-(256+12)%256] = balloc(mip->dev);
+                put_block(mip->dev, indbuf[(lbk-(256+12))/256], tbuf);
+            }
+
+            blk = tbuf[lbk-(256+12)%256];
         }
 
-        get_block(mip->dev, blk, kbuf);
-        char *cp = kbuf + start;
-        int remain = BLKSIZE - start;
+        get_block(mip->dev, blk, wbuf);
+        char *cp = wbuf + startByte;
+        remain = BLKSIZE - startByte;
 
         while (remain) {
             *cp++ = *buf++;
@@ -65,10 +97,12 @@ int my_write(int fd, char *buf, int nbytes) {
             if (nbytes <= 0)
                 break;
         }
-        put_block(mip->dev, blk, kbuf);
+        put_block(mip->dev, blk, wbuf);
     }
 
     mip->dirty = 1;
+    iput(mip);
+
     return count;
 }
 
