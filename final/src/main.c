@@ -39,7 +39,7 @@ GD *gp;
 INODE *ip;
 DIR *dp;
 
-int fd, dev;
+int fd, dev, rootdev;
 int nblocks, ninodes, bmap, imap, iblk;
 char line[128], cmd[32], pathname[128], extra_arg[128];
 
@@ -125,6 +125,7 @@ int main(int argc, char *argv[ ]) {
 
     printf("checking EXT2 FS... ");
     dev = checkfs(disk);
+    rootdev = dev;
     printf("OK\n");
 
     ninodes = sp->s_inodes_count;

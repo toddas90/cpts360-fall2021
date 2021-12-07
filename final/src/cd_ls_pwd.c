@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+
 #include "../include/util.h" 
 #include "../include/type.h"
 #include "../include/cd_ls_pwd.h" 
@@ -18,6 +19,7 @@ extern char pathname[128];
 extern int dev;
 
 /************* cd_ls_pwd.c file **************/
+
 int cd() {
     int ino = 0;
     

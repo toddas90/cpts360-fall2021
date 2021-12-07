@@ -23,7 +23,7 @@ extern char gpath[128];
 extern char *name[64];
 extern int n;
 
-extern int fd, dev;
+extern int fd, dev, rootdev;
 extern int nblocks, ninodes, bmap, imap, iblk;
 
 extern char line[128], cmd[32], pathname[128];
@@ -326,7 +326,7 @@ int getino(char *pathname) {
     MINODE *mip;
 
     //printf("getino: pathname=%s\n", pathname);
-    if (strcmp(pathname, "/")==0) {
+    if (strcmp(pathname, "/") == 0) {
         dev = mountTable[0].dev;
         return 2;
     }
@@ -361,7 +361,7 @@ int getino(char *pathname) {
         iput(mip);
         mip = iget(dev, ino); // switch to new minode
 
-        if (mip->mounted == 1) {
+        if (mip->mounted == True) {
             dev = mip->mptr->dev;
             iput(mip);
             mip = iget(dev, 2);

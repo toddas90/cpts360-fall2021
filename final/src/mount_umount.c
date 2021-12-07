@@ -26,7 +26,7 @@ extern GD *gp;
 extern INODE *ip;
 extern DIR *dp;
 
-extern int fd, dev;
+extern int fd, dev, rootdev;
 extern int nblocks, ninodes, bmap, imap, iblk;
 
 extern char line[128], cmd[32], pathname[128], extra_arg[128];
@@ -53,7 +53,6 @@ int checkfs(char *disk) {
 }
 
 int mount() {
-    int display = False; // If empty, just print. If full, mount.
 
     if (!strcmp(pathname, "") != !strcmp(extra_arg, "")) { // If only one empty
         printf(YEL "Not enough args\n" RESET);
@@ -61,10 +60,6 @@ int mount() {
     }
 
     if (!strcmp(pathname, "") && !strcmp(extra_arg, "")) { // If both empty
-        display = True;
-    }
-    
-    if (display == True) { // If no parameters, print the mountTable values
         for (int i = 0; i < NMOUNT; i++) {
             if (mountTable[i].dev != 0) {
                 printf("Device [%d]: " BLD "%s" RESET " -> Mount Point: " BLD BLU "%s\n" RESET, 
@@ -78,7 +73,7 @@ int mount() {
     char *dir = dirname(pathname); // Get dirname
     char *base = basename(path2); // get basename
 
-    int index = 0;
+    int index = 1;
     int nfd = 0;
 
     for (index; index < NMOUNT; index++) {
@@ -112,7 +107,6 @@ int mount() {
     gp = (GD *)buf;
 
     mountTable[index].dev = nfd;
-    mountTable[index].mounted_inode = mip;
     mountTable[index].bmap = gp->bg_block_bitmap;
     mountTable[index].iblk = gp->bg_inode_table;
     mountTable[index].imap = gp->bg_inode_bitmap;
@@ -122,8 +116,10 @@ int mount() {
     strcpy(mountTable[index].mount_name, extra_arg);
 
     // Set minode as mounted on
-    mountTable[index].mounted_inode->mounted = True;
-    mountTable[index].mounted_inode->mptr = &mountTable[index];
+    mip->mounted = True;
+    mip->mptr = &mountTable[index];
+    mip->dirty = True;
+    mountTable[index].mounted_inode = mip;
 
     return 0;
 }
