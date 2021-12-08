@@ -39,16 +39,20 @@ MOUNT *getmptr(int dev) {
 
 int get_block(int dev, int blk, char *buf)
 {
-   lseek(dev, (long)blk*BLKSIZE, 0);
-   read(dev, buf, BLKSIZE);
-   return 0;
+    lseek(dev, blk * BLKSIZE, SEEK_SET);
+    int n = read(dev, buf, BLKSIZE);
+    if (n < 0)
+        printf("get_block [%d %d] error \n", dev, blk);
+    return 0;
 }   
 
 int put_block(int dev, int blk, char *buf)
 {
-   lseek(dev, (long)blk*BLKSIZE, 0);
-   write(dev, buf, BLKSIZE);
-   return 0;
+    lseek(dev, blk * BLKSIZE, SEEK_SET);
+    int n = write(dev, buf, BLKSIZE);
+    if (n != BLKSIZE)
+        printf("put_block [%d %d] error\n", dev, blk);
+    return 0;
 }   
 
 int tokenize(char *pathname)
@@ -199,21 +203,6 @@ int inc_free_inodes(int dev) {
     gp->bg_free_inodes_count += 1;
     put_block(dev, 2, buf);
     return 0;
-}
-
-int map(INODE ip, int lbk) {
-    char ibuf[256];
-    int blk = 0;
-    if (lbk < 12) { // Direct blocks
-        blk = ip.i_block[lbk];
-    } else if (12 <= lbk && lbk < 12 + 256) {// Indirect blocks
-        get_block(dev, ip.i_block[12], ibuf);
-        blk = ibuf[lbk - 12];
-        put_block(dev, ip.i_block[12], ibuf);
-    } else { // Double indirect blocks
-        // Implement
-    }
-    return blk;
 }
 
 int ialloc(int dev) {
