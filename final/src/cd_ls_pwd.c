@@ -14,6 +14,7 @@
 
 extern PROC *running;
 extern MINODE *root;
+extern MOUNT mountTable[NMOUNT];
 
 extern char pathname[128];
 extern int dev;
@@ -195,9 +196,21 @@ void rpwd(MINODE *wd) {
 
     if (wd == root) // If root, return
         return;
-    
+
     ino = wd->ino; // cwd inode num
-    pino = findino(wd, &ino); // cwd parent inode num
+
+    if (ino == 2 && wd->dev != mountTable[0].dev) {
+        for (int i = 0; i < NMOUNT; i++) {
+            if (mountTable[i].dev == wd->dev) {
+                ino = mountTable[i].mounted_inode->ino;
+                dev = mountTable[i].mounted_inode->dev;
+                pino = findino(mountTable[i].mounted_inode, &ino);
+                break;
+            }
+        }
+    } else {
+        pino = findino(wd, &ino); // cwd parent inode num
+    }
 
     pip = iget(dev, pino); // parent minode
     findmyname(pip, ino, my_name); // get name of cwd from parent
