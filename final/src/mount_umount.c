@@ -127,19 +127,20 @@ int umount(char *filesys) {
 
     for (int i = 0; i < NMOUNT; i++) {
         if (!strcmp(mountTable[i].name, base)) { // If name of thing to mount matches name of mounted thing
-            printf(YEL "%s already mounted\n" RESET, base);
-            return -1;
+            for (int j = 0; j < NMINODE; j++) {
+                if (minode[j].dev == mountTable[i].dev && minode[j].refCount > 0) {
+                    if (minode[j].ino != mountTable[i].mounted_inode->ino) {
+                        printf(YEL "Directory is busy\n" RESET);
+                        return -1;
+                    }    
+                }
+            }
+
+            mountTable[i].dev = 0;
+            mountTable[i].mounted_inode->mounted = False;
+            iput(mountTable[i].mounted_inode);
+            return 0;
         }
     }
-
-    // 2. Check whether any file is still active in the mounted filesys;
-    //     e.g. someone's CWD or opened files are still there,
-    // if so, the mounted filesys is BUSY ==> cannot be umounted yet.
-    // HOW to check?      ANS: by checking all minode[].dev
-
-    // 3. Find the mount_point's inode (which should be in memory while it's mounted 
-    // on).  Reset it to "not mounted"; then 
-    //         iput()   the minode.  (because it was iget()ed during mounting)
-
-    // 4. return 0 for SUCCESS;
-}  
+    return -1;
+} 

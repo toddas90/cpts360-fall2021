@@ -209,6 +209,8 @@ int main(int argc, char *argv[ ]) {
             my_creat(pathname);
         else if (strcmp(cmd, "mount")==0)
             mount();
+        else if (strcmp(cmd, "umount")==0)
+            umount(pathname);
         else if (strcmp(cmd, "quit")==0)
             quit();
         else if (strcmp(cmd, "clear")==0)

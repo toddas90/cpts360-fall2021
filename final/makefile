@@ -25,4 +25,3 @@ $(TARGET) : $(OBJS)
 
 clean:
 	$(RM) *.o *~ $(TARGET)
-
