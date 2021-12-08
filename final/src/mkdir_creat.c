@@ -86,8 +86,8 @@ int my_mkdir(char *pathname) {
     enter_child(pmip, ino, base); // Put child name in parent
     
     pmip->INODE.i_links_count += 1;
-    pmip->dirty = 1; // set parent dirty
-    iput(pmip); // write to disk
+    //pmip->dirty = 1; // set parent dirty
+    //iput(pmip); // write to disk
     return 0;
 }
 
@@ -144,8 +144,8 @@ int my_creat(char *pathname) {
     
     enter_child(pmip, ino, base); // Put child name in parent
     
-    pmip->dirty = 1; // set parent dirty
-    iput(pmip); // write to disk
+    //pmip->dirty = 1; // set parent dirty
+    //iput(pmip); // write to disk
     return 0;
 }
 
@@ -183,7 +183,7 @@ int enter_child(MINODE *pmip, int ino, char *basename) {
             // printf("dp->name = %s, basename = %s\n", dp->name, basename);
             // printf("New entry name: %s, len: %d\n", dp->name, dp->rec_len);
             put_block(dev, pmip->INODE.i_block[i], buf); // Write block back to disk.
-            //iput(pmip);
+            iput(pmip);
             return 0;
         } else { // If new dir can't fit in current block
             //char nbuf[BLKSIZE];
@@ -200,7 +200,7 @@ int enter_child(MINODE *pmip, int ino, char *basename) {
             strcpy(dp->name, basename);
             pmip->dirty = True;
             put_block(dev, pmip->INODE.i_block[i], buf);
-            //iput(pmip);
+            iput(pmip);
             return 0;
         }
     }

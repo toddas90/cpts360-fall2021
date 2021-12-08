@@ -83,8 +83,6 @@ int init()
 
 // load root INODE and set root pointer to it
 int mount_root() { 
-    root = iget(dev, 2);
-    mountTable[0].mounted_inode = root;
     mountTable[0].bmap = bmap;
     mountTable[0].dev = dev;
     mountTable[0].iblk = iblk;
@@ -93,6 +91,8 @@ int mount_root() {
     mountTable[0].imap = imap;
     strcpy(mountTable[0].name, "root");
     strcpy(mountTable[0].mount_name, "/");
+    root = iget(dev, 2);
+    mountTable[0].mounted_inode = root;
     return 0;
 }
 

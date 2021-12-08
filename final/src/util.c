@@ -108,12 +108,13 @@ MINODE *iget(int dev, int ino)
     mip = &minode[i];
     if (mip->refCount == 0) {
        //printf("allocating NEW minode[%d] for [%d %d]\n", i, dev, ino);
+       mip = mialloc();
        mip->refCount = 1;
        mip->dev = dev;
        mip->ino = ino;
 
        // get INODE of ino to buf    
-       blk    = (ino-1)/8 + iblk;
+       blk    = (ino-1)/8 + mp->iblk;
        offset = (ino-1) % 8;
 
        //printf("iget: ino=%d blk=%d offset=%d\n", ino, blk, offset);
@@ -153,7 +154,7 @@ void iput(MINODE *mip)
     }
 
     // Write inode back to disk
-    block = (mip->ino - 1) / 8 + iblk;
+    block = (mip->ino - 1) / 8 + mp->iblk;
     offset = (mip->ino - 1) % 8;
 
     // Get block containing inode
