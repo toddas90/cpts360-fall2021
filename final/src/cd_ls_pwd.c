@@ -35,8 +35,9 @@ int cd() {
 
     //printf("Getting INODE with dev = %d and ino = %d\n", dev, ino);
     MINODE *mip = iget(dev, ino); // get minode of path dir
+    //printf("Got INODE with dev = %d and ino = %d\n", mip->dev, mip->ino);
     
-    if ((mip->INODE.i_mode & 0xF000) == 0xA000) { // Check if link
+    if (S_ISLNK(mip->INODE.i_mode)) { // Check if link
         // If symlink
         char buf[BLKSIZE];
         get_block(dev, mip->INODE.i_block[0], buf);
@@ -133,13 +134,13 @@ int ls_dir(MINODE *mip) {
     if ((mip->INODE.i_mode & 0xF000) == 0xA000) { // Check if link
         // If symlink
         char buf[BLKSIZE];
-        get_block(dev, mip->INODE.i_block[0], buf);
+        get_block(mip->dev, mip->INODE.i_block[0], buf);
         DIR *dp = (DIR *)buf;
         int lino = getino(dp->name);
         //strncpy(lname, dp->name, strlen(dp->name));
-        put_block(dev, mip->INODE.i_block[0], buf);
+        put_block(mip->dev, mip->INODE.i_block[0], buf);
         iput(mip);
-        mip = iget(dev, lino);
+        mip = iget(mip->dev, lino);
     }
 
     get_block(mip->dev, mip->INODE.i_block[0], buf);
@@ -154,13 +155,13 @@ int ls_dir(MINODE *mip) {
         if ((mmip->INODE.i_mode & 0xF000) == 0xA000) { // Check if link
             // If symlink
             char lbuf[BLKSIZE];
-            get_block(dev, mmip->INODE.i_block[0], lbuf);
+            get_block(mip->dev, mmip->INODE.i_block[0], lbuf);
             DIR *ldp = (DIR *)lbuf;
             int lino = getino(ldp->name);
             strncpy(lname, ldp->name, strlen(ldp->name));
-            put_block(dev, mmip->INODE.i_block[0], lbuf);
+            put_block(mip->dev, mmip->INODE.i_block[0], lbuf);
             iput(mmip);
-            mmip = iget(dev, dp->inode);
+            mmip = iget(mip->dev, dp->inode);
         }
         ls_file(mmip, temp, lname); // Call ls_file with each child node
         iput(mmip); // NEW

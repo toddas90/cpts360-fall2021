@@ -83,30 +83,30 @@ MINODE *iget(int dev, int ino)
 {
   int i;
   MINODE *mip;
-  //MOUNT *mp;
+  MOUNT *mp;
   char buf[BLKSIZE];
   int blk, offset;
   INODE *ip;
 
-    // for (i = 0; i<NMOUNT; i++) {
-    //     if(dev == mountTable[i].dev) {
-    //         mp = &mountTable[i];
-    //         break;
-    //     }
-    // }
-
-  for (i=0; i<NMINODE; i++){
-    mip = &minode[i];
-    if (mip->refCount && mip->dev == dev && mip->ino == ino){
-       mip->refCount++;
-       //printf("found [%d %d] as minode[%d] in core\n", dev, ino, i);
-       return mip;
+    for (i = 0; i<NMOUNT; i++) {
+        if(dev == mountTable[i].dev) {
+            mp = &mountTable[i];
+            break;
+        }
     }
-  }
+
+  for (i = 0; i<NMINODE; i++) {
+        mip = &minode[i];
+        if (mip->refCount && mip->dev == dev && mip->ino == ino) {
+            mip->refCount++;
+           //printf("found [%d %d] as minode[%d] in core\n", dev, ino, i);
+           return mip;
+        }
+    }
     
-  for (i=0; i<NMINODE; i++){
+  for (i = 0; i<NMINODE; i++) {
     mip = &minode[i];
-    if (mip->refCount == 0){
+    if (mip->refCount == 0) {
        //printf("allocating NEW minode[%d] for [%d %d]\n", i, dev, ino);
        mip->refCount = 1;
        mip->dev = dev;
@@ -134,7 +134,7 @@ void iput(MINODE *mip)
     int i, block, offset;
     char buf[BLKSIZE];
     INODE *ip;
-    //MOUNT *mp;
+    MOUNT *mp;
 
     if (mip->ino < 2)
         //printf(YEL "Invalid inode\n" RESET);
@@ -145,12 +145,12 @@ void iput(MINODE *mip)
     if (mip->refCount > 0) return;
     if (!mip->dirty)       return;
 
-    // for (i = 0; i<NMOUNT; i++) {
-    //     if (dev == mountTable[i].dev) {
-    //         mp = &mountTable[i];
-    //         break;
-    //     }
-    // }
+    for (i = 0; i<NMOUNT; i++) {
+        if (dev == mountTable[i].dev) {
+            mp = &mountTable[i];
+            break;
+        }
+    }
 
     // Write inode back to disk
     block = (mip->ino - 1) / 8 + iblk;
@@ -206,76 +206,101 @@ int inc_free_inodes(int dev) {
     return 0;
 }
 
-int ialloc(int dev) {
-    // KC's code from the website, not the book.
+int ialloc(int dev)
+{
+    int i;
     char buf[BLKSIZE];
+    MOUNT *mp;
 
-    get_block(dev, imap, buf); // read inode bitmap into buf
-
-    for (int i = 0; i < ninodes; i++) { // loop through number of inodes
-        printf("Loop!\n");
-        if (test_bit(buf, i)==0) { // test the bit
-            printf("Tested bit!\n");
-            set_bit(buf, i); // Set the bit
-            put_block(dev, imap, buf); // write to block
-            //printf("allocated ino = %d\n", i+1); // bits count from 0; ino from 1
-            return i+1;
+    for (i = 0; i<NMOUNT; i++) {
+        if(dev == mountTable[i].dev) {
+            mp = &mountTable[i];
+            break;
         }
     }
+
+    get_block(dev, mp->imap, buf);
+
+    for  (i=0; i < ninodes; i++) {
+        if (test_bit(buf, i) == 0) {
+            set_bit(buf,i);
+            put_block(dev, mp->imap, buf);
+            return i + 1;
+        }
+    }
+    return 0;
+}
+
+int balloc(int dev)
+{
+    int i;
+    char buf[BLKSIZE];
+    MOUNT *mp;
+
+    for (i = 0; i<NMOUNT; i++) {
+        if(dev == mountTable[i].dev) {
+            mp = &mountTable[i];
+            break;
+        }
+    }
+
+    get_block(dev,mp->bmap,buf);
+
+    for (i=0; i < nblocks; i++) {
+        if(test_bit(buf,i) == 0) {
+            set_bit(buf,i);
+            put_block(dev,mp->bmap,buf);
+            return i + 1;
+        }
+    }
+
     return 0;
 }
 
 int idalloc(int dev, int ino) {
-    int i;  
+    int i;
     char buf[BLKSIZE];
 
-    if (ino > ninodes){  
-        printf("inumber %d out of range\n", ino);
+    if (ino > ninodes) {
+        printf(YEL "inumber out of range\n" RESET);
         return -1;
     }
-  
-    get_block(dev, imap, buf);  // get inode bitmap block into buf[]
-  
-    clr_bit(buf, ino-1);        // clear bit ino-1 to 0
 
-    put_block(dev, imap, buf);  // write buf back
-    return 0;
-}
+    MOUNT *mp;
 
-int balloc(int dev) {
-    // Current code is a mirror of
-    // ialloc() except it is using
-    // the bmap instead of imap.
-    char buf[BLKSIZE];
-
-    get_block(dev, bmap, buf);
-    
-    for (int i = 0; i < nblocks; i++) {
-        if (test_bit(buf, i)==0) {
-            set_bit(buf, i);
-            put_block(dev, bmap, buf);
-            //printf("allocated bno = %d\n", i+1);
-            return i+1;
+    for (i = 0; i<NMOUNT; i++) {
+        if (dev == mountTable[i].dev) {
+            mp = &mountTable[i];
+            break;
         }
     }
-    return 0;
+
+    get_block(dev,mp->imap,buf);
+    clr_bit(buf,ino-1);
+    //write back
+    put_block(dev,mp->imap,buf);
 }
 
-int bdalloc(int dev, int bno) {
-    int i;  
+int bdalloc(int dev,int bno) {
+    int i;
     char buf[BLKSIZE];
 
-    if (bno > nblocks){  
-        printf("bnumber %d out of range\n", bno);
+    if (bno > nblocks || bno == 0) {
         return -1;
     }
-  
-    get_block(dev, bmap, buf);  // get inode bitmap block into buf[]
-  
-    clr_bit(buf, bno-1);        // clear bit ino-1 to 0
 
-    put_block(dev, bmap, buf);  // write buf back
-    return 0;
+    MOUNT *mp;
+
+    for (i = 0; i<NMOUNT; i++) {
+        if (dev == mountTable[i].dev) {
+            mp = &mountTable[i];
+            break;
+        }
+    }
+
+    get_block(dev,mp->bmap,buf);
+    clr_bit(buf,bno-1);
+    put_block(dev, mp->bmap,buf);
 }
 
 MINODE *mialloc() {
@@ -351,7 +376,6 @@ int getino(char *pathname) {
     tokenize(pathname);
 
     for (i=0; i<n; i++) {
-        //printf("getino: i=%d name[%d]=%s\n", i, i, name[i]);
         if(!S_ISDIR(mip->INODE.i_mode)) { // Check dir
             printf(YEL "%s is not a directory\n" RESET, name[i]);
             iput(mip);

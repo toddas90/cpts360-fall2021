@@ -64,7 +64,7 @@ int my_mkdir(char *pathname) {
     
     // Sets MINODE dirty and writes it to disk.
     mip->dirty = 1; // Set new MINODE to dirty.
-    printf("Mkdir dev = %d, ino = %d\n", mip->dev, mip->ino);
+    //printf("Mkdir dev = %d, ino = %d\n", mip->dev, mip->ino);
     iput(mip); // Write new MINODE to the disk.
     
     // Creates the . and .. entries in the new INODE
@@ -116,10 +116,10 @@ int my_creat(char *pathname) {
         return -1;
     }
     
-    printf("Passing %d into alloc()\n", dev);
+    //printf("Passing %d into alloc()\n", dev);
     ino = ialloc(dev); // Allocate inode
     bno = balloc(dev); // Allocate disk block
-    printf("Allocated ino = %d, bno = %d\n", ino, bno);
+    //printf("Allocated ino = %d, bno = %d\n", ino, bno);
     
     // This chunk gets a new INODE and puts it into the MINODE.
     // It also initializes the INODE to a DIR.
@@ -139,7 +139,7 @@ int my_creat(char *pathname) {
     
     // Sets MINODE dirty and writes it to disk.
     mip->dirty = 1; // Set new MINODE to dirty.
-    printf("Mkdir dev = %d, ino = %d\n", mip->dev, mip->ino);
+    //printf("Mkdir dev = %d, ino = %d\n", mip->dev, mip->ino);
     iput(mip); // Write new MINODE to the disk.
     
     enter_child(pmip, ino, base); // Put child name in parent

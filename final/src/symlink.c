@@ -44,34 +44,21 @@ int my_symlink() {
     iput(old_mip);
 
     char buf[BLKSIZE];
-    char copy_pathname[128];
-    strcpy(copy_pathname, pathname);
-    strcpy(pathname, extra_arg);
 
-    my_creat(pathname); // create new file
+    my_creat(extra_arg); // create new file
 
     int ino = getino(extra_arg); // get new file
     MINODE *mip = iget(dev, ino);
 
     mip->INODE.i_mode = 0xA1FF; // set link type
-
-    // NEED TO FINISH
-    
-    // assume length of old_file name <= 60 chars
-        // store old_file name in newfile's INODE.i_block[] area
-        // set file size to length of old_file name
-        // mark new_file's minode dirty
-        // iput new_file
-    // mark new_file's parent minode dirty
-    // iput new_file's parent.
    
     DIR *dp = (DIR *)buf;
     char *cp = buf;
 
     get_block(dev, mip->INODE.i_block[0], buf);
-    strncpy(dp->name, copy_pathname, strlen(copy_pathname));
+    strncpy(dp->name, pathname, strlen(pathname));
     put_block(dev, mip->INODE.i_block[0], buf);
-    mip->INODE.i_size = strlen(copy_pathname);
+    mip->INODE.i_size = strlen(pathname);
     mip->dirty = 1;
     iput(mip);
     return 0;

@@ -31,27 +31,6 @@ extern int nblocks, ninodes, bmap, imap, iblk;
 
 extern char line[128], cmd[32], pathname[128], extra_arg[128];
 
-// int checkfs(char *disk) {
-//     int nfd = 0;
-//     char buf[BLKSIZE];
-//     if ((nfd = open(disk, O_RDWR)) < 0){
-//         printf(RED "open %s failed\n" RESET, disk);
-//         exit(1);
-//     }
-
-//     /********** read super block  ****************/
-//     get_block(nfd, 1, buf);
-//     sp = (SUPER *)buf;
-
-//     /* verify it's an ext2 file system ***********/
-//     if (sp->s_magic != 0xEF53){
-//         printf(RED "not an EXT2 filesystem!\n" RESET);
-//         //printf(RED "magic = %x is not an ext2 filesystem\n" RESET, sp->s_magic);
-//         exit(1);
-//     }      
-//     return nfd;
-// }
-
 int mount() {
     if (!strcmp(pathname, "") != !strcmp(extra_arg, "")) { // If only one empty
         printf(YEL "Not enough args\n" RESET);
@@ -80,7 +59,6 @@ int mount() {
     }
 
     int index = 1;
-    int nfd = 0;
 
     for (index; index < NMOUNT; index++) {
         if (mountTable[index].dev == 0) {
@@ -89,13 +67,13 @@ int mount() {
     } 
 
     char sbuf[BLKSIZE];
-    if ((nfd = open(base, O_RDWR)) < 0){
+    if ((fd = open(base, O_RDWR)) < 0){
         printf(RED "open %s failed\n" RESET, base);
         exit(1);
     }
 
     /********** read super block  ****************/
-    get_block(nfd, 1, sbuf);
+    get_block(fd, 1, sbuf);
     sp = (SUPER *)sbuf;
 
     /* verify it's an ext2 file system ***********/
@@ -121,10 +99,10 @@ int mount() {
 
     // Allocating a mountTable entry for the new device
     char buf[BLKSIZE];
-    get_block(nfd, 2, buf);
+    get_block(fd, 2, buf);
     gp = (GD *)buf;
 
-    mountTable[index].dev = nfd;
+    mountTable[index].dev = fd;
     mountTable[index].bmap = gp->bg_block_bitmap;
     mountTable[index].iblk = gp->bg_inode_table;
     mountTable[index].imap = gp->bg_inode_bitmap;
@@ -143,7 +121,16 @@ int mount() {
 }
 
 int umount(char *filesys) {
-    // 1. Search the MOUNT table to check filesys is indeed mounted.
+    char *path2 = strdup(filesys);
+    char *dir = dirname(filesys); // Get dirname
+    char *base = basename(path2); // get basename
+
+    for (int i = 0; i < NMOUNT; i++) {
+        if (!strcmp(mountTable[i].name, base)) { // If name of thing to mount matches name of mounted thing
+            printf(YEL "%s already mounted\n" RESET, base);
+            return -1;
+        }
+    }
 
     // 2. Check whether any file is still active in the mounted filesys;
     //     e.g. someone's CWD or opened files are still there,
@@ -156,50 +143,3 @@ int umount(char *filesys) {
 
     // 4. return 0 for SUCCESS;
 }  
-
-//                   IMPLICATIONS of mount:
-
-// Although it is easy to implement mount and umount, there are implications.
-				       
-// With mount, you must modify the getino(pathname) function to support 
-// "cross mount points". Assume that a file system, newfs, has been mounted on 
-// the directory /a/b/c/.  When traversing a pathname, crossing mount point may
-// occur in both directions.
- 
-// (3).1. Dwonward traversal: When traversing the pathname /a/b/c/x/y, once you 
-// reach the minode of /a/b/c, you should see that the minode has been mounted on 
-// (mounted flag=1). Instead of searching for x in the INODE of /a/b/c, you must
-
-//     .Follow the minode's mountTable pointer to locate the mount table entry.
-//     .From the newfs's DEV number, iget() its root (ino=2) INODE into memory.
-//     .Then, continue to search for x/y under the root INODE of newfs.
-
-// (3).2. Upward traversal: Assume that you are at the directory /a/b/c/x/ and 
-// traversing upward, e.g. cd  ../../,  which will cross the mount point at /a/b/c.
-
-// When you reach the root INODE of the mounted file system, you should see it
-// is a root directory (ino=2) but its DEV number differs from the real root.
-// Using its DEV number, you can locate its mount table entry, which points 
-// to the mounted minode of /a/b/c/. Then, you switch to the minode of /a/b/c/ and 
-// continue the upward traversal.
-
-// Thus, crossing mount point is like a monkey or squirrel hoping from one tree to
-//       another tree and then back.
-
-// (3).3. While traversing a pathname, the dev number may change. You must modify
-// the getino(pathname) function to change the (global) dev number whenever it 
-// crosses a mount point. Thus,
-
-//         (global) int dev;   // start from root dev OR running->cwd's dev
-//         int ino = getino(pathname);
-
-// essentially returns the (dev, ino) of a pathname.
-
-//                   Other Modifications:
-
-// In ialloc()/idealloc(), balloc()/bdealloc(): 
-//    must use current dev's imap, bmap, ninodes, nblocks
-// 						      .
-
-// In iget()/iput():
-//    must use current dev's iblk (inodes_start_block).
