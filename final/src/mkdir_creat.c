@@ -155,7 +155,7 @@ int enter_child(MINODE *pmip, int ino, char *basename) {
     DIR *dp;
     char *cp;
 
-    for (i = 0; i < pmip->INODE.i_size/BLKSIZE; i++) { // KC said to assume 12 in the book?
+    for (i = 0; i < 12; i++) { // KC said to assume 12 in the book?
         if (pmip->INODE.i_block[i] == 0) // If the block doesn't exist, break.
             break;
         get_block(pmip->dev, pmip->INODE.i_block[i], buf); // Read block
@@ -179,24 +179,28 @@ int enter_child(MINODE *pmip, int ino, char *basename) {
             dp->rec_len = remain;
             dp->name_len = strlen(basename);
             strcpy(dp->name, basename);
+            pmip->dirty = True;
             // printf("dp->name = %s, basename = %s\n", dp->name, basename);
             // printf("New entry name: %s, len: %d\n", dp->name, dp->rec_len);
             put_block(dev, pmip->INODE.i_block[i], buf); // Write block back to disk.
+            //iput(pmip);
             return 0;
         } else { // If new dir can't fit in current block
-            char nbuf[BLKSIZE];
+            //char nbuf[BLKSIZE];
             int new_bno = balloc(dev);
             pmip->INODE.i_block[i] = new_bno;
             pmip->INODE.i_size += BLKSIZE;
             pmip->dirty = 1;
-            get_block(dev, new_bno, nbuf);
-            DIR *ndp = (DIR *)buf;
-            char *ncp = buf;
+            get_block(dev, pmip->INODE.i_block[i], buf);
+            //DIR *ndp = (DIR *)buf;
+            //char *ncp = buf;
             dp->inode = ino;
             dp->rec_len = BLKSIZE;
             dp->name_len = strlen(basename);
             strcpy(dp->name, basename);
-            put_block(dev, new_bno, nbuf);
+            pmip->dirty = True;
+            put_block(dev, pmip->INODE.i_block[i], buf);
+            //iput(pmip);
             return 0;
         }
     }

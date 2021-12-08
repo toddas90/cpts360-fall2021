@@ -27,10 +27,10 @@ int my_link() {
         return -1;
     }
 
-    int old_ino = getino(pathname);
-    MINODE *old_mip = iget(dev, old_ino);
+    int src_ino = getino(pathname);
+    MINODE *src_mip = iget(dev, src_ino);
 
-    if (S_ISDIR(old_mip->INODE.i_mode)) {
+    if (S_ISDIR(src_mip->INODE.i_mode)) {
         printf(YEL "Cannot link a directory\n" RESET);
         return -1;
     }
@@ -44,18 +44,19 @@ int my_link() {
     char *parent = dirname(extra_arg);
     char *child = basename(path2);
     
-    int pino = getino(parent);
-    MINODE *pmip = iget(dev, pino);
-    enter_child(pmip, old_ino, child);
+    int dest_ino = getino(parent);
+    MINODE *dest_mip = iget(dev, dest_ino);
+    enter_child(dest_mip, src_ino, child);
 
-    old_mip->INODE.i_links_count += 1;
-    old_mip->dirty = 1;
-    iput(old_mip);
-    iput(pmip);
+    src_mip->INODE.i_links_count += 1;
+    src_mip->dirty = 1;
+    iput(src_mip);
+    iput(dest_mip);
     return 0;
 }
 
 int my_unlink() {
+    //printf("Unlinking %s\n", pathname);
     int ino = getino(pathname);
     MINODE *mip = iget(dev, ino);
 
@@ -78,11 +79,12 @@ int my_unlink() {
     if (mip->INODE.i_links_count > 0)
         mip->dirty = 1;
     else {
-        for (int i = 0; i < mip->INODE.i_size/BLKSIZE; i++) {
-            if (mip->INODE.i_block[i] == 0)
-                break;
-            bdalloc(dev, pmip->INODE.i_block[i]);
-        }
+        // for (int i = 0; i < mip->INODE.i_size/BLKSIZE; i++) {
+        //     if (mip->INODE.i_block[i] == 0)
+        //         break;
+        //     bdalloc(dev, pmip->INODE.i_block[i]);
+        // }
+        bdalloc(dev, ino);
         idalloc(dev, ino);
     }
     iput(mip);
