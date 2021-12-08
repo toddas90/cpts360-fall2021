@@ -120,7 +120,7 @@ int mount() {
     return 0;
 }
 
-int umount(char *filesys) {
+int umount(char *filesys) { // SEGFAULTS SOMETIMES??? ALSO STAYS BUSY AFTER YOU CD INTO AND OUT OF IT
     char *path2 = strdup(filesys);
     char *dir = dirname(filesys); // Get dirname
     char *base = basename(path2); // get basename
