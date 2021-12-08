@@ -154,7 +154,7 @@ void iput(MINODE *mip)
     }
 
     // Write inode back to disk
-    block = (mip->ino - 1) / 8 + mp->iblk;
+    block = (mip->ino - 1) / 8 + mp->iblk; 
     offset = (mip->ino - 1) % 8;
 
     // Get block containing inode
