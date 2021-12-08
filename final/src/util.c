@@ -136,7 +136,8 @@ void iput(MINODE *mip)
     INODE *ip;
     //MOUNT *mp;
 
-    if (mip==0) 
+    if (mip->ino < 2)
+        //printf(YEL "Invalid inode\n" RESET);
         return;
 
     mip->refCount--;
@@ -212,7 +213,9 @@ int ialloc(int dev) {
     get_block(dev, imap, buf); // read inode bitmap into buf
 
     for (int i = 0; i < ninodes; i++) { // loop through number of inodes
+        printf("Loop!\n");
         if (test_bit(buf, i)==0) { // test the bit
+            printf("Tested bit!\n");
             set_bit(buf, i); // Set the bit
             put_block(dev, imap, buf); // write to block
             //printf("allocated ino = %d\n", i+1); // bits count from 0; ino from 1
@@ -330,7 +333,6 @@ int getino(char *pathname) {
     INODE *ip;
     MINODE *mip;
 
-    //printf("getino: pathname=%s\n", pathname);
     if (strcmp(pathname, "/") == 0) {
         dev = mountTable[0].dev;
         return 2;
@@ -348,7 +350,8 @@ int getino(char *pathname) {
     mip->refCount += 1; // because we iput(mip) later
     tokenize(pathname);
 
-    for (i=0; i<n; i++){
+    for (i=0; i<n; i++) {
+        //printf("getino: i=%d name[%d]=%s\n", i, i, name[i]);
         if(!S_ISDIR(mip->INODE.i_mode)) { // Check dir
             printf(YEL "%s is not a directory\n" RESET, name[i]);
             iput(mip);
@@ -373,7 +376,7 @@ int getino(char *pathname) {
             ino = mip->ino;
         }
 
-        if (ino == 2 && mountTable[0].dev != dev && strcmp(name[i], "..") == 0) {
+        if (ino == 2 && mountTable[0].dev != dev && !strcmp(name[i], "..")) {
             for (int j=0; j<NMOUNT; j++) {
                 if (mountTable[j].dev == dev) {
                     mip = mountTable[j].mounted_inode;

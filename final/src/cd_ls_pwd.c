@@ -33,7 +33,7 @@ int cd() {
         }
     }
 
-    printf("Getting INODE with dev = %d and ino = %d\n", dev, ino);
+    //printf("Getting INODE with dev = %d and ino = %d\n", dev, ino);
     MINODE *mip = iget(dev, ino); // get minode of path dir
     
     if ((mip->INODE.i_mode & 0xF000) == 0xA000) { // Check if link

@@ -31,26 +31,26 @@ extern int nblocks, ninodes, bmap, imap, iblk;
 
 extern char line[128], cmd[32], pathname[128], extra_arg[128];
 
-int checkfs(char *disk) {
-    int nfd = 0;
-    char buf[BLKSIZE];
-    if ((nfd = open(disk, O_RDWR)) < 0){
-        printf(RED "open %s failed\n" RESET, disk);
-        exit(1);
-    }
+// int checkfs(char *disk) {
+//     int nfd = 0;
+//     char buf[BLKSIZE];
+//     if ((nfd = open(disk, O_RDWR)) < 0){
+//         printf(RED "open %s failed\n" RESET, disk);
+//         exit(1);
+//     }
 
-    /********** read super block  ****************/
-    get_block(nfd, 1, buf);
-    sp = (SUPER *)buf;
+//     /********** read super block  ****************/
+//     get_block(nfd, 1, buf);
+//     sp = (SUPER *)buf;
 
-    /* verify it's an ext2 file system ***********/
-    if (sp->s_magic != 0xEF53){
-        printf(RED "not an EXT2 filesystem!\n" RESET);
-        //printf(RED "magic = %x is not an ext2 filesystem\n" RESET, sp->s_magic);
-        exit(1);
-    }      
-    return nfd;
-}
+//     /* verify it's an ext2 file system ***********/
+//     if (sp->s_magic != 0xEF53){
+//         printf(RED "not an EXT2 filesystem!\n" RESET);
+//         //printf(RED "magic = %x is not an ext2 filesystem\n" RESET, sp->s_magic);
+//         exit(1);
+//     }      
+//     return nfd;
+// }
 
 int mount() {
     if (!strcmp(pathname, "") != !strcmp(extra_arg, "")) { // If only one empty
@@ -84,10 +84,26 @@ int mount() {
 
     for (index; index < NMOUNT; index++) {
         if (mountTable[index].dev == 0) {
-            nfd = checkfs(base); // Check to see if ext2 fs
             break;
         }
     } 
+
+    char sbuf[BLKSIZE];
+    if ((nfd = open(base, O_RDWR)) < 0){
+        printf(RED "open %s failed\n" RESET, base);
+        exit(1);
+    }
+
+    /********** read super block  ****************/
+    get_block(nfd, 1, sbuf);
+    sp = (SUPER *)sbuf;
+
+    /* verify it's an ext2 file system ***********/
+    if (sp->s_magic != 0xEF53){
+        printf(RED "not an EXT2 filesystem!\n" RESET);
+        //printf(RED "magic = %x is not an ext2 filesystem\n" RESET, sp->s_magic);
+        exit(1);
+    }
 
     int ino  = getino(extra_arg); // get ino:
     MINODE *mip  = iget(dev, ino); // get minode in memory;
