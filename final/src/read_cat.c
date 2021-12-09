@@ -22,7 +22,7 @@ int my_read(int fd, char *buf, int nbytes) {
 
     OFT *oftp = running->fd[fd];
     char readbuf[BLKSIZE]; 
-    int ibuf[256];
+    int ibuf[BLKSIZE/4];
     char *cq = buf;
 
     int count = 0, lbk = 0, startByte = 0, blk = 0;
@@ -49,7 +49,7 @@ int my_read(int fd, char *buf, int nbytes) {
             put_block(mip->dev, tmpblk, tmpbuf); // put back
             put_block(mip->dev, mip->INODE.i_block[13], ibuf); // put back
         }
-
+        
         get_block(mip->dev, blk, readbuf);
 
         /* copy from startByte to buf[ ], at most remain bytes in this block */
@@ -75,6 +75,16 @@ int my_read(int fd, char *buf, int nbytes) {
 }
 
 int cat(char *file) {
+    if (!strcmp(file, "")) {
+        printf(YEL "No file provided\n" RESET);
+        return -1;
+    }
+
+    if (getino(file) <= 0) {
+        printf(YEL "File not found\n" RESET);
+        return -1;
+    }
+
     char mybuf[BLKSIZE], dummy = 0;
     int n = 0;
 

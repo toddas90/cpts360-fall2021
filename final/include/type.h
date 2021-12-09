@@ -21,10 +21,26 @@ extern DIR   *dp;
 #define FREE        0
 #define READY       1
 
+#define True        1
+#define False       0
+
 #define BLKSIZE  1024
 #define NMINODE   128
 #define NPROC       2
+#define NMOUNT      8
 #define NFD        64
+
+typedef struct mount {
+    int dev; // 0 means free
+    int ninodes; // From superblock
+    int nblocks;
+    int bmap; // From GD block
+    int imap;
+    int iblk;
+    struct minode *mounted_inode;
+    char name[64]; // device name
+    char mount_name[64]; // Mounted DIR pathname
+}MOUNT;
 
 typedef struct minode{
   INODE INODE;           // INODE structure on disk
@@ -33,7 +49,7 @@ typedef struct minode{
   int dirty;             // 0 for clean, 1 for modified
 
   int mounted;           // for level-3
-  struct mntable *mptr;  // for level-3
+  struct mount *mptr;  // for level-3
 }MINODE;
 
 typedef struct oft {

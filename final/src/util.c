@@ -17,28 +17,101 @@
 extern MINODE minode[NMINODE];
 extern MINODE *root;
 extern PROC   proc[NPROC], *running;
+extern MOUNT mountTable[NMOUNT];
 
 extern char gpath[128];
 extern char *name[64];
 extern int n;
 
-extern int fd, dev;
+extern int fd, dev, rootdev;
 extern int nblocks, ninodes, bmap, imap, iblk;
 
 extern char line[128], cmd[32], pathname[128];
 
+// mode read = 0, write = 1, execute = 2, all = 3
+int my_access(char *filename, char mode) {
+    int r = 0, ino = 0;
+    MINODE *mip;
+
+    if (running->uid == 0)
+        return 1; // ROOT ALWAYS WELCOME IN MY HOUSE
+
+    ino = getino(filename);
+    mip = iget(dev, ino);
+
+/*
+                                       |own|grp|oth|
+   Recall that INODE.i_mode = |tttt|ugs|rwx|rwx|rwx|
+                                       |permissions|
+*/
+
+    if (mip->INODE.i_uid == running->uid) {
+        if (mode == 'r') // r
+            r = test_bit(mip->INODE.i_mode, 7);
+        if (mode == 'w') // w
+            r = test_bit(mip->INODE.i_mode, 8);
+        if (mode == 'x') // x
+            r = test_bit(mip->INODE.i_mode, 9);
+    }
+    else {
+        if (mode == 'r') // r
+            r = test_bit(mip->INODE.i_mode, 13);
+        if (mode == 'w') // w
+            r = test_bit(mip->INODE.i_mode, 14);
+        if (mode == 'x') // x
+            r = test_bit(mip->INODE.i_mode, 15);
+    }
+
+    iput(mip);
+    return r;
+}
+
+int is_owner(char *filename) { // returns 1 if owner, 0 if not
+    int r = 0, ino = 0;
+    MINODE *mip;
+
+    if (running->uid == 0)
+        return 1; // ROOT ALWAYS WELCOME IN MY HOUSE
+
+    ino = getino(filename);
+    mip = iget(dev, ino);
+
+    if (mip->INODE.i_uid == running->uid) {
+        r = 1;
+    }
+    else {
+        r = 0;
+    }
+
+    iput(mip);
+    return 0;
+}
+
+MOUNT *getmptr(int dev) {
+    for (int i = 0; i < NMOUNT; i++) {
+        if (dev == mountTable[i].dev) {
+            return &mountTable[i];
+        }
+    }
+    return 0;
+}
+
 int get_block(int dev, int blk, char *buf)
 {
-   lseek(dev, (long)blk*BLKSIZE, 0);
-   read(dev, buf, BLKSIZE);
-   return 0;
+    lseek(dev, blk * BLKSIZE, SEEK_SET);
+    int n = read(dev, buf, BLKSIZE);
+    if (n < 0)
+        printf("get_block [%d %d] error \n", dev, blk);
+    return 0;
 }   
 
 int put_block(int dev, int blk, char *buf)
 {
-   lseek(dev, (long)blk*BLKSIZE, 0);
-   write(dev, buf, BLKSIZE);
-   return 0;
+    lseek(dev, blk * BLKSIZE, SEEK_SET);
+    int n = write(dev, buf, BLKSIZE);
+    if (n != BLKSIZE)
+        printf("put_block [%d %d] error\n", dev, blk);
+    return 0;
 }   
 
 int tokenize(char *pathname)
@@ -69,29 +142,38 @@ MINODE *iget(int dev, int ino)
 {
   int i;
   MINODE *mip;
+  MOUNT *mp;
   char buf[BLKSIZE];
   int blk, offset;
   INODE *ip;
 
-  for (i=0; i<NMINODE; i++){
-    mip = &minode[i];
-    if (mip->refCount && mip->dev == dev && mip->ino == ino){
-       mip->refCount++;
-       //printf("found [%d %d] as minode[%d] in core\n", dev, ino, i);
-       return mip;
+    for (i = 0; i<NMOUNT; i++) {
+        if(dev == mountTable[i].dev) {
+            mp = &mountTable[i];
+            break;
+        }
     }
-  }
+
+  for (i = 0; i<NMINODE; i++) {
+        mip = &minode[i];
+        if (mip->refCount && mip->dev == dev && mip->ino == ino) {
+            mip->refCount++;
+           //printf("found [%d %d] as minode[%d] in core\n", dev, ino, i);
+           return mip;
+        }
+    }
     
-  for (i=0; i<NMINODE; i++){
+  for (i = 0; i<NMINODE; i++) {
     mip = &minode[i];
-    if (mip->refCount == 0){
+    if (mip->refCount == 0) {
        //printf("allocating NEW minode[%d] for [%d %d]\n", i, dev, ino);
+       mip = mialloc();
        mip->refCount = 1;
        mip->dev = dev;
        mip->ino = ino;
 
        // get INODE of ino to buf    
-       blk    = (ino-1)/8 + iblk;
+       blk    = (ino-1)/8 + mp->iblk;
        offset = (ino-1) % 8;
 
        //printf("iget: ino=%d blk=%d offset=%d\n", ino, blk, offset);
@@ -112,8 +194,10 @@ void iput(MINODE *mip)
     int i, block, offset;
     char buf[BLKSIZE];
     INODE *ip;
+    MOUNT *mp;
 
-    if (mip==0) 
+    if (mip->ino < 2)
+        //printf(YEL "Invalid inode\n" RESET);
         return;
 
     mip->refCount--;
@@ -121,8 +205,15 @@ void iput(MINODE *mip)
     if (mip->refCount > 0) return;
     if (!mip->dirty)       return;
 
+    for (i = 0; i<NMOUNT; i++) {
+        if (dev == mountTable[i].dev) {
+            mp = &mountTable[i];
+            break;
+        }
+    }
+
     // Write inode back to disk
-    block = (mip->ino - 1) / 8 + iblk;
+    block = (mip->ino - 1) / 8 + mp->iblk; 
     offset = (mip->ino - 1) % 8;
 
     // Get block containing inode
@@ -175,89 +266,101 @@ int inc_free_inodes(int dev) {
     return 0;
 }
 
-int map(INODE ip, int lbk) {
-    char ibuf[256];
-    int blk = 0;
-    if (lbk < 12) { // Direct blocks
-        blk = ip.i_block[lbk];
-    } else if (12 <= lbk && lbk < 12 + 256) {// Indirect blocks
-        get_block(dev, ip.i_block[12], ibuf);
-        blk = ibuf[lbk - 12];
-        put_block(dev, ip.i_block[12], ibuf);
-    } else { // Double indirect blocks
-        // Implement
-    }
-    return blk;
-}
-
-int ialloc(int dev) {
-    // KC's code from the website, not the book.
+int ialloc(int dev)
+{
+    int i;
     char buf[BLKSIZE];
+    MOUNT *mp;
 
-    get_block(dev, imap, buf); // read inode bitmap into buf
-
-    for (int i = 0; i < ninodes; i++) { // loop through number of inodes
-        if (test_bit(buf, i)==0) { // test the bit
-            set_bit(buf, i); // Set the bit
-            put_block(dev, imap, buf); // write to block
-            //printf("allocated ino = %d\n", i+1); // bits count from 0; ino from 1
-            return i+1;
+    for (i = 0; i<NMOUNT; i++) {
+        if(dev == mountTable[i].dev) {
+            mp = &mountTable[i];
+            break;
         }
     }
+
+    get_block(dev, mp->imap, buf);
+
+    for  (i=0; i < ninodes; i++) {
+        if (test_bit(buf, i) == 0) {
+            set_bit(buf,i);
+            put_block(dev, mp->imap, buf);
+            return i + 1;
+        }
+    }
+    return 0;
+}
+
+int balloc(int dev)
+{
+    int i;
+    char buf[BLKSIZE];
+    MOUNT *mp;
+
+    for (i = 0; i<NMOUNT; i++) {
+        if(dev == mountTable[i].dev) {
+            mp = &mountTable[i];
+            break;
+        }
+    }
+
+    get_block(dev,mp->bmap,buf);
+
+    for (i=0; i < nblocks; i++) {
+        if(test_bit(buf,i) == 0) {
+            set_bit(buf,i);
+            put_block(dev,mp->bmap,buf);
+            return i + 1;
+        }
+    }
+
     return 0;
 }
 
 int idalloc(int dev, int ino) {
-    int i;  
+    int i;
     char buf[BLKSIZE];
 
-    if (ino > ninodes){  
-        printf("inumber %d out of range\n", ino);
+    if (ino > ninodes) {
+        printf(YEL "inumber out of range\n" RESET);
         return -1;
     }
-  
-    get_block(dev, imap, buf);  // get inode bitmap block into buf[]
-  
-    clr_bit(buf, ino-1);        // clear bit ino-1 to 0
 
-    put_block(dev, imap, buf);  // write buf back
-    return 0;
-}
+    MOUNT *mp;
 
-int balloc(int dev) {
-    // Current code is a mirror of
-    // ialloc() except it is using
-    // the bmap instead of imap.
-    char buf[BLKSIZE];
-
-    get_block(dev, bmap, buf);
-    
-    for (int i = 0; i < nblocks; i++) {
-        if (test_bit(buf, i)==0) {
-            set_bit(buf, i);
-            put_block(dev, bmap, buf);
-            //printf("allocated bno = %d\n", i+1);
-            return i+1;
+    for (i = 0; i<NMOUNT; i++) {
+        if (dev == mountTable[i].dev) {
+            mp = &mountTable[i];
+            break;
         }
     }
-    return 0;
+
+    get_block(dev,mp->imap,buf);
+    clr_bit(buf,ino-1);
+    //write back
+    put_block(dev,mp->imap,buf);
 }
 
-int bdalloc(int dev, int bno) {
-    int i;  
+int bdalloc(int dev,int bno) {
+    int i;
     char buf[BLKSIZE];
 
-    if (bno > nblocks){  
-        printf("bnumber %d out of range\n", bno);
+    if (bno > nblocks || bno == 0) {
         return -1;
     }
-  
-    get_block(dev, bmap, buf);  // get inode bitmap block into buf[]
-  
-    clr_bit(buf, bno-1);        // clear bit ino-1 to 0
 
-    put_block(dev, bmap, buf);  // write buf back
-    return 0;
+    MOUNT *mp;
+
+    for (i = 0; i<NMOUNT; i++) {
+        if (dev == mountTable[i].dev) {
+            mp = &mountTable[i];
+            break;
+        }
+    }
+
+    get_block(dev,mp->bmap,buf);
+    clr_bit(buf,bno-1);
+    put_block(dev, mp->bmap,buf);
 }
 
 MINODE *mialloc() {
@@ -309,44 +412,70 @@ int search(MINODE *mip, char *name)
    return 0;
 }
 
-int getino(char *pathname)
-{
-  int i, ino, blk, offset;
-  char buf[BLKSIZE];
-  INODE *ip;
-  MINODE *mip;
+int getino(char *pathname) {
+    int i, ino, blk, offset;
+    char buf[BLKSIZE];
+    INODE *ip;
+    MINODE *mip;
 
-  //printf("getino: pathname=%s\n", pathname);
-  if (strcmp(pathname, "/")==0)
-      return 2;
+    if (strcmp(pathname, "/") == 0) {
+        dev = mountTable[0].dev;
+        return 2;
+    }
   
-  // starting mip = root OR CWD
-  if (pathname[0]=='/')
-     mip = root;
-  else
-     mip = running->cwd;
+    // starting mip = root OR CWD
+    if (pathname[0]== '/') {
+        dev = mountTable[0].dev;
+        mip = root;
+    } else {
+        mip = running->cwd;
+        dev = running->cwd->dev;
+    }
 
-  mip->refCount++;         // because we iput(mip) later
-  
-  tokenize(pathname);
+    mip->refCount += 1; // because we iput(mip) later
+    tokenize(pathname);
 
-  for (i=0; i<n; i++){
-      //printf("===========================================\n");
-      //printf("getino: i=%d name[%d]=%s\n", i, i, name[i]);
- 
-      ino = search(mip, name[i]);
+    for (i=0; i<n; i++) {
+        if(!S_ISDIR(mip->INODE.i_mode)) { // Check dir
+            printf(YEL "%s is not a directory\n" RESET, name[i]);
+            iput(mip);
+            return 0;
+        }
 
-      if (ino==0){
-         iput(mip);
-         //printf(YEL "name %s does not exist\n" RESET, name[i]);
-         return 0;
-      }
-      iput(mip);
-      mip = iget(dev, ino);
-   }
+        ino = search(mip, name[i]);
+        
+        if (ino == 0) {
+            //printf(YEL "name %s does not exist\n" RESET, name[i]);
+            iput(mip);
+            return 0;
+        }
 
-   iput(mip);
-   return ino;
+        iput(mip);
+        mip = iget(dev, ino); // switch to new minode
+
+        if (mip->mounted == True) {
+            dev = mip->mptr->dev;
+            iput(mip);
+            mip = iget(dev, 2);
+            ino = mip->ino;
+        }
+
+        if (ino == 2 && mountTable[0].dev != dev && !strcmp(name[i], "..")) {
+            for (int j=0; j<NMOUNT; j++) {
+                if (mountTable[j].dev == dev) {
+                    mip = mountTable[j].mounted_inode;
+                    break;
+                }
+            }
+
+            mip->refCount += 1;
+            dev = mip->dev;
+            ino = search(mip, name[i]);
+        }
+    }
+
+    iput(mip);
+    return ino;
 }
 
 // These 2 functions are needed for pwd()

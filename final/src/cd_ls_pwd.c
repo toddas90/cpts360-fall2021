@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+
 #include "../include/util.h" 
 #include "../include/type.h"
 #include "../include/cd_ls_pwd.h" 
@@ -13,11 +14,13 @@
 
 extern PROC *running;
 extern MINODE *root;
+extern MOUNT mountTable[NMOUNT];
 
 extern char pathname[128];
 extern int dev;
 
 /************* cd_ls_pwd.c file **************/
+
 int cd() {
     int ino = 0;
     
@@ -31,9 +34,16 @@ int cd() {
         }
     }
 
+    //printf("Getting INODE with dev = %d and ino = %d\n", dev, ino);
     MINODE *mip = iget(dev, ino); // get minode of path dir
+    //printf("Got INODE with dev = %d and ino = %d\n", mip->dev, mip->ino);
+
+    if (my_access(pathname, 'x') != 1) { // If the dir has x (execute) permission
+        printf(YEL "Permission denied\n" RESET);
+        return -1;
+    }
     
-    if ((mip->INODE.i_mode & 0xF000) == 0xA000) { // Check if link
+    if (S_ISLNK(mip->INODE.i_mode)) { // Check if link
         // If symlink
         char buf[BLKSIZE];
         get_block(dev, mip->INODE.i_block[0], buf);
@@ -42,7 +52,7 @@ int cd() {
         put_block(dev, mip->INODE.i_block[0], buf);
         iput(mip);
         mip = iget(dev, lino);
-    } else if(!((mip->INODE.i_mode & 0xF000) == 0x4000)) { // If inode is not a dir, quit
+    } else if(!S_ISDIR(mip->INODE.i_mode)) { // If inode is not a dir, quit
         fprintf(stderr, YEL "INODE is not a dir\n" RESET);
         return -1;
     }
@@ -139,7 +149,7 @@ int ls_dir(MINODE *mip) {
         mip = iget(dev, lino);
     }
 
-    get_block(mip->dev, mip->INODE.i_block[0], buf);
+    get_block(dev, mip->INODE.i_block[0], buf);
     dp = (DIR *)buf;
     cp = buf;
   
@@ -164,8 +174,7 @@ int ls_dir(MINODE *mip) {
         cp += dp->rec_len;
         dp = (DIR *)cp;
     }
-    put_block(mip->dev, mip->INODE.i_block[0], buf); // NEW
-    printf("\n");
+    put_block(dev, mip->INODE.i_block[0], buf); // NEW
     return 0;
 }
 
@@ -173,11 +182,12 @@ int ls() {
     if (!strcmp(pathname, "")) // If path empty, use cwd
         ls_dir(running->cwd);
     else {
-        int i = getino(pathname); // get path inode number
-        if (i < 2)
+        int ino = getino(pathname); // get path inode number
+        if (ino < 2)
             return -1;
-        int d = running->cwd->dev; // get device num
-        MINODE *m = iget(d, i); // get minode of path dir
+        //int d = running->cwd->dev; // get device num
+        //printf("Getting INODE with dev = %d and ino = %d\n", dev, ino);
+        MINODE *m = iget(dev, ino); // get minode of path dir
         ls_dir(m);
         iput(m); // NEW
     }
@@ -191,9 +201,21 @@ void rpwd(MINODE *wd) {
 
     if (wd == root) // If root, return
         return;
-    
+
     ino = wd->ino; // cwd inode num
-    pino = findino(wd, &ino); // cwd parent inode num
+
+    if (ino == 2 && wd->dev != mountTable[0].dev) {
+        for (int i = 0; i < NMOUNT; i++) {
+            if (mountTable[i].dev == wd->dev) {
+                ino = mountTable[i].mounted_inode->ino;
+                dev = mountTable[i].mounted_inode->dev;
+                pino = findino(mountTable[i].mounted_inode, &ino);
+                break;
+            }
+        }
+    } else {
+        pino = findino(wd, &ino); // cwd parent inode num
+    }
 
     pip = iget(dev, pino); // parent minode
     findmyname(pip, ino, my_name); // get name of cwd from parent

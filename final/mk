@@ -2,6 +2,6 @@
 
 ./mkdisk
 
-make debug
+make
 
 ./final

@@ -5,8 +5,7 @@
 
 int my_open(char *filename, int flags);
 int my_lseek(int fd, int pos);
-int my_close(int fd);
-int my_truncate(MINODE *mip);
+int my_close(int fd); 
 
 void print_fd();
 

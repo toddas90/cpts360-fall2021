@@ -11,6 +11,8 @@ MINODE *iget(int d, int i);
 void iput(MINODE *m);
 int search(MINODE *m, char *n);
 int getino(char *p);
+int my_access(char *filename, char mode);
+int is_owner(char *filename);
 int findmyname(MINODE *p, u32 m, char *my);
 MINODE *mialloc();
 int midealloc(MINODE *mip);
@@ -26,6 +28,7 @@ int numblks(MINODE *mip);
 int clr_bit(char *buf, int bit);
 int inc_free_inodes(int dev);
 int map(INODE ip, int lbk);
+MOUNT *getmptr(int dev);
 
 int idalloc(int dev, int ino);
 int bdalloc(int dev, int bno);
