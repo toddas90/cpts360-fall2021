@@ -19,6 +19,11 @@ int my_rmdir() {
         return -1;
     }
 
+    if (is_owner(pathname) == 0) {
+        printf(YEL "Permission denied\n" RESET);
+        return -1;
+    }
+
     int ino = getino(pathname);
     MINODE *mip = iget(dev, ino);
     

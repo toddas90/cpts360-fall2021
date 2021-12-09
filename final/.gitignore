@@ -1,3 +1,9 @@
 final
-diskimage
-KC_disk
+disk2
+disk2.bak
+disk3
+disk3.bak
+mydisk
+mydisk.bak
+demo/*
+backup_disks/*
