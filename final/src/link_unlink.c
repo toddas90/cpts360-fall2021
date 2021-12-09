@@ -62,7 +62,7 @@ int my_unlink() {
         printf(YEL "Permission denied\n" RESET);
         return -1;
     }
-    
+
     int ino = getino(pathname);
     MINODE *mip = iget(dev, ino);
 

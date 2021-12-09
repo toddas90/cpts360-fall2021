@@ -42,7 +42,7 @@ int my_symlink() {
     }
 
     src_mip->INODE.i_links_count += 1;
-    //src_mip->dirty = True;
+    src_mip->dirty = True;
     iput(src_mip);
 
     char buf[BLKSIZE];
