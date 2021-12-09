@@ -78,21 +78,67 @@ int my_unlink() {
     int pino = getino(parent);
     MINODE *pmip = iget(dev, pino);
     rm_child(pmip, child);
-    pmip->dirty = 1;
+    pmip->dirty = True;
     iput(pmip);
 
     mip->INODE.i_links_count -= 1;
     if (mip->INODE.i_links_count > 0)
-        mip->dirty = 1;
+        mip->dirty = True;
     else {
-        // for (int i = 0; i < mip->INODE.i_size/BLKSIZE; i++) {
-        //     if (mip->INODE.i_block[i] == 0)
-        //         break;
-        //     bdalloc(dev, pmip->INODE.i_block[i]);
-        // }
-        bdalloc(dev, ino);
+        my_truncate(mip);
+        //bdalloc(dev, ino);
         idalloc(dev, ino);
     }
     iput(mip);
     return 0;
+}
+
+int my_truncate(MINODE *del) {
+    int nblk = del->INODE.i_size / BLKSIZE;
+    int bno = 0;
+    int buf[BLKSIZE];
+
+    if (S_ISDIR(del->INODE.i_mode)) {
+        del->dirty = True;
+
+        for (int i = 0; i < 12; i++) { // Direct blocks
+            bdalloc(dev, del->INODE.i_block[i]);
+        }
+
+        if (nblk >= 12) { // Indirect
+            bno = del->INODE.i_block[12];
+            get_block(dev, bno, buf);
+            for (int i = 0; i < BLKSIZE/4; i++) {
+                if (buf[i] == 0)
+                    break;
+                bdalloc(dev, buf[i]);
+            }
+            bdalloc(dev, bno);
+        }
+
+        if (nblk >= (12 + 256)) { // Double Indirect
+            bno = bno = del->INODE.i_block[13];
+            get_block(dev, bno, buf);
+            for (int i = 0; i < BLKSIZE/4; i++) {
+                if (buf[i] == 0)
+                    break;
+                
+                int tmpbuf[BLKSIZE];
+                int tmpino = buf[i];
+                get_block(dev, tmpino, tmpbuf);
+                for (int j = 0; j < BLKSIZE/4; i++) {
+                    if (tmpbuf[i] == 0)
+                        break;
+                    bdalloc(dev, tmpbuf[i]);
+                }
+                bdalloc(dev, buf[i]);
+            }
+            bdalloc(dev, bno);
+        }
+        del->INODE.i_atime = time(NULL);
+        del->INODE.i_mtime = time(NULL);
+        del->INODE.i_size = 0;
+        return 0;
+    }
+    return -1;
 }

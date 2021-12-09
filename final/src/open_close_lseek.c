@@ -7,6 +7,7 @@
 #include <time.h>
 
 #include "../include/open_close_lseek.h"
+#include "../include/link_unlink.h"
 #include "../include/mkdir_creat.h"
 #include "../include/util.h"
 #include "../include/terminal.h"
@@ -72,21 +73,6 @@ int my_open(char *filename, int flags) {
     }
     mip->dirty = 1;
     return -1;
-}
-
-int my_truncate(MINODE *mip) {
-    for (int i = 0; i < mip->INODE.i_size/BLKSIZE; i++) {
-        if (mip->INODE.i_block[i] == 0)
-            continue;
-        else {
-            bdalloc(dev, mip->INODE.i_block[i]);
-        }
-    }
-    mip->INODE.i_atime = time(NULL);
-    mip->INODE.i_mtime = time(NULL);
-    mip->INODE.i_size = 0;
-    mip->dirty = 1;
-    return 0;
 }
 
 int my_close(int fd) {

@@ -6,5 +6,6 @@
 
 int my_link();
 int my_unlink();
+int my_truncate(MINODE *del);
 
 #endif /* LINK_UNLINK_H */
