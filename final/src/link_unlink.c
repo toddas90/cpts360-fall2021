@@ -135,8 +135,6 @@ int my_truncate(MINODE *del) {
             }
             bdalloc(dev, bno);
         }
-        del->INODE.i_atime = time(NULL);
-        del->INODE.i_mtime = time(NULL);
         del->INODE.i_size = 0;
         return 0;
     }

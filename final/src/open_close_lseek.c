@@ -34,11 +34,6 @@ int my_open(char *filename, int flags) {
         return  -1;
     }
 
-    // if (access(filename, R_OK) != 0) {
-    //     printf(RED "Permission denied\n" RESET);
-    //     return -1;
-    // }
-
     OFT *oftp = (OFT *)malloc(sizeof(OFT)); // NEED TO FREE THIS
     oftp->minodePtr = mip;
     oftp->refCount = 1;
