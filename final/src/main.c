@@ -22,6 +22,7 @@
 #include "../include/read_cat.h"
 #include "../include/write_cp.h"
 #include "../include/mount_umount.h"
+#include "../include/switch.h"
 
 extern MINODE *iget();
 
@@ -63,8 +64,9 @@ int init()
   for (i=0; i<NPROC; i++){
     p = &proc[i];
     p->pid = i;
-    p->uid = p->gid = 0;
+    p->uid = p->gid = i; // Originally 0
     p->cwd = 0;
+    p->status = READY;
     for (int k = 0; k<NFD; k++) {
       p->fd[k] = 0;
     }
@@ -168,6 +170,7 @@ int main(int argc, char *argv[ ]) {
     running = &proc[0];
     running->status = READY;
     running->cwd = iget(dev, 2);
+    proc[1].cwd = iget(dev, 2);
     //printf("root refCount = %d\n", root->refCount);
 
     // WRTIE code here to create P1 as a USER process
@@ -219,6 +222,8 @@ int main(int argc, char *argv[ ]) {
             cat(pathname);
         else if (strcmp(cmd, "cp")==0)
             cp(pathname, extra_arg);
+        else if (strcmp(cmd, "switch")==0)
+            my_switch(pathname);
         else if (strcmp(cmd, "help")==0)
             help();
         printf("\n");
@@ -278,6 +283,9 @@ void help() {
 
     printf(BLD BLU "umount" RESET "  - ");
     printf(GRN "Args(1) " RESET "Unmount an ext2 filesystem\n");
+
+    printf(BLD BLU "switch" RESET "  - ");
+    printf(GRN "Args(1) " RESET "Change to a different user process\n");
 
     printf(BLD BLU "clear" RESET "   - ");
     printf(GRN "Args(0) " RESET "Clear screen\n");

@@ -37,6 +37,11 @@ int cd() {
     //printf("Getting INODE with dev = %d and ino = %d\n", dev, ino);
     MINODE *mip = iget(dev, ino); // get minode of path dir
     //printf("Got INODE with dev = %d and ino = %d\n", mip->dev, mip->ino);
+
+    if (my_access(pathname, 'x') != 1) { // If the dir has x (execute) permission
+        printf(YEL "Permission denied\n" RESET);
+        return -1;
+    }
     
     if (S_ISLNK(mip->INODE.i_mode)) { // Check if link
         // If symlink

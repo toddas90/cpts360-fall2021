@@ -28,6 +28,65 @@ extern int nblocks, ninodes, bmap, imap, iblk;
 
 extern char line[128], cmd[32], pathname[128];
 
+// mode read = 0, write = 1, execute = 2, all = 3
+int my_access(char *filename, char mode) {
+    int r = 0, ino = 0;
+    MINODE *mip;
+
+    if (running->uid == 0)
+        return 1; // ROOT ALWAYS WELCOME IN MY HOUSE
+
+    ino = getino(filename);
+    mip = iget(dev, ino);
+
+/*
+                                       |own|grp|oth|
+   Recall that INODE.i_mode = |tttt|ugs|rwx|rwx|rwx|
+                                       |permissions|
+*/
+
+    if (mip->INODE.i_uid == running->uid) {
+        if (mode == 'r') // r
+            r = test_bit(mip->INODE.i_mode, 7);
+        if (mode == 'w') // w
+            r = test_bit(mip->INODE.i_mode, 8);
+        if (mode == 'x') // x
+            r = test_bit(mip->INODE.i_mode, 9);
+    }
+    else {
+        if (mode == 'r') // r
+            r = test_bit(mip->INODE.i_mode, 13);
+        if (mode == 'w') // w
+            r = test_bit(mip->INODE.i_mode, 14);
+        if (mode == 'x') // x
+            r = test_bit(mip->INODE.i_mode, 15);
+    }
+
+    iput(mip);
+    return r;
+}
+
+int is_owner(char *filename) { // returns 1 if owner, 0 if not
+    int r = 0, ino = 0;
+    MINODE *mip;
+
+    if (running->uid == 0)
+        return 1; // ROOT ALWAYS WELCOME IN MY HOUSE
+
+    ino = getino(filename);
+    mip = iget(dev, ino);
+
+    if (mip->INODE.i_uid == running->uid) {
+        r = 1;
+    }
+    else {
+        r = 0;
+    }
+
+    iput(mip);
+    return 0;
+}
+
 MOUNT *getmptr(int dev) {
     for (int i = 0; i < NMOUNT; i++) {
         if (dev == mountTable[i].dev) {
