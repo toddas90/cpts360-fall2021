@@ -1,6 +1,6 @@
 CC := gcc
-debug: CFLAGS :=  -g -O0 -Wall
-release: CFLAGS := -O3 -Wall -Werror -pipe -march=native
+debug: CFLAGS :=  -g -Wall
+release: CFLAGS := -O2 --pipe -march=native
 
 TARGET := final
 
@@ -12,9 +12,11 @@ OBJS := $(SRCS:.c=.o)
 .PHONY: clean
 
 debug : $(TARGET)
+	./newdisk
 	@echo Debug build finished
 
 release : $(TARGET)
+	./newdisk
 	@echo Release build finished
 
 $(TARGET) : $(OBJS)
