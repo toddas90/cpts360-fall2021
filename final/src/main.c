@@ -273,6 +273,12 @@ void help() {
     printf(BLD BLU "cp" RESET "      - ");
     printf(GRN "Args(2) " RESET "Print from src file to dest\n");
 
+    printf(BLD BLU "mount" RESET "   - ");
+    printf(GRN "Args(2) " RESET "Mount an ext2 filesystem\n");
+
+    printf(BLD BLU "umount" RESET "  - ");
+    printf(GRN "Args(1) " RESET "Unmount an ext2 filesystem\n");
+
     printf(BLD BLU "clear" RESET "   - ");
     printf(GRN "Args(0) " RESET "Clear screen\n");
 

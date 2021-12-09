@@ -1,0 +1,4 @@
+#!/bin/bash
+rm disk2 && rm disk3
+cp backup_disks/disk2.bak disk2 && cp backup_disks/disk3.bak disk3
+echo "Disks have been refreshed!"
