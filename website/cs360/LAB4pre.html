@@ -1,0 +1,86 @@
+<html>
+<body bgcolor="#00CCCC" text="#000000">
+<pre>
+                   CS360 LAB4 Pre-WORK
+                  DUE & DEMO: 10-7-2021
+
+============================================================================
+                  PART 1: Web Programming
+
+1. YOUR WEBSITE at 69.166.48.15:
+   Each of you has a user account on the Linux server machine IP=69.166.48.15
+
+        login name = YOUR last name in lowercase 
+        password   = YOUR WSU ID number
+
+Copy file to your account: scp filename YOURNAME@69.166.48.15:public_html
+		   
+NOTE: The server machine is NOT administered by WSU systems people.
+      If you have any problem with login or webpage, contact KCW directly.
+
+2. Access YOUR website by http://69.166.48.15/~YOURNAME
+   You will get a webpage, which looks like the following.    
+        ------------------------------------
+        |    Welcome to YOUR Website       |
+        |       ------------------         |
+        |       | YOUR PICTURE   |         |
+        |       ------------------         |
+        | Input command  :  BOX            | 
+        | Input filename1:  BOX            |
+        | Input filename2:  BOX            | 
+        | Submit command :  Submit BOX     |
+        ------------------------------------
+
+3. You will NOT like your current picture. 
+   login to your account by ssh YOURNAME@69.166.48.15
+   Change it to YOUR pretty picture. Please use a real (JPG) picture of you
+
+4. You may enter strings to the input boxes. When you click the Submit BOX,
+   it submits the input strings to the httpd (Apache) server on the server
+   machinee, directing it to execute
+
+	     ~kcw/cgi-bin/mycgi.bin 
+ 
+  which constructs a new webpage DYNAMICALLY and sends it back to your browser.
+  As of now, it only echos YOUR inputs.
+
+5. login to your account. YOUR home directory contains:
+ 
+        public_html --- index.html 
+               |
+	   cgi-bin ---- mycgi.c util.o
+
+Modify the index.html file to direct it to execute YOUR mycgi.bin program. 
+Then run   cc -o mycgi.bin mycgi.c util.o   # generate YOUR OWN mycgi.bin executable.
+           chmod u+s mycgi.bin              # chmod mycgi.bin to a SETUID executable
+
+YOUR mycgi.bin program is executed by an Apache process (uid=80) on the server.
+ 
+When a process executes a SETUID program, it temporarily assumes the uid of 
+the program owner, allowing it to write to the owner's directories.
+
+6. Access YOUR webpage again. Enter command and filenames. Then, Submit.
+   It should execute YOUR mycgi.bin program in YOUR cgi-bin/ directory.
+
+<h2>======================= REQUIREMENTS ===============================</H2>
+7. MODIFY mycgi.c to do the following file operations AND generate 
+   DYNAMIC webpages containing YOUR results.
+
+     mkdir dirname
+     rmdir dirname
+     rm    filename
+     cat   filename
+     cp    file1 file2
+     ls    [directory] <== if no directory, ls CWD
+
+============================================================================
+		   
+PART 2 : Network Programming using TCP
+
+Download files from samples/LAB4pre/ :  server.c   client.c
+The programs are EXPLAINED and demonstrated in class
+			   
+=================== DO these: No need to turn in ======================
+Modify client.c to send a line containing two numbers, e.g. 123 456
+Modify server.c to compute the SUM of the numbers and reply 123 456 sum=579
+

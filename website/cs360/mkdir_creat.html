@@ -1,0 +1,111 @@
+<Title>360 Notes</Title>
+<Body bgcolor="#00cccc" text="#000000">
+
+<H1>360 Project Help: HOW TO mkdir_creat</H1>
+<H2>Chapter 11.8.1: mkdir. 11.8.2: creat, 11.8.3</H2>
+<Pre>
+
+1. Base code: YOUR mount_root program
+// NOTE: nblocks, ninodes, imap, bmap, iblk are globals as in mount_root
+
+ADD these C code:
+
+int tst_bit(char *buf, int bit) // in Chapter 11.3.1
+
+int set_bit(char *buf, int bit) // in Chapter 11.3.1
+
+int ialloc(int dev)  // allocate an inode number from inode_bitmap
+{
+  int  i;
+  char buf[BLKSIZE];
+
+  // read inode_bitmap block
+  get_block(dev, imap, buf);
+
+  for (i=0; i < ninodes; i++){
+    if (tst_bit(buf, i)==0){
+        set_bit(buf, i);
+        put_block(dev, imap, buf);
+        printf("allocated ino = %d\n", i+1); // bits count from 0; ino from 1
+        return i+1;
+    }
+  }
+  return 0;
+}
+
+// WRITE YOUR OWN balloc(dev) function, which returns a FREE disk block number
+
+// Finish iput(MINODE *mip) code in util.c (in Chapter 11.7.2 3.3)
+
+
+============= Review of mount_root program ============================		
+char *disk = "diskimage";    // work with an EMPTY FS diskimage
+
+int main()
+{
+(1). open disk for RW; let dev = opened fd
+
+(2). read SUPER block to verify it's an EXT2 FS
+     and get ninodes, nblocks   as globals
+     print ninodes, nblocks;
+
+(3). read Group Descriptor 0 to get bmap, imap and iblk (inode_start_block)
+     print bmap, imap, iblk;
+
+(4). init();            // initialize FS data structures
+     mount_root();      // mount root
+
+NOTE: (1) to (4) are already in mount_root. 
+      You only need to complete ls, cd, pwd as required in mount_root
+             
+----------------------------------------------------------
+     YOUR ls, cd, pwd commands should be working by now
+-----------------------------------------------------------
+
+                HOW TO mkdir
+
+Chapter 11.8.1: Algorithm of mkdir
+
+// USE the ialloc() function given above (for simplicity)
+
+// Data block of new DIR:
+
+   | entry .     | entry ..     |                                       |
+   ----------------------------------------------------------------------
+   |ino|12|1|.   |pino|1012|2|..                                        |
+   ----------------------------------------------------------------------
+                 |-- last record length (1012) to end of block--------->|
+
+
+                HOW TO creat (files)
+
+
+================ development HINTS =============================
+
+1. Your mkdir/creat may trash the disk iamge because it may write to wrong 
+   data blocks. This will cause problems later even if your program is correct.
+   So, it's better to use a FRESH disk image each time during development.
+
+   Write a sh script "run" or "doit" containing: 
+
+      sudo mke2fs -b 1024 disk 1440  # renew the disk image file
+      mk
+      a.out
+
+   Enter run or doit to test YOUR new a.out, so that you use a NEW disk image 
+   each time until YOUR a.out no longer trashes the disk image.
+
+2. After YOUR mkdir/creat commands, you should check the results under LINUX.
+   Write a sh script "s" containing
+       
+         sudo mount disk /mnt
+         ls -a -i -l /mnt       # show . and .., inode number, long format
+         sudo umount /mnt
+
+   to show the disk contents under LINUX.
+==============================================================
+  
+                     Sample solutions:
+samples/LEVEL1/: mountroot, mkdir_creat, rmdir, link_unlink, misc1
+
+     

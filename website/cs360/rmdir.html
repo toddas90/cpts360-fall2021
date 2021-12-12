@@ -1,0 +1,44 @@
+<Title>360 PROJECT HELP</Title>
+<Body bgcolor="#ffffca" text="#000000">
+
+<H1>HOWTO rmdir</H1>
+<h2>READ: Chapter 11.8.4, 11.8.5</h2>
+
+<Pre>
+
+1. POSTED sample solutions in samples/LEVEL1 directory:
+
+   =========== Project Level-1 ==========
+   mountroot  : mount_root; ls, cd, pwd
+   mkdir_creat: mkdir, creat
+   rmdir      : rmdir
+   link_unlink: link, unlink, symlink, readlink
+   ======================================
+
+Page 338: int idalloc(dev, ino) deallocate an inode (number)
+
+int idalloc(int dev, int ino)
+{
+  int i;  
+  char buf[BLKSIZE];
+
+  if (ino > ninodes){  
+    printf("inumber %d out of range\n", ino);
+    return;
+  }
+  
+  get_block(dev, imap, buf);  // get inode bitmap block into buf[]
+  
+  clr_bit(buf, ino-1);        // clear bit ino-1 to 0
+
+  put_block(dev, imap, buf);  // write buf back
+}
+
+============================================================
+YOU write a   bdalloc(dev, bno) to deallocate a block (number)
+============================================================
+
+Assume: command line = "rmdir pathname"
+
+        Algorithm of rmdir: Chapter 11.8.4
+

@@ -1,0 +1,39 @@
+<html>
+<body>
+<pre>
+                            LAB2 Check List
+                           Total points: 100
+			 
+    Commands                Expected Results                      Comments
+---------------------  -------------------------------------  -----------------
+start up; pwd; ls;      cwd = /; directory empty
+
+1. mkdir d1; 
+   mkdir d2;            
+   creat f1; ls         show [D d1] [D d2] [F f1] exist
+
+2. mkdir d2/d3; ls d2   show [D d3] in DIR d2
+
+3. cd /d2/d3; pwd       cwd = /d2/d3
+
+4. cd ../../; pwd       cwd = /
+
+5. rmdir d1; ls         show [D d2] [F f1]
+
+6. rm f1; ls            show f1 is removed			    
+
+7. rmdir d2             fail, d2 not empty
+
+8. quit                 save tree as a FILE; exit
+
+9. restart; reload;ls   MUST show THE SAME TREE as saved before.
+------------------------------------------------------------------------------
+	                Questions:
+   During DEMO, you have to answer some of these questions: 10 points
+			    
+1. How do you divide a pathname into stoken strings?
+2. How to convert a pathname to its NODE pointer in the binary tree?
+3. How does  ls /a/b/c   work?
+4. How to mkdir /a/b/c?
+5. How to pwd?			    
+6. How to implement a general tree as a binay tree? 

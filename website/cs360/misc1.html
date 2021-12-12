@@ -1,0 +1,102 @@
+<html>
+<body>
+<pre>
+            CS 360 NOTES on misc. Level-1 Functions
+
+1. stat filename: 
+        struct stat myst;
+        get INODE of filename into memory:
+            int ino = getino(pathname);
+            MINODE *mip = iget(dev, ino);
+            copy dev, ino to myst.st_dev, myst.st_ino;
+            copy mip->INODE fields to myst fields;
+        iput(mip);
+
+2. chmod filename mode: (mode = |rwx|rwx|rwx|, e.g. 0644 in octal)
+         get INODE of pathname into memroy:
+             ino = getino(pathname);
+             mip = iget(dev, ino);
+             mip->INODE.i_mode |= mode;
+         mip->dirty = 1;
+         iput(mip);
+
+3. utime filename: (Modify atime of INODE)
+
+
+4. Many other level-1 functions:
+        get INODE into memory;
+        copy OR MODIFY INODE fields;
+                set dirty flag if modified;
+        iput(mip):
+
+=================== Key Components of Level-1 =======================
+
+1. Given a DIR INODE, step through entries in its data block(s) to 
+   print all DIR entries = [inode|rec_len|name_len|name]:
+
+         INODE *ip -> INODE
+         get_block(dev, ip->i_block, buf[ ]);
+         DIR  *dp = (  )buf;
+         char *cp = buf;
+         while(cp < buf + BLKSIZE){
+
+	    // use dp-> to access entry's inode, rec_len, name_len, name;
+            // print entry or search for an entry by inode number of by name;
+          
+            cp += dp->rec_len;
+            dp = ( )cp;
+         }
+    
+         ================== for EXPERTs in C: ==========================
+
+         DIR  *dp = (  )buf;
+
+         while((char *)dp < buf + BLKSIZE){
+
+	    // use dp-> to access entry's inode, rec_len, name_len, name;
+            // print entry or search for an entry by inode number of by name;
+ 
+            dp = (DIR *)( (char *)dp += dp->rec_len ); // for EXPERTs in C !!!!
+         }
+
+2. int ino = getino(pathname):
+
+(1). tokenize pathname into name[0], name[1], .., name[n-1] with n pointers
+  
+(2). mip = root if pathname is absolute;
+           CWD  if pathname is relative
+ 
+(2). for (int i=0; i < n; i++){
+         ino = search(mip, name[i]);
+
+         if (!ino) return 0;
+
+         iput(mip);
+         mip = iget(dev, ino) 
+     }
+     iput(mip);
+     return mip->ino;
+
+
+3. MINODE *iget(dev, ino):
+
+     return mip->minode[] containing INODE of (dev,ino)
+
+4. iput(MINODE *mip)
+ 
+     wrtie mip->INODE back to disk if refCount==0 AND dirty
+
+5. Convert ino to disk block number and offset by Mailman's algorithm
+        
+6. Enter an entry [ino, name] into the data block of parent directory.
+
+7. Delete an entry [ino, name] from the dat block of parent directory.
+
+
+
+
+
+
+
+
+     

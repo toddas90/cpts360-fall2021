@@ -1,0 +1,145 @@
+<html>
+<Body bgcolor="#00CCCC" text="#000000">
+
+<H1>LAB #5: Mount Root Operation of FS</H1>
+<PRE>
+  
+           DUE AND DEMO: 10-28-2021
+
+A. REQUIREMENTS: 
+=======================================================================
+Write a C program to start up the FS project:
+
+1. Initialize FS data structures
+2. mount the root file system
+3. ls the root directory /
+4. cd and pwd
+=======================================================================
+
+                     B. HELP information
+
+1. Download ~samples/MOUNTROOT/mountroot.tgz
+   Run      zcat mountroot.tgz | tar xvf -      to extract files
+	   
+            Will be explained in class on 10-19-2021
+
+2. FS Level-1 Data Structures
+
+PROC* running           MINODE *root                          
+      |                          |                 ||*********************
+      V                          |  MINODE         || 
+    PROC[0]                      V minode[128]     ||         Disk dev
+ =============  |-pointerToCWD-> ==== 0 =====      ||   ==================
+ |nextProcPtr|  |                |  INODE   |      ||   |     INODEs   
+ |pid = 0    |  |                | -------  |      ||   ================== 
+ |uid = gid=0|  |                | (dev,2)  |      || 
+ |cwd -------|->|                | refCount=3      ||*********************
+ =============                   | dirty=0  |
+                                 | mounted=1|         
+    PROC[1]      root minode     | mptr     |
+ =============   ^               |==========|
+ |nextrocPtr |   |               |=== 1 ====|         
+ |pid = 1    |   |               |  INODE   |          
+ |uid = gid=1|   |               | (dev,ino)|   
+ |cwd -------|----               | refCount |  
+ =============                   | dirty    |   
+                                 | mounted  |
+                                 | mptr     |
+                                 |==========|  
+ 
+
+3. init() // Initialize data structures of LEVEL-1:
+   {
+     (1). 2 PROCs, P0 with uid=0, P1 with uid=1, all PROC.cwd = 0
+     (2). MINODE minode[128]; all with refCount=0
+     (3). MINODE *root = 0;
+   }
+
+4. util.c file contains functions: getino(pathname); iget(dev, ino); iput(mip);
+   Their usage are as follows
+
+     int ino     = getino(char *pathname);  
+     MINODE *mip = iget(dev, ino);
+
+                   // USE the INODE in minode
+
+                   iput(mip)
+
+5. int mount_root()  // mount root file system, establish / and CWDs
+   {
+      open device for RW (the file descriptor is dev of the FS device)
+      read SUPER block to verify it's an EXT2 FS
+      record              nblocks, ninodes                          as globals
+
+      read GD0; record    bmap, imap, iblk = inodes_start_block#    as globals;
+      
+      root = iget(dev, 2);    // get root inode into MINODE[0] 
+   
+      Let cwd of both P0 and P1 point at the root minode (refCount=3)
+          P0.cwd = iget(dev, 2); 
+          P1.cwd = iget(dev, 2);
+
+      Let running -> PROC[0].
+    }
+
+
+6.int main()
+  {
+     init();
+     mount_root();
+
+     while(1){
+        //  ask for a command line = "cmd [pathname]"
+        //  cmd=ls:
+                ls(pathname);
+        //  cmd=cd:
+                chdir(pathname);
+        //  cmd=pwd
+                pwd(running->cwd)
+            cmd=quit
+                quit();
+  }       
+
+<H2>The requirememnts are for YOU to implement ls(), cd(), pwd()</H2>
+	    
+7. HOW TO ls [pathname]:
+
+   Read Chapter 11.7.3: HOW TO ls and Algorithm of ls
+
+8. HOW TO chdir(char *pathname)
+
+   Read Chapter 11.7.3: HOW TO chdir
+
+9. HOW TO pwd()?    pwd(running->cwd):
+
+   READ Chapter 11.7.3: HOW TO pwd
+
+10.int quit()
+   {
+     iput() all minodes with (refCount > 0 && DIRTY);
+     exit(0); 
+   }
+
+11. Sample Solution: ~samples/MOUNTROOT/solution
+
+
+                  Review Questions:
+
+1. EXPLAIN in words: What does mount root do? 
+
+2. Given  int ino;              // an INODE number
+          INODE thisInode;      // an INODE structure
+   Write C code to load the INODE of ino into thisInode
+
+3. Assume: MINODE *mip points at an in-memory DIR minode
+                                                  INODE
+                                                  dev, ino
+                                                  refCount
+                                                  dirty
+
+(1). Write C code to print its parent ino:
+
+(2). HOW to find the name string of this DIR INODE?
+	      
+
+

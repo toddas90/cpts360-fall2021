@@ -1,0 +1,104 @@
+<Title>360 PROJECT FILE</Title>
+<Body bgcolor="#00cccc" text="#000000">
+<H1>360 PROJECT</H1>
+<Pre>
+                    CPTS 360 PROJECT
+
+                 Date Assigned: 10/14/2021
+        DUE & DEMO: ALL Levels: close week Dec 9, 2021
+
+         Submit a zip file of your work on Dec 9, 2021
+                
+
+  1. Level-1    : 11/12/2021
+     Level-2    : 12/02/2021
+                    
+  2. May work in 2-person teams. However, a comprehensive INTERVIEW will 
+     be given to EACH individual during the DEMO. The INTERVIEW results
+     will be a major part of your final grades.
+
+       ----------------  Project grading standards: --------------------
+          Full credit   : Working AND can EXPLAIN your work.
+          1/2 or better : Partially working but can EXPLAIN your work.
+          0 and REPORT case to EECS: working but CANNOT EXPLAIN code.
+       -----------------------------------------------------------------
+
+                     A. OBJECTIVE:
+   Design and implement a Linux-compatible EXT2 file system.
+
+                     B. SPECIFICATIONS:
+   Implementation of EXT2 File System: Chapter 11.6
+
+		    1. Files:
+   Files are exactly the same as they are in the Linux file system, i.e.
+   we shall use the same EXT2 file system data structures for
+
+      SuperBlock, GroupDescriptor, Bitmaps, Inode, Directory
+
+   EXCEPTIONS:
+      Only DIR and REG file types; no SPECIAL files.
+      File size : No triple-indirect blocks.
+   
+2. Disks:
+    Disks are "virtual disks" simulated by Linux files.  
+    Disk I/O are simulated by Linux read()/write() operations on a BLKSIZE 
+    basis. You may use Linux's mke2fs to create virtual disks
+
+3. File names:
+   As in Unix, each file is identified by a pathname, e.g. /a/b/c or x/y/z.
+
+   If a pathname begins with "/",  it's relative to the / directory.
+   Otherwise, it's relative to the Current Working Directory (CWD) of the 
+   running process (see Processes below). 
+
+4. Processes:
+   Every file operation is performed by a process.
+   The simulator starts with TWO processes:
+       A process P1 with uid=0 (for SUPERUSER), and
+       A process P2 with uid=1 (for ordinary user).
+   The CWD of both processes are initially at the root directory /
+  
+   P1 runs first. It is used in Level-1 and Level-2.
+   P2 is needed only in Level-3 for permission checking.
+
+   All processes executes the same code (i.e. the FS project), in which it
+
+       loop forever{
+            prompt for a command;
+            execute the command;
+       }
+ 
+5. File System Commands and Operations:
+   File operations will be executed as commands. The required commands are 
+   listed below. LEVEL 1 is the MINIMUM requirements for passing.
+    
+              -------  LEVEL 1 ------------ 
+                      REQUIRED:
+	       mount_root; ls, cd, pwd
+               mkdir, creat, rmdir, 
+	       link,  unlink, symlink, readlink
+
+                       MINOR                      
+               stat,  chmod, utime;
+
+	      -------  LEVEl 2 -------------
+	              REQUIRED:
+              open, close, read, write, cat, cp,
+		       MINOR:
+	            lseek, mv
+
+              -------  LEVEl 3 ------------ 
+                      REQUIRED:
+	       mount, umount, cross mounting points
+               File permission checking
+              -----------------------------
+      
+   All commands work exactly the same way as they do in Unix/Linux. 
+
+============================================================================
+                       SAMPLE PROGRAMS:
+1. OVERALL: ~cs360/samples/PROJECT
+            simulator.bin: The File System Simulator for EXT2 FS. 
+            diskimage    : a virtual FD disk containing DIRs and FILEs
+  Download and run the simulator on diskimage to see what I expect of YOUR work.
+============================================================================

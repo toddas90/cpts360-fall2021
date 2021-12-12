@@ -1,0 +1,63 @@
+<html>
+  <body>
+    <pre>
+      
+	Project Level-3: Permission Checking
+
+1. Permission bits in INODE:
+                                       |own|grp|oth|
+   Recall that INODE.i_mode = |tttt|ugs|rwx|rwx|rwx|
+                                       |permissions|
+
+   Access to file is governed by permission bits
+
+2. Permission Checking in General: access() return 1 if permission OK, 0 if not
+
+int access(char *filename, char mode)  // mode = r|w|x:
+{
+  int r;
+
+  if (SUPERuser: running->uid == 0)   // SUPERuser always OK
+     return 1;
+
+  // NOT SUPERuser: get file's INODE
+  ino = getino(filename);
+  mip = iget(dev, ino);
+
+  if (OWNER: mip->INODE.i_uid == running->uid)
+    r = (check owner's rwx with mode);  // by tst_bit()
+  else
+    r = (check other's rwx with mode);  // by tst_bit()
+
+  iput(mip);
+  
+  return r;
+}
+
+2. USE of access() in FS functions:
+
+getino(filename): must have r,x permission on every DIR during search()
+
+cd_ls_pwd :  must have x and r permissions
+
+mkdr_creat:  must have rwx to parent directory
+
+rmdir     :  must be owner
+
+link o n  :  must have rwx on oldfile, rwx to new parent
+
+unlink    :  must be owner
+  
+open f m  :  must have m permission to file
+
+
+3. Simplified Requirements for Project
+
+Switch process to run P1 whose uid = 1, so it's not a superuser process.
+
+		    Modify
+cd newDir: allow cd to newDir only if has x permission
+rmdir    : must be owner of removed dir
+unlink   : must be owner of the unlinked file
+========================================================================
+						      
